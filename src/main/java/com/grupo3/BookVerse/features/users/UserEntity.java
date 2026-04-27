@@ -14,23 +14,23 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "id_external", unique = true, nullable = false)
     private UUID idExternal;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "user_name",unique = true, nullable = false)
     private String username;
 
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "password_hash",nullable = false)
     private String passwordHash;
 
-    @Column(nullable = false)
+    @Column(name = "role_id",nullable = false)
     private Long roleId;
 
-    @Column(nullable = false)
-    private Long suscriptionId;
+    @Column(name = "subscription_id",nullable = false)
+    private Long subscriptionId;
 
     /* VER ENUM DESPUES
     @Enumerated(EnumType.STRING)
@@ -43,10 +43,10 @@ public class UserEntity {
         SUSPENDED
     }*/
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist
