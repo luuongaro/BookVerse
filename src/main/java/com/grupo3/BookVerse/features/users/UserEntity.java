@@ -30,7 +30,7 @@ public class UserEntity {
     private Long roleId;
 
     @Column(nullable = false)
-    private Long suscriptionId;
+    private Long subscriptionId;
 
     /* VER ENUM DESPUES
     @Enumerated(EnumType.STRING)
