@@ -27,7 +27,6 @@ public class ReviewEntity {
     @Column(name = "book_id", nullable = false)
     private Long bookId;
 
-
     @Column(nullable = false)
     private Integer rating;
 
