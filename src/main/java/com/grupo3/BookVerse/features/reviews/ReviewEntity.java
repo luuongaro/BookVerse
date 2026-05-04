@@ -21,14 +21,12 @@ public class ReviewEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-  //  @ManyToOne(optional = false)
-   // @JoinColumn(name = "user_id", nullable = false)
-   // private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
+    @Column(name = "book_id", nullable = false)
+    private Long bookId;
 
-   // @ManyToOne(optional = false)
-   // @JoinColumn(name = "book_id", nullable = false)
-   // private Book book;
 
     @Column(nullable = false)
     private Integer rating;
@@ -42,18 +40,27 @@ public class ReviewEntity {
     @Column(nullable = false)
     private Boolean isDeleted = false;
 
+    @Column(name = "takedown_at")
     private LocalDateTime takedownAt;
 
-   // @Enumerated(EnumType.STRING)
-   // private TakedownStatus takedownStatus;
-
+    @Column(name = "takedown_reason")
     private String takedownReason;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "takedown_status")
+    private TakedownStatus takedownStatus;
+
+    public enum TakedownStatus {
+        ACTIVE,
+        TAKEN_DOWN,
+        RESTORED
+    }
 
     @PrePersist
     public void prePersist() {
