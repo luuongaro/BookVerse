@@ -2,12 +2,7 @@ package com.grupo3.BookVerse.features.authors;
 
 import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "authors")
@@ -29,5 +24,12 @@ public class AuthorEntity {
 
     @Column(nullable = false)
     private String language;
+
+   @ManyToMany(mappedBy = "authors")
+   private List<BookEntity> books;
+
+
+
+
 
 }
