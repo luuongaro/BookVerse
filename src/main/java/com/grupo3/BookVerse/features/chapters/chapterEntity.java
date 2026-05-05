@@ -34,6 +34,9 @@ public class ChapterEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Column(name = "page_count", nullable = false)
+    private int pageCount;
+
     @Column(name = "is_published", nullable = false)
     private boolean isPublished;
 
