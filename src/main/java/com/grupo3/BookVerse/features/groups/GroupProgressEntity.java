@@ -1,6 +1,7 @@
-package com.grupo3.BookVerse.features.users;
+package com.grupo3.BookVerse.features.groups;
 
 
+import com.grupo3.BookVerse.features.users.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,7 +27,7 @@ public class GroupProgressEntity {
     private UUID idExternal = UUID.randomUUID();
 
     @Column(name = "group_id", nullable = false)
-    private Long group;
+    private ReadingGroupEntity group;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
