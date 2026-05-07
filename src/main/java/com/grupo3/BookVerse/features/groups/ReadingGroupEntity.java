@@ -1,5 +1,6 @@
 package com.grupo3.BookVerse.features.groups;
 
+import com.grupo3.BookVerse.features.books.BookEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,6 +22,10 @@ public class ReadingGroupEntity {
 
     @Column(name = "id_external", unique = true, nullable = false)
     private UUID idExternal = UUID.randomUUID();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id", nullable = false)
+    private BookEntity book;
 
 
 

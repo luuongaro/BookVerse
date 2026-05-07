@@ -1,7 +1,7 @@
 package com.grupo3.BookVerse.features.users;
 
 import com.grupo3.BookVerse.features.users.common.UserStatus;
-import com.grupo3.BookVerse.roles.roleEntity;
+import com.grupo3.BookVerse.roles.RoleEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,7 +42,7 @@ public class UserEntity {
             joinColumns = @JoinColumn(name = "user_id",nullable = false),
             inverseJoinColumns = @JoinColumn(name = "role_id",nullable = false)
     )
-    private List<roleEntity> roles = new ArrayList<>();
+    private List<RoleEntity> roles = new ArrayList<>();
 
     @Column(name = "subscription_id",nullable = false)
     private Long subscriptionId;
