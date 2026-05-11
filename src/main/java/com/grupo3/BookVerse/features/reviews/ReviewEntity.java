@@ -1,5 +1,6 @@
 package com.grupo3.BookVerse.features.reviews;
 
+import com.grupo3.BookVerse.features.books.BookEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,8 +25,9 @@ public class ReviewEntity {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "book_id", nullable = false)
-    private Long bookId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id", nullable = false)
+    private BookEntity book;
 
     @Column(nullable = false)
     private Integer rating;

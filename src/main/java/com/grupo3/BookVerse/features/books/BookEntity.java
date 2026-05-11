@@ -7,6 +7,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import com.grupo3.BookVerse.features.authors.AuthorEntity;
 import com.grupo3.BookVerse.features.reviews.ReviewEntity;
 
+//import com.grupo3.BookVerse.features.readingstatus.ReadingStatusEntity;
+import com.grupo3.BookVerse.features.groups.ReadingGroupEntity;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +22,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class bookEntity {
+public class BookEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -69,8 +72,8 @@ public class bookEntity {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ReviewEntity> reviews;
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<ReadingStatusEntity> readingStatuses;
+    //@OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    //private List<ReadingStatusEntity> readingStatuses;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ReadingGroupEntity> readingGroups;
@@ -83,3 +86,4 @@ public class bookEntity {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 }
+
