@@ -1,11 +1,19 @@
 package com.grupo3.BookVerse.features.authors;
 
 import java.util.UUID;
+import java.util.List;
 
 import jakarta.persistence.*;
+import lombok.*;
+
+import com.grupo3.BookVerse.features.books.BookEntity;
 
 @Entity
 @Table(name = "authors")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 
 public class AuthorEntity {
 
@@ -27,9 +35,5 @@ public class AuthorEntity {
 
    @ManyToMany(mappedBy = "authors")
    private List<BookEntity> books;
-
-
-
-
 
 }

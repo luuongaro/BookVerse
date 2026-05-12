@@ -1,12 +1,22 @@
 package com.grupo3.BookVerse.features.users;
 
+import com.grupo3.BookVerse.features.users.common.UserStatus;
+import com.grupo3.BookVerse.roles.RoleEntity;
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
+@AllArgsConstructor
+@Builder
+@NoArgsConstructor
 
 public class UserEntity {
 
@@ -26,22 +36,20 @@ public class UserEntity {
     @Column(name = "password_hash",nullable = false)
     private String passwordHash;
 
-    @Column(name = "role_id",nullable = false)
-    private Long roleId;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "role_users",
+            joinColumns = @JoinColumn(name = "user_id",nullable = false),
+            inverseJoinColumns = @JoinColumn(name = "role_id",nullable = false)
+    )
+    private List<RoleEntity> roles = new ArrayList<>();
 
     @Column(name = "subscription_id",nullable = false)
     private Long subscriptionId;
 
-    /* VER ENUM DESPUES
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private UserStatus status;
-
-    public enum UserStatus {
-        ACTIVE,
-        INACTIVE,
-        SUSPENDED
-    }*/
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -53,6 +61,13 @@ public class UserEntity {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+
+        if (idExternal == null) {
+            idExternal = UUID.randomUUID();
+        }
+        if (status == null) {
+            status = UserStatus.ACTIVE;
+        }
     }
 
     @PreUpdate
