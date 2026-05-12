@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.reviews;
+package com.grupo3.BookVerse.features.reviews.domain;
 
 import com.grupo3.BookVerse.features.books.BookEntity;
 import jakarta.persistence.*;
