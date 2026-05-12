@@ -5,11 +5,12 @@ import com.grupo3.BookVerse.features.users.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
 @Entity
-@Table(name = "group_progress")
+@Table(name = "group_progresses")
 
 @Getter
 @Setter
@@ -38,6 +39,6 @@ public class GroupProgressEntity {
     private int currentProgress;
 
     @Column(name = "updated_at", nullable = false)
-    private Date updatedAt;
+    private LocalDateTime updatedAt;
 
 }
