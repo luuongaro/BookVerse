@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import com.grupo3.BookVerse.features.authors.AuthorEntity;
+import com.grupo3.BookVerse.features.authors.domain.AuthorEntity;
 import com.grupo3.BookVerse.features.reviews.ReviewEntity;
 
 //import com.grupo3.BookVerse.features.readingstatus.ReadingStatusEntity;

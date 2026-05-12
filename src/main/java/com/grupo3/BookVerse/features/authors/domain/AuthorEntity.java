@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.authors;
+package com.grupo3.BookVerse.features.authors.domain;
 
 import java.util.UUID;
 import java.util.List;
