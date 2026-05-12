@@ -5,11 +5,13 @@ import com.grupo3.BookVerse.features.users.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @Table(name = "group_progress")
+@Table(name = "group_progresses")
 
 @Getter
 @Setter
@@ -28,6 +30,9 @@ public class GroupProgressEntity {
 
     @Column(name = "group_id", nullable = false)
     private Long group;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id", nullable = false)
+    private ReadingGroupEntity group;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -38,5 +43,6 @@ public class GroupProgressEntity {
 
     @Column(name = "updated_at", nullable = false)
     private Date updatedAt;
+    private LocalDateTime updatedAt;
 
 }
