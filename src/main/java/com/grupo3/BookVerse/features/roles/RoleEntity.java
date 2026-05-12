@@ -1,6 +1,6 @@
-package com.grupo3.BookVerse.roles;
+package com.grupo3.BookVerse.features.roles;
 
-import com.grupo3.BookVerse.features.users.UserEntity;
+import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
