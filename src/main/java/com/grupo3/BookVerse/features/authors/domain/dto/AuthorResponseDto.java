@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import com.grupo3.BookVerse.features.books.domain.dto.BookDTO;
 
-public record AuthorDTO(
+public record AuthorResponseDto(
 
         UUID idExternal,
         String fullName,

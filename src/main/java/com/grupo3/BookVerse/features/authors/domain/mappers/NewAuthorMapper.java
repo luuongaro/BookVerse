@@ -2,7 +2,7 @@
 package com.grupo3.BookVerse.features.authors.domain.mappers;
 
 import com.grupo3.BookVerse.features.authors.domain.AuthorEntity;
-import com.grupo3.BookVerse.features.authors.domain.dto.NewAuthorDTO;
+import com.grupo3.BookVerse.features.authors.domain.dto.AuthorRequestDto;
 import com.grupo3.BookVerse.common.model.IMapper;
 
 import org.mapstruct.Mapper;
@@ -12,9 +12,9 @@ import org.mapstruct.ReportingPolicy;
         componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
-public interface NewAuthorMapper extends IMapper<AuthorEntity, NewAuthorDTO> {
+public interface NewAuthorMapper extends IMapper<AuthorEntity, AuthorRequestDto> {
 
-    AuthorEntity toEntity(NewAuthorDTO newAuthorDTO);
+    AuthorEntity toEntity(AuthorRequestDto newAuthorDTO);
 
-    NewAuthorDTO toDTO(AuthorEntity authorEntity);
+    AuthorRequestDto toDTO(AuthorEntity authorEntity);
 }
