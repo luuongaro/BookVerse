@@ -1,7 +1,7 @@
 
 package com.grupo3.BookVerse.features.authors.domain.mappers;
 
-import com.grupo3.BookVerse.features.authors.AuthorEntity;
+import com.grupo3.BookVerse.features.authors.domain.AuthorEntity;
 import com.grupo3.BookVerse.features.authors.domain.dto.AuthorDTO;
 import com.grupo3.BookVerse.common.model.IMapper;
 
