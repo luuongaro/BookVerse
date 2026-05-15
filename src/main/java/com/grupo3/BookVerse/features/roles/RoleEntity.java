@@ -31,5 +31,11 @@ public class RoleEntity {
     @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
     private List<UserEntity> users = new ArrayList<>();
 
+    @PrePersist
+    protected void onCreate() {
+        if (idExternal == null) {
+            idExternal = UUID.randomUUID();
+        }
+    }
 
 }
