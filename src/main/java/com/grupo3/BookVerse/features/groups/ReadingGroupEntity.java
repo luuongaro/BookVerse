@@ -1,7 +1,7 @@
 package com.grupo3.BookVerse.features.groups;
 
-import com.grupo3.BookVerse.features.books.bookEntity;
-import com.grupo3.BookVerse.features.users.UserEntity;
+import com.grupo3.BookVerse.features.books.BookEntity;
+import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
