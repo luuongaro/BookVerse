@@ -47,7 +47,7 @@ public class UserEntity {
     private Long subscriptionId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "com/grupo3/BookVerse/features/status", nullable = false)
     private UserStatus status;
 
     @Column(name = "created_at", nullable = false)
