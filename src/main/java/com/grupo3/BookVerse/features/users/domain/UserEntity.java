@@ -8,7 +8,7 @@ import com.grupo3.BookVerse.features.roles.domain.RoleEntity;
 import com.grupo3.BookVerse.features.status.ReadingStatusEntity;
 import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
 import com.grupo3.BookVerse.features.subscriptions.SubscriptionEntity;
-import com.grupo3.BookVerse.features.tips.TipEntity;
+import com.grupo3.BookVerse.features.tips.domain.TipEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

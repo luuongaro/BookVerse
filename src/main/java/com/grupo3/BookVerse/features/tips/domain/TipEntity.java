@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.tips;
+package com.grupo3.BookVerse.features.tips.domain;
 
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
@@ -24,12 +24,6 @@ public class TipEntity {
 
     @Column(name = "id_external", nullable = false, unique = true)
     private UUID idExternal;
-
-    @Column(name = "sender_user_id", nullable = false, unique = true)
-    private Long senderUserId;
-
-    @Column(name = "reciever_user_id",nullable = false, unique = true)
-    private Long recieverUserId;
 
     @Column(nullable = false)
     private BigDecimal amount;
