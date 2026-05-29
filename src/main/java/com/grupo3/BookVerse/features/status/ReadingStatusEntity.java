@@ -1,6 +1,6 @@
 package com.grupo3.BookVerse.features.status;
 import com.grupo3.BookVerse.features.books.BookEntity;
-import com.grupo3.BookVerse.features.stories.StoryEntity;
+import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,8 +33,10 @@ public class ReadingStatusEntity {
     @Column(name = "book_id", nullable = false)
     private BookEntity bookId; //FK
 
-    @Column(name = "story_id", nullable = false)
-    private StoryEntity storyId; //FK
+    //Association added by Yan :D
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "story_id", nullable = false)
+    private StoryEntity story;
 
     @Enumerated(EnumType.STRING) // Guarda el enum como Texto en la base de datos
     @Column(name = "status", nullable = false)
