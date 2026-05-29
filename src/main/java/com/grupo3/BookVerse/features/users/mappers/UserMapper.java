@@ -1,8 +1,8 @@
-package com.grupo3.BookVerse.features.users.domain.mappers;
+package com.grupo3.BookVerse.features.users.mappers;
 
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
-import com.grupo3.BookVerse.features.users.domain.dto.UserRequestDto;
-import com.grupo3.BookVerse.features.users.domain.dto.UserResponseDto;
+import com.grupo3.BookVerse.features.users.dto.UserRequestDto;
+import com.grupo3.BookVerse.features.users.dto.UserResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
