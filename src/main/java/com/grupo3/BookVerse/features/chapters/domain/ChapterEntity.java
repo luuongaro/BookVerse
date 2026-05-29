@@ -1,7 +1,7 @@
 package com.grupo3.BookVerse.features.chapters.domain;
 
 
-import com.grupo3.BookVerse.features.stories.StoryEntity;
+import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

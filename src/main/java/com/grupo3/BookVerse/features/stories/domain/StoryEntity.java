@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.stories;
+package com.grupo3.BookVerse.features.stories.domain;
 
 import com.grupo3.BookVerse.features.chapters.domain.ChapterEntity;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
@@ -18,7 +18,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
-
 public class StoryEntity {
 
     @Id
@@ -27,9 +26,6 @@ public class StoryEntity {
 
     @Column(name = "id_external", nullable = false, unique = true)
     private UUID idExternal;
-
-    @Column(name = "author_id", nullable = false)
-    private Long authorId;
 
     @Column(nullable = false)
     private String title;
@@ -49,25 +45,12 @@ public class StoryEntity {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
 
-    @Column(name = "created_at",nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-
-//    @PrePersist
-//    protected void onCreate() {
-//        createdAt = LocalDateTime.now();
-//        updatedAt = LocalDateTime.now();
-//    }
-//
-//    @PreUpdate
-//    protected void onUpdate() {
-//        updatedAt = LocalDateTime.now();
-//    }
-
-    //Association
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "author_id", nullable = false)
     private UserEntity author;
@@ -75,5 +58,19 @@ public class StoryEntity {
     @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChapterEntity> chapters = new ArrayList<>();
 
+    @PrePersist
+    protected void onCreate() {
+        if (idExternal == null) {
+            idExternal = UUID.randomUUID();
+        }
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        isHidden = false;
+        isDeleted = false;
+    }
 
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
