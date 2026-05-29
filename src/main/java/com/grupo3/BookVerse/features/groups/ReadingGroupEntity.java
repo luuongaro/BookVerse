@@ -25,11 +25,15 @@ public class ReadingGroupEntity {
     @Column(name = "id_external", unique = true, nullable = false)
     private UUID idExternal = UUID.randomUUID();
 
-    @Column(name = "book_id", nullable = false)
-    private BookEntity bookId; //FK
 
-    @Column(name = "created_by_user_id", nullable = false)
-    private UserEntity createdByUserId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "book_id", nullable = false)
+    private BookEntity book; //FK
+
+    //Association added by Yan :)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "created_by_user_id", nullable = false)
+    private UserEntity createdBy;
 
     @Column(name = "name", nullable = false)
     private String name;

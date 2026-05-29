@@ -1,14 +1,15 @@
 package com.grupo3.BookVerse.features.books;
 
+import com.grupo3.BookVerse.features.reviews.domain.ReviewEntity;
+import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.grupo3.BookVerse.features.authors.domain.AuthorEntity;
-import com.grupo3.BookVerse.features.reviews.ReviewEntity;
-
 //import com.grupo3.BookVerse.features.readingstatus.ReadingStatusEntity;
 import com.grupo3.BookVerse.features.groups.ReadingGroupEntity;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -72,6 +73,13 @@ public class BookEntity {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ReviewEntity> reviews;
 
+
+    // usuario que cargó / creó el registro del libro en el sistema
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "created_by_user_id", nullable = false)
+    private UserEntity createdBy;
+
+
     //@OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     //private List<ReadingStatusEntity> readingStatuses;
 
@@ -82,8 +90,15 @@ public class BookEntity {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @CreationTimestamp
+    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+
+// luuuu :) hay que inicializar las listas en los mapeos. Tipo :
+// private List<ReadingGroupEntity> readingGroups = new ArrayList <>;
+
+
+
 }
 

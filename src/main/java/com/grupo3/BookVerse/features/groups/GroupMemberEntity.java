@@ -27,7 +27,7 @@ public class GroupMemberEntity {
     @Column(name = "group_id", nullable = false)
     private Long group;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user; //FK
 

@@ -1,6 +1,7 @@
-package com.grupo3.BookVerse.features.chapters;
+package com.grupo3.BookVerse.features.chapters.domain;
 
 
+import com.grupo3.BookVerse.features.stories.StoryEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -21,8 +22,11 @@ public class ChapterEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "story_id", nullable = false)
-    private Long storyId;
+
+    //Association with StoryEntity (Yan)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "story_id", nullable = false)
+    private StoryEntity story;
 
     @Column(name = "chapter_number", nullable = false)
     private int chapterNumber;
