@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.groups;
+package com.grupo3.BookVerse.features.groups.GroupGoals.domain;
 
 import jakarta.persistence.*;
 import lombok.*;

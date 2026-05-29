@@ -1,11 +1,20 @@
 package com.grupo3.BookVerse.features.reviews.domain;
 
 import jakarta.persistence.*;
+import lombok.*;
+
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "review_report")
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+
 public class ReviewReportEntity {
 
     @Id
