@@ -26,11 +26,11 @@ public class GroupProgressesEntity {
     @Column(name = "id_external", unique = true, nullable = false)
     private UUID idExternal = UUID.randomUUID();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,  optional = false)
     @JoinColumn(name = "group_id", nullable = false)
     private ReadingGroupEntity group;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,  optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user; //FK
 

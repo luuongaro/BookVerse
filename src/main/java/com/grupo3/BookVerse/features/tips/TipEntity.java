@@ -1,5 +1,6 @@
 package com.grupo3.BookVerse.features.tips;
 
+import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,7 +16,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 
-public class TipsEntity {
+public class TipEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,5 +44,13 @@ public class TipsEntity {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "sender_user_id", nullable = false)
+    private UserEntity sender;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "receiver_user_id", nullable = false)
+    private UserEntity receiver;
 
 }

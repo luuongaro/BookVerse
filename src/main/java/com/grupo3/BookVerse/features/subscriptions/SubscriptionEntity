@@ -1,6 +1,6 @@
 package com.grupo3.BookVerse.features.subscriptions;
 
-import com.grupo3.BookVerse.features.users.UserEntity;
+import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

@@ -1,6 +1,6 @@
 package com.grupo3.BookVerse.features.status;
 import com.grupo3.BookVerse.features.books.BookEntity;
-import com.grupo3.BookVerse.features.story.entity.StoryEntity;
+import com.grupo3.BookVerse.features.stories.StoryEntity;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,7 +17,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 
-public class ReadingStatus {
+public class ReadingStatusEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +26,7 @@ public class ReadingStatus {
     @Column(name = "id_external", unique = true, nullable = false)
     private UUID idExternal = UUID.randomUUID();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,  optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user; //FK
 
