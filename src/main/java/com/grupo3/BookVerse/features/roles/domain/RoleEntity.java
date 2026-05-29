@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.roles;
+package com.grupo3.BookVerse.features.roles.domain;
 
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
@@ -18,6 +18,7 @@ import java.util.UUID;
 
 public class RoleEntity {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,7 +26,7 @@ public class RoleEntity {
     @Column(name = "id_external", unique = true, nullable = false)
     private UUID idExternal;
 
-    @Column(name = "role_name",unique = true, nullable = false)
+    @Column(name = "role_name", unique = true, nullable = false, length = 50)
     private String name;
 
     @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
@@ -37,5 +38,6 @@ public class RoleEntity {
             idExternal = UUID.randomUUID();
         }
     }
+
 
 }

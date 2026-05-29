@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.users.domain.dto;
+package com.grupo3.BookVerse.features.users.dto;
 
 import java.util.UUID;
 

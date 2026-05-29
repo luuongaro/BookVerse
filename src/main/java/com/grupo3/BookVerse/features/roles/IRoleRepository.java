@@ -1,5 +1,6 @@
 package com.grupo3.BookVerse.features.roles;
 
+import com.grupo3.BookVerse.features.roles.domain.RoleEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
