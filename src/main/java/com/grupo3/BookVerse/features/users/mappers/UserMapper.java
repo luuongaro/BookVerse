@@ -11,7 +11,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "idExternal", ignore = true)
     @Mapping(target = "passwordHash", ignore = true)
@@ -28,10 +27,10 @@ public interface UserMapper {
     @Mapping(target = "groupsCreated", ignore = true)
     @Mapping(target = "groupMembers", ignore = true)
     @Mapping(target = "readingStatuses", ignore = true)
-    UserEntity toEntityDto (UserRequestDto dto);
+    UserEntity toEntity(UserRequestDto dto);
 
-    @Mapping(target = "status", expression = "java(user.getStatus().name())")
-    UserResponseDto toResponseDto (UserEntity user);
+    @Mapping(target = "status", expression = "java(user.getStatus() != null ? user.getStatus().name() : null)")
+    UserResponseDto toResponseDto(UserEntity user);
 
-    List<UserResponseDto> toResponseListDto (List<UserEntity> users);
+    List<UserResponseDto> toResponseDtoList(List<UserEntity> users);
 }
