@@ -1,8 +1,8 @@
 package com.grupo3.BookVerse.features.authors.controller;
 
-import com.grupo3.BookVerse.features.authors.IAuthorService;
-import com.grupo3.BookVerse.features.authors.domain.dto.AuthorRequestDto;
-import com.grupo3.BookVerse.features.authors.domain.dto.AuthorResponseDto;
+import com.grupo3.BookVerse.features.authors.services.IAuthorService;
+import com.grupo3.BookVerse.features.authors.dto.AuthorRequestDto;
+import com.grupo3.BookVerse.features.authors.dto.AuthorResponseDto;
 
 import lombok.AllArgsConstructor;
 

@@ -1,8 +1,8 @@
 package com.grupo3.BookVerse.features.reviews.controller;
 
-import com.grupo3.BookVerse.features.reviews.IReviewService;
-import com.grupo3.BookVerse.features.reviews.domain.dto.ReviewRequestDto;
-import com.grupo3.BookVerse.features.reviews.domain.dto.ReviewResponseDto;
+import com.grupo3.BookVerse.features.reviews.services.IReviewService;
+import com.grupo3.BookVerse.features.reviews.dto.ReviewRequestDto;
+import com.grupo3.BookVerse.features.reviews.dto.ReviewResponseDto;
 
 import lombok.AllArgsConstructor;
 
