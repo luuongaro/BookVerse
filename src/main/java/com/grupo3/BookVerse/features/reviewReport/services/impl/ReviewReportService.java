@@ -1,6 +1,6 @@
 package com.grupo3.BookVerse.features.reviewReport.services.impl;
 
-import com.grupo3.BookVerse.common.exceptions.EntityNotFoundException;
+import com.grupo3.BookVerse.common.EntityNotFoundException;
 import com.grupo3.BookVerse.features.reviewReport.domain.ReviewReportEntity;
 import com.grupo3.BookVerse.features.reviewReport.dtos.ReviewReportRequestDto;
 import com.grupo3.BookVerse.features.reviewReport.dtos.ReviewReportResponseDto;

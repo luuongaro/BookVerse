@@ -18,5 +18,4 @@ public class RoleRequestDto {
     @Size(max = 50, message = "Role name must not exceed 50 characters")
     private String name;
 
-
 }

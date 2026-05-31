@@ -18,7 +18,6 @@ import java.util.UUID;
 
 public class RoleEntity {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,6 +37,4 @@ public class RoleEntity {
             idExternal = UUID.randomUUID();
         }
     }
-
-
 }
