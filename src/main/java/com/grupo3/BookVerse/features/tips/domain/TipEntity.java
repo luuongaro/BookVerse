@@ -22,21 +22,26 @@ public class TipEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "id_external", nullable = false, unique = true)
+    @Column(name = "id_external", nullable = false, unique = true, updatable = false)
     private UUID idExternal;
 
     @Column(nullable = false)
     private BigDecimal amount;
 
-    @Column(nullable = false)
+    @Column(length = 255)
     private String message;
 
-    @Column(name = "created_at",nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        if (idExternal == null) {
+            idExternal = UUID.randomUUID();
+        }
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
     }
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
