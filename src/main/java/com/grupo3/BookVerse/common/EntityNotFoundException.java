@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.common.exceptions;
+package com.grupo3.BookVerse.common;
 
 import lombok.Getter;
 

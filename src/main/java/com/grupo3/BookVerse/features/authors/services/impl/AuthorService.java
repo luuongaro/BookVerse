@@ -1,7 +1,7 @@
 package com.grupo3.BookVerse.features.authors.services.impl;
 
 
-import com.grupo3.BookVerse.common.exceptions.EntityNotFoundException;
+import com.grupo3.BookVerse.common.EntityNotFoundException;
 
 import com.grupo3.BookVerse.features.authors.domain.AuthorEntity;
 import com.grupo3.BookVerse.features.authors.dto.AuthorRequestDto;
