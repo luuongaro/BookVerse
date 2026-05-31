@@ -1,6 +1,6 @@
 package com.grupo3.BookVerse.features.groups.GroupGoals.controller;
 
-import com.grupo3.BookVerse.features.groups.GroupGoals.IGroupGoalsService;
+import com.grupo3.BookVerse.features.groups.GroupGoals.service.IGroupGoalsService;
 import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsRequestDto;
 import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsResponseDto;
 import lombok.AllArgsConstructor;
