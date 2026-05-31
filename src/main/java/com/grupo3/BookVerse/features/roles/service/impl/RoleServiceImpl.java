@@ -25,14 +25,14 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     public RoleResponseDto createRole(RoleRequestDto roleRequestDto) {
-        String normalizedName = roleRequestDto.getName().trim().toUpperCase();
+        String name = roleRequestDto.getName().trim().toUpperCase();
 
-        if (roleRepository.existsByNameIgnoreCase(normalizedName)) {
-            throw new DuplicateResourceException("Role already exists with name: " + normalizedName);
+        if (roleRepository.existsByNameIgnoreCase(name)) {
+            throw new DuplicateResourceException("Role already exists with name: " + name);
         }
 
         RoleEntity roleEntity = roleMapper.toEntity(roleRequestDto);
-        roleEntity.setName(normalizedName);
+        roleEntity.setName(name);
 
         RoleEntity savedRole = roleRepository.save(roleEntity);
 
@@ -47,27 +47,27 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
-    public RoleResponseDto getRoleByIdExternal(UUID idExternal) {
-        RoleEntity roleEntity = roleRepository.findByIdExternal(idExternal)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found with idExternal: " + idExternal));
+    public RoleResponseDto getRoleByIdExternal(UUID id) {
+        RoleEntity roleEntity = roleRepository.findByIdExternal(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
 
         return roleMapper.toResponseDto(roleEntity);
     }
 
     @Override
     @Transactional
-    public RoleResponseDto updateRole(UUID idExternal, RoleRequestDto roleRequestDto) {
-        RoleEntity existingRole = roleRepository.findByIdExternal(idExternal)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found with idExternal: " + idExternal));
+    public RoleResponseDto updateRole(UUID id, RoleRequestDto roleRequestDto) {
+        RoleEntity existingRole = roleRepository.findByIdExternal(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
 
-        String normalizedName = roleRequestDto.getName().trim().toUpperCase();
+        String name = roleRequestDto.getName().trim().toUpperCase();
 
-        if (roleRepository.existsByNameIgnoreCase(normalizedName)
-                && !existingRole.getName().equalsIgnoreCase(normalizedName)) {
-            throw new DuplicateResourceException("Role already exists with name: " + normalizedName);
+        if (roleRepository.existsByNameIgnoreCase(name)
+                && !existingRole.getName().equalsIgnoreCase(name )) {
+            throw new DuplicateResourceException("Role already exists with name: " + name );
         }
 
-        existingRole.setName(normalizedName);
+        existingRole.setName(name);
 
         RoleEntity updatedRole = roleRepository.save(existingRole);
 
@@ -76,18 +76,17 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
-    public void deleteRole(UUID idExternal) {
-        RoleEntity roleEntity = roleRepository.findByIdExternal(idExternal)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found with idExternal: " + idExternal));
+    public void deleteRole(UUID id) {
+        RoleEntity roleEntity = roleRepository.findByIdExternal(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + id));
 
         roleRepository.delete(roleEntity);
     }
 
     @Override
-    @Transactional
-    public RoleResponseDto getRoleByName(String nameExternal) {
-        RoleEntity roleEntity = roleRepository.findByNameIgnoreCase(nameExternal)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found with name: " + nameExternal));
+    public RoleResponseDto getRoleByName(String name) {
+        RoleEntity roleEntity = roleRepository.findByNameIgnoreCase(name)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found with name: " + name));
 
         return roleMapper.toResponseDto(roleEntity);
     }
