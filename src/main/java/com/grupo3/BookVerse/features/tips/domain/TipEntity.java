@@ -28,7 +28,7 @@ public class TipEntity {
     @Column(nullable = false)
     private BigDecimal amount;
 
-    @Column(length = 255)
+    @Column(length = 250)
     private String message;
 
     @Column(name = "created_at", nullable = false, updatable = false)

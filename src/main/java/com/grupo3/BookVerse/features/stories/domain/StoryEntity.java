@@ -24,13 +24,13 @@ public class StoryEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "id_external", nullable = false, unique = true)
+    @Column(name = "id_external", nullable = false, unique = true, updatable = false)
     private UUID idExternal;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 150)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String description;
 
     @Column(name = "is_private", nullable = false)
@@ -45,7 +45,7 @@ public class StoryEntity {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)

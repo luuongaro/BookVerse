@@ -20,7 +20,6 @@ public interface StoryMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "chapters", ignore = true)
     @Mapping(target = "author", source = "authorId")
-    @Mapping(target = "authorId", ignore = true)
     @Mapping(target = "isHidden", ignore = true)
     @Mapping(target = "isDeleted", ignore = true)
     StoryEntity toEntity(StoryRequestDto dto);
