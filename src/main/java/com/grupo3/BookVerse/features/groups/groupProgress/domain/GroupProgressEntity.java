@@ -1,6 +1,7 @@
-package com.grupo3.BookVerse.features.groups;
+package com.grupo3.BookVerse.features.groups.groupProgress.domain;
 
 
+import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,7 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 
-public class GroupProgressesEntity {
+public class GroupProgressEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,5 +40,20 @@ public class GroupProgressesEntity {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (idExternal == null) {
+            idExternal = UUID.randomUUID();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
 }
