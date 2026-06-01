@@ -1,5 +1,6 @@
-package com.grupo3.BookVerse.features.groups;
+package com.grupo3.BookVerse.features.groups.groupMember.domain;
 
+import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,8 +25,9 @@ public class GroupMemberEntity {
     @Column(name = "id_external", unique = true, nullable = false)
     private UUID idExternal = UUID.randomUUID();
 
-    @Column(name = "group_id", nullable = false)
-    private Long group;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "group_id", nullable = false)
+    private ReadingGroupEntity group;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -33,5 +35,15 @@ public class GroupMemberEntity {
 
     @Column(name = "joined_at", nullable = false)
     private LocalDateTime joinedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (idExternal == null) {
+            idExternal = UUID.randomUUID();
+        }
+        if (joinedAt == null) {
+            joinedAt = LocalDateTime.now();
+        }
+    }
 
 }

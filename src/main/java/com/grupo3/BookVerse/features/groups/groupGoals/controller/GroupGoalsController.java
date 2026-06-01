@@ -1,8 +1,8 @@
-package com.grupo3.BookVerse.features.groups.GroupGoals.controller;
+package com.grupo3.BookVerse.features.groups.groupGoals.controller;
 
-import com.grupo3.BookVerse.features.groups.GroupGoals.service.IGroupGoalsService;
-import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsRequestDto;
-import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsResponseDto;
+import com.grupo3.BookVerse.features.groups.groupGoals.service.IGroupGoalsService;
+import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsRequestDto;
+import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsResponseDto;
 import lombok.AllArgsConstructor;
 
 import org.springframework.http.HttpStatus;

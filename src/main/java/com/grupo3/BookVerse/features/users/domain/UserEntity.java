@@ -1,8 +1,8 @@
 package com.grupo3.BookVerse.features.users.domain;
 
 import com.grupo3.BookVerse.features.books.domain.BookEntity;
-import com.grupo3.BookVerse.features.groups.GroupMemberEntity;
-import com.grupo3.BookVerse.features.groups.ReadingGroupEntity;
+import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberEntity;
+import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import com.grupo3.BookVerse.features.reviews.domain.ReviewEntity;
 import com.grupo3.BookVerse.features.roles.domain.RoleEntity;
 import com.grupo3.BookVerse.features.status.ReadingStatusEntity;

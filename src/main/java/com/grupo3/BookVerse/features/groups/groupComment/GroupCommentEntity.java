@@ -1,5 +1,6 @@
-package com.grupo3.BookVerse.features.groups;
+package com.grupo3.BookVerse.features.groups.groupComment;
 
+import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,7 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GroupCommentsEntity {
+public class GroupCommentEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,11 +25,11 @@ public class GroupCommentsEntity {
     @Column(name = "id_external", nullable = false, unique = true)
     private UUID idExternal;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "group_id", nullable = false)
     private ReadingGroupEntity group;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
@@ -42,7 +43,7 @@ public class GroupCommentsEntity {
     private boolean isHidden;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
