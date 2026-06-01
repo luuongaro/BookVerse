@@ -6,7 +6,7 @@ import java.util.List;
 import jakarta.persistence.*;
 import lombok.*;
 
-import com.grupo3.BookVerse.features.books.BookEntity;
+import com.grupo3.BookVerse.features.books.domain.BookEntity;
 
 @Entity
 @Table(name = "authors")

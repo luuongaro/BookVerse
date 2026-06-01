@@ -1,5 +1,5 @@
 package com.grupo3.BookVerse.features.status;
-import com.grupo3.BookVerse.features.books.BookEntity;
+import com.grupo3.BookVerse.features.books.domain.BookEntity;
 import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;

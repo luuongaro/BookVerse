@@ -3,7 +3,7 @@ package com.grupo3.BookVerse.features.authors.dto;
 import java.util.List;
 import java.util.UUID;
 
-import com.grupo3.BookVerse.features.books.domain.dto.BookDTO;
+import com.grupo3.BookVerse.features.books.domain.dto.BookDto;
 
 public record AuthorResponseDto(
 
@@ -11,7 +11,7 @@ public record AuthorResponseDto(
         String fullName,
         String nationality,
         String language,
-        List<BookDTO> books
+        List<BookDto> books
 
 ) {
 }
