@@ -1,10 +1,13 @@
 package com.grupo3.BookVerse.features.reviewReport.domain;
 
+import com.grupo3.BookVerse.features.reviews.domain.ReviewEntity;
+import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "review_report")
@@ -21,14 +24,21 @@ public class ReviewReportEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "review_id", nullable = false)
-    private Long reviewId;
+    @Builder.Default
+    @Column(name = "id_external", unique = true, nullable = false)
+    private UUID idExternal;
 
-    @Column(name = "reporter_user_id", nullable = false)
-    private Long reporterUserId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "review_id", nullable = false)
+    private ReviewEntity review;
 
-    @Column(name = "moderator_user_id")
-    private Long moderatorUserId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reporter_user_id", nullable = false)
+    private UserEntity reporterUser;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "moderator_user_id")
+    private UserEntity moderatorUser;
 
     @Column(nullable = false)
     private String reason;
@@ -41,6 +51,9 @@ public class ReviewReportEntity {
 
     @PrePersist
     protected void onCreate() {
+        if (idExternal == null) {
+            idExternal = UUID.randomUUID();
+        }
         createdAt = LocalDateTime.now();
     }
 

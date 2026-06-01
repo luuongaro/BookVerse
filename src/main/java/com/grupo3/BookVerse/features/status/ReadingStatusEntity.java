@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "group_members")
+@Table(name = "reading_statuses")
 
 @Getter
 @Setter

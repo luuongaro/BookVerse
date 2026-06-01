@@ -1,11 +1,14 @@
 package com.grupo3.BookVerse.features.reviews.domain;
 
 import com.grupo3.BookVerse.features.books.domain.BookEntity;
+import com.grupo3.BookVerse.features.reviewReport.domain.ReviewReportEntity;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -32,6 +35,9 @@ public class ReviewEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false)
     private BookEntity book;
+
+    @OneToMany(mappedBy = "review", fetch = FetchType.LAZY)
+    private List<ReviewReportEntity> reports = new ArrayList<>();
 
     @Column(nullable = false)
     private Integer rating;
