@@ -15,11 +15,16 @@ import java.util.List;
         unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface ReviewReportMapper {
+    ReviewReportEntity toEntity(ReviewReportRequestDto dto);
 
-    ReviewReportEntity toEntityDto(ReviewReportRequestDto dto);
-
-    @Mapping(source = "id", target = "reportId")
+    @Mapping(source = "idExternal", target = "reportId")
+    @Mapping(source = "review.idExternal", target = "reviewId")
+    @Mapping(source = "reporterUser.idExternal", target = "reporterUserId")
+    @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(source = "resolvedAt", target = "resolvedAt")
+    @Mapping(source = "status", target = "status")
     ReviewReportResponseDto toResponseDto(ReviewReportEntity report);
+
 
     List<ReviewReportResponseDto> toResponseListDto(List<ReviewReportEntity> reports);
 }

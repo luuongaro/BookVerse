@@ -16,10 +16,11 @@ import java.util.List;
 )
 public interface ReviewMapper {
 
-    ReviewEntity toEntityDto(ReviewRequestDto dto);
+    ReviewEntity toEntity(ReviewRequestDto dto);
 
     @Mapping(source = "idExternal", target = "reviewId")
     @Mapping(source = "user.idExternal", target = "userId")
+    @Mapping(source = "book.idExternal", target = "bookId")
     ReviewResponseDto toResponseDto(ReviewEntity review);
 
     List<ReviewResponseDto> toResponseListDto(List<ReviewEntity> reviews);

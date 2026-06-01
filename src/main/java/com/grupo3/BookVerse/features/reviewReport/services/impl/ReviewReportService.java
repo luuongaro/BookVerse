@@ -8,6 +8,10 @@ import com.grupo3.BookVerse.features.reviewReport.mapper.ReviewReportMapper;
 import com.grupo3.BookVerse.features.reviewReport.services.IReviewReportService;
 import com.grupo3.BookVerse.features.reviewReport.repository.ReviewReportRepository;
 
+import com.grupo3.BookVerse.features.reviews.domain.ReviewEntity;
+import com.grupo3.BookVerse.features.reviews.repository.ReviewRepository;
+import com.grupo3.BookVerse.features.users.domain.UserEntity;
+import com.grupo3.BookVerse.features.users.repository.UserRepository;
 import lombok.AllArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -21,6 +25,9 @@ public class ReviewReportService implements IReviewReportService {
 
     private final ReviewReportRepository reviewReportRepository;
     private final ReviewReportMapper reviewReportMapper;
+    private final ReviewRepository reviewRepository;
+    private final UserRepository userRepository;
+
 
 
 
@@ -52,7 +59,36 @@ public class ReviewReportService implements IReviewReportService {
     @Override
     public ReviewReportResponseDto save(ReviewReportRequestDto reviewReportRequestDto) {
 
-        ReviewReportEntity toBeSaved = reviewReportMapper.toEntityDto(reviewReportRequestDto);
+        ReviewReportEntity toBeSaved = reviewReportMapper.toEntity(reviewReportRequestDto);
+
+        ReviewEntity review =
+                reviewRepository.findByIdExternal(reviewReportRequestDto.reviewId())
+                        .orElseThrow(() ->
+                                new EntityNotFoundException(
+                                        "Review",
+                                        "Review was not found",
+                                        "reviewId",
+                                        reviewReportRequestDto.reviewId().toString()
+                                ));
+
+
+
+        UserEntity reporter =
+                userRepository.findByIdExternal(reviewReportRequestDto.reporterUserId())
+                        .orElseThrow(() ->
+                                new EntityNotFoundException(
+                                        "User",
+                                        "User was not found",
+                                        "userId",
+                                        reviewReportRequestDto.reporterUserId().toString()
+                                ));
+
+        toBeSaved.setReview(review);
+        toBeSaved.setReporterUser(reporter);
+        toBeSaved.setStatus(ReviewReportEntity.ReportStatus.PENDING);
+
+
+
 
         ReviewReportEntity saved = reviewReportRepository.save(toBeSaved);
 
