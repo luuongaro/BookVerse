@@ -9,7 +9,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "group_members")
+@Table(name = "group_members", uniqueConstraints =
+        {@UniqueConstraint(columnNames = {"group_id", "user_id"})})
+// Ensures that each user can be associated with
+// a group only once (prevents duplicate memberships)
 
 @Getter
 @Setter
