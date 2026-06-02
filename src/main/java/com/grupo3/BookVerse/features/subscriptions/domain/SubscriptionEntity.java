@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.subscriptions;
+package com.grupo3.BookVerse.features.subscriptions.domain;
 
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
@@ -6,6 +6,8 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -40,10 +42,6 @@ public class SubscriptionEntity {
     @Column(name = "end_date", nullable = false)
     private LocalDateTime endDate;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user;
-
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -69,4 +67,9 @@ public class SubscriptionEntity {
     public enum SubscriptionType {
         FREE, PREMIUM
     }
+
+    //adding association with user (Yan)
+    @OneToMany(mappedBy = "subscription", fetch = FetchType.LAZY)
+    private List<UserEntity> users = new ArrayList<>();
+
 }
