@@ -1,15 +1,15 @@
-package com.grupo3.BookVerse.features.groups.groupGoals.controller;
+package com.grupo3.BookVerse.features.groups.GroupGoals.controller;
 
-import com.grupo3.BookVerse.features.groups.groupGoals.service.IGroupGoalsService;
-import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsRequestDto;
-import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsResponseDto;
+import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsRequestDto;
+import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsResponseDto;
+import com.grupo3.BookVerse.features.groups.GroupGoals.service.IGroupGoalsService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-        import java.util.List;
+import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -19,18 +19,18 @@ public class GroupGoalsController {
     private final IGroupGoalsService groupGoalsService;
 
     @GetMapping
-    ResponseEntity<List<GroupGoalsResponseDto>> findAll() {
+    public ResponseEntity<List<GroupGoalsResponseDto>> findAll() {
         return ResponseEntity.ok(groupGoalsService.findAll());
     }
 
     @GetMapping("/{groupGoalsId}")
-    ResponseEntity<GroupGoalsResponseDto> findById(@PathVariable Long groupGoalsId) {
+    public ResponseEntity<GroupGoalsResponseDto> findById(@PathVariable Long groupGoalsId) {
         return ResponseEntity.ok(groupGoalsService.findById(groupGoalsId));
     }
 
     @PostMapping
-    ResponseEntity<GroupGoalsResponseDto> create(
-            @RequestBody GroupGoalsRequestDto groupGoalsRequestDto
+    public ResponseEntity<GroupGoalsResponseDto> create(
+            @Valid @RequestBody GroupGoalsRequestDto groupGoalsRequestDto
     ) {
         return new ResponseEntity<>(
                 groupGoalsService.save(groupGoalsRequestDto),
@@ -39,9 +39,9 @@ public class GroupGoalsController {
     }
 
     @PutMapping("/{groupGoalsId}")
-    ResponseEntity<GroupGoalsResponseDto> update(
+    public ResponseEntity<GroupGoalsResponseDto> update(
             @PathVariable Long groupGoalsId,
-            @RequestBody GroupGoalsRequestDto groupGoalsRequestDto
+            @Valid @RequestBody GroupGoalsRequestDto groupGoalsRequestDto
     ) {
         return ResponseEntity.ok(
                 groupGoalsService.update(groupGoalsId, groupGoalsRequestDto)
@@ -49,8 +49,13 @@ public class GroupGoalsController {
     }
 
     @DeleteMapping("/{groupGoalsId}")
-    ResponseEntity<Void> delete(@PathVariable Long groupGoalsId) {
+    public ResponseEntity<Void> delete(@PathVariable Long groupGoalsId) {
         groupGoalsService.delete(groupGoalsId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/group/{groupId}")
+    public ResponseEntity<List<GroupGoalsResponseDto>> findByGroupId(@PathVariable Long groupId) {
+        return ResponseEntity.ok(groupGoalsService.findByGroupId(groupId));
     }
 }

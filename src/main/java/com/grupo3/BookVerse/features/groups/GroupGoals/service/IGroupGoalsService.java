@@ -16,4 +16,6 @@ public interface IGroupGoalsService {
     GroupGoalsResponseDto findById(Long groupGoalsId);
 
     List<GroupGoalsResponseDto> findAll();
+
+    List<GroupGoalsResponseDto> findByGroupId(Long groupId);
 }
