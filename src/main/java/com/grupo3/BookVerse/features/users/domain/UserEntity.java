@@ -1,13 +1,12 @@
 package com.grupo3.BookVerse.features.users.domain;
 
-import com.grupo3.BookVerse.features.books.domain.BookEntity;
 import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberEntity;
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import com.grupo3.BookVerse.features.reviews.domain.ReviewEntity;
 import com.grupo3.BookVerse.features.roles.domain.RoleEntity;
 import com.grupo3.BookVerse.features.status.ReadingStatusEntity;
 import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
-import com.grupo3.BookVerse.features.subscriptions.SubscriptionEntity;
+import com.grupo3.BookVerse.features.subscriptions.domain.SubscriptionEntity;
 import com.grupo3.BookVerse.features.tips.domain.TipEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -99,9 +98,6 @@ public class UserEntity {
 
     @OneToMany(mappedBy = "receiver", fetch = FetchType.LAZY)
     private List<TipEntity> tipsReceived = new ArrayList<>();
-
-    @OneToMany(mappedBy = "createdBy", fetch = FetchType.LAZY)
-    private List<BookEntity> booksCreated = new ArrayList<>();
 
     @OneToMany(mappedBy = "createdBy",fetch = FetchType.LAZY)
     private List<ReadingGroupEntity> groupsCreated = new ArrayList<>();

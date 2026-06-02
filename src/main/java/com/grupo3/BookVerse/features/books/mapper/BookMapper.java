@@ -25,6 +25,7 @@ public interface BookMapper {
     BookResponseDto toResponseDto(BookEntity bookEntity);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "idExternal", ignore = true)
     @Mapping(target = "isDeleted", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
@@ -34,6 +35,7 @@ public interface BookMapper {
     BookEntity toEntity(BookRequestDto bookRequestDto);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "idExternal", ignore = true)
     @Mapping(target = "isDeleted", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)

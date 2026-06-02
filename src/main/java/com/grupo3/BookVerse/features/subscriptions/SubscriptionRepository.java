@@ -1,5 +1,6 @@
 package com.grupo3.BookVerse.features.subscriptions;
 
+import com.grupo3.BookVerse.features.subscriptions.domain.SubscriptionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

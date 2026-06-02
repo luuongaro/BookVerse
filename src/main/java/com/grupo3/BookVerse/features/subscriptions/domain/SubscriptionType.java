@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.subscriptions.common.models;
+package com.grupo3.BookVerse.features.subscriptions.domain;
 
 public enum SubscriptionType {
     FREE("Free"),

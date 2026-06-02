@@ -23,7 +23,6 @@ public interface UserMapper {
     @Mapping(target = "reviews", ignore = true)
     @Mapping(target = "tipsSent", ignore = true)
     @Mapping(target = "tipsReceived", ignore = true)
-    @Mapping(target = "booksCreated", ignore = true)
     @Mapping(target = "groupsCreated", ignore = true)
     @Mapping(target = "groupMembers", ignore = true)
     @Mapping(target = "readingStatuses", ignore = true)
