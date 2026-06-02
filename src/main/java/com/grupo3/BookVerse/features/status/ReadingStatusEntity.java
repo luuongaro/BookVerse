@@ -24,14 +24,15 @@ public class ReadingStatusEntity {
     private Long id; // PK
 
     @Column(name = "id_external", unique = true, nullable = false)
-    private UUID idExternal = UUID.randomUUID();
+    private UUID idExternal;
 
     @ManyToOne(fetch = FetchType.LAZY,  optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user; //FK
 
-    @Column(name = "book_id", nullable = false)
-    private BookEntity bookId; //FK
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "book_id", nullable = false)
+    private BookEntity book;
 
     //Association added by Yan :D
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

@@ -24,7 +24,6 @@ public class ReviewReportEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Builder.Default
     @Column(name = "id_external", unique = true, nullable = false)
     private UUID idExternal;
 

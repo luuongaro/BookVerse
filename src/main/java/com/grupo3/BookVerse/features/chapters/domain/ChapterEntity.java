@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 
 @Entity
@@ -21,6 +22,10 @@ public class ChapterEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+
+    @Column(name = "id_external", unique = true, nullable = false)
+    private UUID idExternal;
 
 
     //Association with StoryEntity (Yan)
