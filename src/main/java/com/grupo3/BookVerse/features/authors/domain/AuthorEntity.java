@@ -1,7 +1,8 @@
 package com.grupo3.BookVerse.features.authors.domain;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
-import java.util.List;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,7 +34,7 @@ public class AuthorEntity {
     @Column(nullable = false)
     private String language;
 
-   @ManyToMany(mappedBy = "authors")
-   private List<BookEntity> books;
+    @ManyToMany(mappedBy = "authors")
+    private Set<BookEntity> books = new HashSet<>();
 
 }

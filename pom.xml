@@ -18,7 +18,7 @@
     <version>0.0.1-SNAPSHOT</version>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>24</java.version>
     </properties>
 
     <dependencies>
@@ -62,7 +62,8 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <version>1.18.46</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.mapstruct</groupId>
@@ -139,12 +140,17 @@
                                 <path>
                                     <groupId>org.projectlombok</groupId>
                                     <artifactId>lombok</artifactId>
-                                    <version>1.18.30</version>
+                                    <version>1.18.46</version>
                                 </path>
                                 <path>
                                     <groupId>org.mapstruct</groupId>
                                     <artifactId>mapstruct-processor</artifactId>
                                     <version>1.5.5.Final</version>
+                                </path>
+                                <path>
+                                    <groupId>org.projectlombok</groupId>
+                                    <artifactId>lombok-mapstruct-binding</artifactId>
+                                    <version>0.2.0</version>
                                 </path>
                             </annotationProcessorPaths>
                         </configuration>
@@ -161,12 +167,17 @@
                                 <path>
                                     <groupId>org.projectlombok</groupId>
                                     <artifactId>lombok</artifactId>
-                                    <version>1.18.30</version>
+                                    <version>1.18.46</version>
                                 </path>
                                 <path>
                                     <groupId>org.mapstruct</groupId>
                                     <artifactId>mapstruct-processor</artifactId>
                                     <version>1.5.5.Final</version>
+                                </path>
+                                <path>
+                                    <groupId>org.projectlombok</groupId>
+                                    <artifactId>lombok-mapstruct-binding</artifactId>
+                                    <version>0.2.0</version>
                                 </path>
                             </annotationProcessorPaths>
                         </configuration>

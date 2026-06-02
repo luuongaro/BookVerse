@@ -48,7 +48,7 @@ public class ReviewService implements IReviewService {
     @Override
     public ReviewResponseDto save(ReviewRequestDto reviewRequestDto) {
 
-        ReviewEntity toBeSaved = reviewMapper.toEntityDto(reviewRequestDto);
+        ReviewEntity toBeSaved = reviewMapper.toEntity(reviewRequestDto);
 
         ReviewEntity saved = reviewRepository.save(toBeSaved);
 

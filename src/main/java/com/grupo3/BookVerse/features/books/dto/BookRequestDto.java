@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,4 +29,6 @@ public class BookRequestDto {
     @NotBlank(message = "Book genre is required")
     @Size(max = 100, message = "Book genre cannot exceed 100 characters")
     private String genre;
+
+    private Set<Long> authorIds;
 }

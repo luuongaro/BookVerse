@@ -1,21 +1,18 @@
 package com.grupo3.BookVerse.features.books.mapper;
 
-
 import com.grupo3.BookVerse.features.authors.domain.AuthorEntity;
-
 import com.grupo3.BookVerse.features.books.domain.BookEntity;
 import com.grupo3.BookVerse.features.books.dto.BookRequestDto;
 import com.grupo3.BookVerse.features.books.dto.BookResponseDto;
-import com.grupo3.BookVerse.features.readingGroups.ReadingGroupEntity;
+import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import com.grupo3.BookVerse.features.status.ReadingStatusEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 import java.util.Collections;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")

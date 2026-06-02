@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -21,4 +22,9 @@ public class BookResponseDto {
     private Boolean isDeleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private Set<Long> authorIds;
+    private Set<String> authorNames;
+    private Integer readingGroupsCount;
+    private Integer readingStatusesCount;
 }

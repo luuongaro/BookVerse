@@ -2,8 +2,8 @@ package com.grupo3.BookVerse.features.groups.readingGroups.domain;
 
 
 import com.grupo3.BookVerse.features.books.domain.BookEntity;
+import com.grupo3.BookVerse.features.groups.GroupGoals.domain.GroupGoalsEntity;
 import com.grupo3.BookVerse.features.groups.groupComment.GroupCommentEntity;
-import com.grupo3.BookVerse.features.groups.groupGoals.domain.GroupGoalsEntity;
 import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberEntity;
 import com.grupo3.BookVerse.features.groups.groupProgress.domain.GroupProgressEntity;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;

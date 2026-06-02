@@ -25,7 +25,7 @@ public class GroupProgressEntity {
     private Long id; // PK
 
     @Column(name = "id_external", unique = true, nullable = false)
-    private UUID idExternal = UUID.randomUUID();
+    private UUID idExternal;
 
     @ManyToOne(fetch = FetchType.LAZY,  optional = false)
     @JoinColumn(name = "group_id", nullable = false)
