@@ -1,11 +1,11 @@
-package com.grupo3.BookVerse.features.groups.groupGoals.domain;
-
+package com.grupo3.BookVerse.features.groups.GroupGoals.domain;
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "group_goals")
@@ -19,6 +19,9 @@ public class GroupGoalsEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "id_external", unique = true, nullable = false)
+    private UUID idExternal;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "group_id", nullable = false)
@@ -34,7 +37,7 @@ public class GroupGoalsEntity {
     private BigDecimal averageProgress;
 
     @Column(name = "is_achieved", nullable = false)
-    private Boolean isAchieved = false;
+    private Boolean achieved = false;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
@@ -44,8 +47,8 @@ public class GroupGoalsEntity {
         if (updatedAt == null) {
             updatedAt = LocalDateTime.now();
         }
-        if (isAchieved == null) {
-            isAchieved = false;
+        if (achieved == null) {
+            achieved = false;
         }
     }
 
