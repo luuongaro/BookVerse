@@ -21,7 +21,7 @@ public interface GroupGoalsMapper {
     @Mapping(target = "updatedAt", ignore = true)
     GroupGoalsEntity toEntity(GroupGoalsRequestDto dto);
 
-    @Mapping(target = "groupId", source = "group.id")
+    @Mapping(target = "groupId", source = "group.idExternal")
     GroupGoalsResponseDto toResponseDto(GroupGoalsEntity entity);
 
     List<GroupGoalsResponseDto> toResponseDtoList(List<GroupGoalsEntity> entities);

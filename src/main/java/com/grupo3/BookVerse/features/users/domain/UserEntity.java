@@ -4,7 +4,7 @@ import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberEntity
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import com.grupo3.BookVerse.features.reviews.domain.ReviewEntity;
 import com.grupo3.BookVerse.features.roles.domain.RoleEntity;
-import com.grupo3.BookVerse.features.status.ReadingStatusEntity;
+import com.grupo3.BookVerse.features.status.domain.ReadingStatusEntity;
 import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
 import com.grupo3.BookVerse.features.subscriptions.domain.SubscriptionEntity;
 import com.grupo3.BookVerse.features.tips.domain.TipEntity;

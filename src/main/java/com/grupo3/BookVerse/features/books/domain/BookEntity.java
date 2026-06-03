@@ -2,7 +2,7 @@ package com.grupo3.BookVerse.features.books.domain;
 
 import com.grupo3.BookVerse.features.authors.domain.AuthorEntity;
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
-import com.grupo3.BookVerse.features.status.ReadingStatusEntity;
+import com.grupo3.BookVerse.features.status.domain.ReadingStatusEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -5,7 +5,7 @@ import com.grupo3.BookVerse.features.books.domain.BookEntity;
 import com.grupo3.BookVerse.features.books.dto.BookRequestDto;
 import com.grupo3.BookVerse.features.books.dto.BookResponseDto;
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
-import com.grupo3.BookVerse.features.status.ReadingStatusEntity;
+import com.grupo3.BookVerse.features.status.domain.ReadingStatusEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
