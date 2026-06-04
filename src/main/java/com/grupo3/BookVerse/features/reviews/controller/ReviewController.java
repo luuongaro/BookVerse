@@ -1,6 +1,6 @@
 package com.grupo3.BookVerse.features.reviews.controller;
 
-import com.grupo3.BookVerse.features.reviews.services.IReviewService;
+import com.grupo3.BookVerse.features.reviews.services.ReviewService;
 import com.grupo3.BookVerse.features.reviews.dto.ReviewRequestDto;
 import com.grupo3.BookVerse.features.reviews.dto.ReviewResponseDto;
 
@@ -18,7 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ReviewController {
 
-    private final IReviewService reviewService;
+    private final ReviewService reviewService;
 
     @GetMapping
     public ResponseEntity<List<ReviewResponseDto>> getAllReviews() {

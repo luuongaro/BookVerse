@@ -10,7 +10,7 @@ import com.grupo3.BookVerse.features.authors.dto.AuthorResponseDto;
 import com.grupo3.BookVerse.features.authors.mapper.AuthorMapper;
 
 import com.grupo3.BookVerse.features.authors.repository.AuthorRepository;
-import com.grupo3.BookVerse.features.authors.services.IAuthorService;
+import com.grupo3.BookVerse.features.authors.services.AuthorService;
 import lombok.AllArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
-public class AuthorService implements IAuthorService {
+public class AuthorServiceImpl implements AuthorService {
 
     private final AuthorRepository authorRepository;
     private final AuthorMapper authorMapper;

@@ -7,7 +7,7 @@ import com.grupo3.BookVerse.features.reviewReport.domain.ReviewReportStatus;
 import com.grupo3.BookVerse.features.reviewReport.dtos.ReviewReportRequestDto;
 import com.grupo3.BookVerse.features.reviewReport.dtos.ReviewReportResponseDto;
 import com.grupo3.BookVerse.features.reviewReport.mapper.ReviewReportMapper;
-import com.grupo3.BookVerse.features.reviewReport.services.IReviewReportService;
+import com.grupo3.BookVerse.features.reviewReport.services.ReviewReportService;
 import com.grupo3.BookVerse.features.reviewReport.repository.ReviewReportRepository;
 
 import com.grupo3.BookVerse.features.reviews.domain.ReviewEntity;
@@ -23,7 +23,7 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
-public class ReviewReportService implements IReviewReportService {
+public class ReviewReportServiceImpl implements ReviewReportService {
 
     private final ReviewReportRepository reviewReportRepository;
     private final ReviewReportMapper reviewReportMapper;

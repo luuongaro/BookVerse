@@ -7,7 +7,7 @@ import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsRequestDto;
 import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsResponseDto;
 import com.grupo3.BookVerse.features.groups.GroupGoals.mappers.GroupGoalsMapper;
 import com.grupo3.BookVerse.features.groups.GroupGoals.repository.GroupGoalsRepository;
-import com.grupo3.BookVerse.features.groups.GroupGoals.service.IGroupGoalsService;
+import com.grupo3.BookVerse.features.groups.GroupGoals.service.GroupGoalsService;
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class GroupGoalsService implements IGroupGoalsService {
+public class GroupGoalsServiceImpl implements GroupGoalsService {
 
     private final GroupGoalsRepository groupGoalsRepository;
     private final GroupGoalsMapper groupGoalsMapper;
