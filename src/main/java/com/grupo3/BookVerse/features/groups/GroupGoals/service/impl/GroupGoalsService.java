@@ -1,6 +1,7 @@
 package com.grupo3.BookVerse.features.groups.GroupGoals.service.impl;
 
-import com.grupo3.BookVerse.common.EntityNotFoundException;
+
+import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
 import com.grupo3.BookVerse.features.groups.GroupGoals.domain.GroupGoalsEntity;
 import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsRequestDto;
 import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsResponseDto;
@@ -32,11 +33,8 @@ public class GroupGoalsService implements IGroupGoalsService {
     @Override
     public void delete(Long groupGoalsId) {
         GroupGoalsEntity groupGoals = groupGoalsRepository.findById(groupGoalsId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "GroupGoals",
-                        "Group goal was not found",
-                        "groupGoalsId",
-                        groupGoalsId.toString()
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Group goal not found with id: " + groupGoalsId
                 ));
 
         groupGoalsRepository.delete(groupGoals);
@@ -47,11 +45,8 @@ public class GroupGoalsService implements IGroupGoalsService {
                                         GroupGoalsRequestDto groupGoalsRequestDto) {
 
         GroupGoalsEntity groupGoals = groupGoalsRepository.findById(groupGoalsId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "GroupGoals",
-                        "Group goal was not found",
-                        "groupGoalsId",
-                        groupGoalsId.toString()
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Group goal not found with id: " + groupGoalsId
                 ));
 
         ReadingGroupEntity group = new ReadingGroupEntity();
@@ -72,11 +67,8 @@ public class GroupGoalsService implements IGroupGoalsService {
     public GroupGoalsResponseDto findById(Long groupGoalsId) {
         return groupGoalsRepository.findById(groupGoalsId)
                 .map(groupGoalsMapper::toResponseDto)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "GroupGoals",
-                        "Group goal was not found",
-                        "groupGoalsId",
-                        groupGoalsId.toString()
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Group goal not found with id: " + groupGoalsId
                 ));
     }
 

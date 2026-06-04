@@ -1,6 +1,7 @@
 package com.grupo3.BookVerse.features.reviews.services.impl;
 
-import com.grupo3.BookVerse.common.EntityNotFoundException;
+
+import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
 import com.grupo3.BookVerse.features.reviews.domain.ReviewEntity;
 import com.grupo3.BookVerse.features.reviews.dto.ReviewRequestDto;
 import com.grupo3.BookVerse.features.reviews.dto.ReviewResponseDto;
@@ -36,13 +37,10 @@ public class ReviewService implements IReviewService {
 
         return reviewRepository.findByIdExternal(reviewId)
                 .map(reviewMapper::toResponseDto)
-                .orElseThrow(() ->
-                        new EntityNotFoundException(
-                                "Review",
-                                "Review was not found",
-                                "reviewId",
-                                reviewId.toString()
-                        ));
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Review not found with id: " + reviewId
+                                ));
     }
 
     @Override
@@ -60,12 +58,9 @@ public class ReviewService implements IReviewService {
 
         ReviewEntity toBeDeleted = reviewRepository.findByIdExternal(reviewId)
                 .orElseThrow(() ->
-                        new EntityNotFoundException(
-                                "Review",
-                                "Review was not found",
-                                "reviewId",
-                                reviewId.toString()
-                        ));
+                                new ResourceNotFoundException(
+                                        "Review not found with id: " + reviewId
+                                ));
 
         reviewRepository.delete(toBeDeleted);
     }
