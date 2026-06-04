@@ -5,7 +5,7 @@ import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsResponseDto
 
 import java.util.List;
 
-public interface IGroupGoalsService {
+public interface GroupGoalsService {
 
     GroupGoalsResponseDto save(GroupGoalsRequestDto groupGoalsRequestDto);
 

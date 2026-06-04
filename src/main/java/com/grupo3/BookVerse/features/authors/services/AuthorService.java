@@ -7,7 +7,7 @@ import com.grupo3.BookVerse.features.authors.dto.AuthorResponseDto;
 import java.util.List;
 import java.util.UUID;
 
-public interface IAuthorService {
+public interface AuthorService {
 
     AuthorResponseDto save(AuthorRequestDto authorRequestDto);
 

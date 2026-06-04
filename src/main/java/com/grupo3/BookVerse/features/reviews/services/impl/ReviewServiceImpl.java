@@ -8,7 +8,7 @@ import com.grupo3.BookVerse.features.reviews.dto.ReviewResponseDto;
 import com.grupo3.BookVerse.features.reviews.mapper.ReviewMapper;
 import com.grupo3.BookVerse.features.reviews.repository.ReviewRepository;
 
-import com.grupo3.BookVerse.features.reviews.services.IReviewService;
+import com.grupo3.BookVerse.features.reviews.services.ReviewService;
 import lombok.AllArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
-public class ReviewService implements IReviewService {
+public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final ReviewMapper reviewMapper;

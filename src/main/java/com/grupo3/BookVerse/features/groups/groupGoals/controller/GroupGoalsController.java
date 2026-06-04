@@ -2,7 +2,7 @@ package com.grupo3.BookVerse.features.groups.GroupGoals.controller;
 
 import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsRequestDto;
 import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsResponseDto;
-import com.grupo3.BookVerse.features.groups.GroupGoals.service.IGroupGoalsService;
+import com.grupo3.BookVerse.features.groups.GroupGoals.service.GroupGoalsService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,7 @@ import java.util.List;
 @RequestMapping("/group-goals")
 public class GroupGoalsController {
 
-    private final IGroupGoalsService groupGoalsService;
+    private final GroupGoalsService groupGoalsService;
 
     @GetMapping
     public ResponseEntity<List<GroupGoalsResponseDto>> findAll() {

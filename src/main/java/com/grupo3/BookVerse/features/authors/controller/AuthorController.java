@@ -1,6 +1,6 @@
 package com.grupo3.BookVerse.features.authors.controller;
 
-import com.grupo3.BookVerse.features.authors.services.IAuthorService;
+import com.grupo3.BookVerse.features.authors.services.AuthorService;
 import com.grupo3.BookVerse.features.authors.dto.AuthorRequestDto;
 import com.grupo3.BookVerse.features.authors.dto.AuthorResponseDto;
 
@@ -18,7 +18,7 @@ import java.util.UUID;
 @RequestMapping("/authors")
 public class AuthorController {
 
-    private final IAuthorService authorService;
+    private final AuthorService authorService;
 
     @GetMapping
     ResponseEntity<List<AuthorResponseDto>> findAll() {

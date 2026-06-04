@@ -1,7 +1,7 @@
 package com.grupo3.BookVerse.features.reviewReport.controller;
 
 
-import com.grupo3.BookVerse.features.reviewReport.services.IReviewReportService;
+import com.grupo3.BookVerse.features.reviewReport.services.ReviewReportService;
 import com.grupo3.BookVerse.features.reviewReport.dtos.ReviewReportRequestDto;
 import com.grupo3.BookVerse.features.reviewReport.dtos.ReviewReportResponseDto;
 
@@ -19,7 +19,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ReviewReportController {
 
-    private final IReviewReportService reviewReportService;
+    private final ReviewReportService reviewReportService;
 
     @GetMapping
     public ResponseEntity<List<ReviewReportResponseDto>> getAllReports() {

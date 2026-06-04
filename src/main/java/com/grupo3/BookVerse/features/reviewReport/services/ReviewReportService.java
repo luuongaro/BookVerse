@@ -6,7 +6,7 @@ import com.grupo3.BookVerse.features.reviewReport.dtos.ReviewReportResponseDto;
 import java.util.List;
 import java.util.UUID;
 
-public interface IReviewReportService {
+public interface ReviewReportService {
 
     List<ReviewReportResponseDto> getAllReports();
 
