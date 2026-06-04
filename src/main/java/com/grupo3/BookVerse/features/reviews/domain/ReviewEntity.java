@@ -64,14 +64,9 @@ public class ReviewEntity {
     private LocalDateTime updatedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "takedown_status")
-    private TakedownStatus takedownStatus;
+    @Column(name = "takedown_status", nullable = false)
+    private ReviewTakedownStatus takedownStatus;
 
-    public enum TakedownStatus {
-        ACTIVE,
-        TAKEN_DOWN,
-        RESTORED
-    }
 
     @PrePersist
     public void prePersist() {

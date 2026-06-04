@@ -48,25 +48,25 @@ public class ReviewReportEntity {
     @Column(name = "resolved_at")
     private LocalDateTime resolvedAt;
 
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ReviewReportStatus status;
+
     @PrePersist
     protected void onCreate() {
         if (idExternal == null) {
             idExternal = UUID.randomUUID();
         }
-        createdAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
+
+        if (status == null) {
+            status = ReviewReportStatus.PENDING;
+        }
+    }
     }
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ReportStatus status;
 
-    public enum ReportStatus {
-        PENDING,
-        APPROVED,
-        REJECTED
-    }
-
-}
 
 
 

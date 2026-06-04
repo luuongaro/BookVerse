@@ -2,6 +2,7 @@ package com.grupo3.BookVerse.features.reviewReport.services.impl;
 
 import com.grupo3.BookVerse.common.EntityNotFoundException;
 import com.grupo3.BookVerse.features.reviewReport.domain.ReviewReportEntity;
+import com.grupo3.BookVerse.features.reviewReport.domain.ReviewReportStatus;
 import com.grupo3.BookVerse.features.reviewReport.dtos.ReviewReportRequestDto;
 import com.grupo3.BookVerse.features.reviewReport.dtos.ReviewReportResponseDto;
 import com.grupo3.BookVerse.features.reviewReport.mapper.ReviewReportMapper;
@@ -85,7 +86,7 @@ public class ReviewReportService implements IReviewReportService {
 
         toBeSaved.setReview(review);
         toBeSaved.setReporterUser(reporter);
-        toBeSaved.setStatus(ReviewReportEntity.ReportStatus.PENDING);
+        toBeSaved.setStatus(ReviewReportStatus.PENDING);
 
 
 
