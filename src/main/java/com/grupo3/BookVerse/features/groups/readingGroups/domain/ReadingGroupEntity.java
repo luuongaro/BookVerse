@@ -48,6 +48,7 @@ public class ReadingGroupEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
@@ -61,6 +62,7 @@ public class ReadingGroupEntity {
             idExternal = UUID.randomUUID();
         }
     }
+
 
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
     private List<GroupMemberEntity> members = new ArrayList<>();
