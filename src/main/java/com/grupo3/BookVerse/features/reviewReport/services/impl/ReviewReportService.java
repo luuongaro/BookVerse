@@ -1,6 +1,7 @@
 package com.grupo3.BookVerse.features.reviewReport.services.impl;
 
-import com.grupo3.BookVerse.common.EntityNotFoundException;
+
+import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
 import com.grupo3.BookVerse.features.reviewReport.domain.ReviewReportEntity;
 import com.grupo3.BookVerse.features.reviewReport.domain.ReviewReportStatus;
 import com.grupo3.BookVerse.features.reviewReport.dtos.ReviewReportRequestDto;
@@ -48,11 +49,8 @@ public class ReviewReportService implements IReviewReportService {
         return reviewReportRepository.findByIdExternal(reportId)
                 .map(reviewReportMapper::toResponseDto)
                 .orElseThrow(() ->
-                        new EntityNotFoundException(
-                                "ReviewReport",
-                                "Review report was not found",
-                                "reportId",
-                                reportId.toString()
+                        new ResourceNotFoundException(
+                                "Review report not found with id: " + reportId
                         ));
 
     }
@@ -65,24 +63,19 @@ public class ReviewReportService implements IReviewReportService {
         ReviewEntity review =
                 reviewRepository.findByIdExternal(reviewReportRequestDto.reviewId())
                         .orElseThrow(() ->
-                                new EntityNotFoundException(
-                                        "Review",
-                                        "Review was not found",
-                                        "reviewId",
-                                        reviewReportRequestDto.reviewId().toString()
-                                ));
+                                        new ResourceNotFoundException(
+                                                "Review not found with id: " + reviewReportRequestDto.reviewId()
+                                        ));
+
 
 
 
         UserEntity reporter =
                 userRepository.findByIdExternal(reviewReportRequestDto.reporterUserId())
                         .orElseThrow(() ->
-                                new EntityNotFoundException(
-                                        "User",
-                                        "User was not found",
-                                        "userId",
-                                        reviewReportRequestDto.reporterUserId().toString()
-                                ));
+                                        new ResourceNotFoundException(
+                                                "User not found with id: " + reviewReportRequestDto.reporterUserId()
+                                        ));
 
         toBeSaved.setReview(review);
         toBeSaved.setReporterUser(reporter);
@@ -101,14 +94,10 @@ public class ReviewReportService implements IReviewReportService {
 
         ReviewReportEntity toBeDeleted =
                 reviewReportRepository.findByIdExternal(reportId)
-                        .orElseThrow(() ->
-                                new EntityNotFoundException(
-                                        "ReviewReport",
-                                        "Review report was not found",
-                                        "reportId",
-                                        reportId.toString()
-                                ));
-
+                                .orElseThrow(() ->
+                                        new ResourceNotFoundException(
+                                                "Review report not found with id: " + reportId
+                                        ));
         reviewReportRepository.delete(toBeDeleted);
     }
 }

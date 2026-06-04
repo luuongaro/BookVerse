@@ -1,8 +1,9 @@
 package com.grupo3.BookVerse.features.authors.services.impl;
 
 
-import com.grupo3.BookVerse.common.EntityNotFoundException;
 
+
+import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
 import com.grupo3.BookVerse.features.authors.domain.AuthorEntity;
 import com.grupo3.BookVerse.features.authors.dto.AuthorRequestDto;
 import com.grupo3.BookVerse.features.authors.dto.AuthorResponseDto;
@@ -40,12 +41,9 @@ public class AuthorService implements IAuthorService {
     public void delete(UUID authorId) {
 
         AuthorEntity author = authorRepository.findByIdExternal(authorId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Author",
-                        "Author was not found",
-                        "authorId",
-                        authorId.toString()
-                ));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Author was not found with idExternal: " + authorId
+                    ));
 
         authorRepository.delete(author);
     }
@@ -55,11 +53,8 @@ public class AuthorService implements IAuthorService {
                                     AuthorRequestDto authorRequestDto) {
 
         AuthorEntity author = authorRepository.findByIdExternal(authorId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Author",
-                        "Author was not found",
-                        "authorId",
-                        authorId.toString()
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Author not found with idExternal: " + authorId
                 ));
 
         author.setFullName(authorRequestDto.fullName());
@@ -75,11 +70,8 @@ public class AuthorService implements IAuthorService {
     public AuthorResponseDto findById(UUID authorId) {
         return authorRepository.findByIdExternal(authorId)
                 .map(authorMapper::toResponseDto)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Author",
-                        "Author was not found",
-                        "authorId",
-                        authorId.toString()
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Author not found with idExternal: " + authorId
                 ));
 
 
