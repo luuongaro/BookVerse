@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.groups.groupComment;
+package com.grupo3.BookVerse.features.groups.groupComment.domain;
 
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
