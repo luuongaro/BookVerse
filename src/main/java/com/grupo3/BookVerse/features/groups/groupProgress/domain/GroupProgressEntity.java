@@ -22,7 +22,7 @@ public class GroupProgressEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // PK
+    private Long id;
 
     @Column(name = "id_external", unique = true, nullable = false)
     private UUID idExternal;
@@ -33,7 +33,7 @@ public class GroupProgressEntity {
 
     @ManyToOne(fetch = FetchType.LAZY,  optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user; //FK
+    private UserEntity user;
 
     @Column(name = "current_progress", nullable = false)
     private int currentProgress;
