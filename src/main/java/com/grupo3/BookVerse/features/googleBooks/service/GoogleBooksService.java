@@ -1,4 +1,8 @@
 package com.grupo3.BookVerse.features.googleBooks.service;
 
-public class GoogleBooksService {
+import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBooksApiResponseDto;
+
+public interface GoogleBooksService {
+
+    GoogleBooksApiResponseDto searchBooks(String query);
 }
