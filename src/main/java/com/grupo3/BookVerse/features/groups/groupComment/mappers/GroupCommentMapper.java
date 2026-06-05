@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.groups.groupComment;
+package com.grupo3.BookVerse.features.groups.groupComment.mappers;
 
 
 import com.grupo3.BookVerse.features.groups.groupComment.domain.GroupCommentEntity;
