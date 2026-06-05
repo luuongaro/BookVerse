@@ -1,4 +1,34 @@
 package com.grupo3.BookVerse.features.googleBooks.client;
 
+
+import com.grupo3.BookVerse.common.exception.BadRequestException;
+import com.grupo3.BookVerse.config.GoogleBooksProperties;
+import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBooksApiResponseDto;
+import com.grupo3.BookVerse.features.googleBooks.service.GoogleBooksService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+@Component
+@RequiredArgsConstructor
 public class GoogleBooksClient {
+
+    private final GoogleBooksProperties googleBooksProperties;
+    private final RestTemplate restTemplate;
+
+    /**
+     * Calls the Google Books API using the provided query
+     * and returns the raw response mapped to DTOs.
+     */
+
+    public GoogleBooksApiResponseDto searchBooks(String query) {
+
+        String url = UriComponentsBuilder.fromUriString(googleBooksProperties.getUrl())
+                .queryParam("q",query)
+                .queryParam("key", googleBooksProperties.getKey())
+                .toUriString();
+
+        return restTemplate.getForObject(url, GoogleBooksApiResponseDto.class);
+    }
 }

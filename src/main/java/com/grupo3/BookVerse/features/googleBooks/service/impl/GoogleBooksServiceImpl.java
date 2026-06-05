@@ -3,6 +3,7 @@ package com.grupo3.BookVerse.features.googleBooks.service.impl;
 import com.grupo3.BookVerse.common.exception.BadRequestException;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
 import com.grupo3.BookVerse.config.GoogleBooksProperties;
+import com.grupo3.BookVerse.features.googleBooks.client.GoogleBooksClient;
 import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBooksApiResponseDto;
 import com.grupo3.BookVerse.features.googleBooks.service.GoogleBooksService;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +16,16 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequiredArgsConstructor
 public class GoogleBooksServiceImpl implements GoogleBooksService {
 
-    private final GoogleBooksProperties googleBooksProperties;
-    private final RestTemplate restTemplate;
+
+    private final GoogleBooksClient googleBooksClient;
+
+
+    /**
+     * Service responsible for handling business logic related to Google Books search.
+     * Validates the query, delegates the API call to the client,
+     * and processes the response (e.g., handling empty results).
+     */
+
 
     @Override
     public GoogleBooksApiResponseDto searchBooks(String query) {
@@ -27,13 +36,8 @@ public class GoogleBooksServiceImpl implements GoogleBooksService {
 
         String normalizedQuery = query.trim();
 
-        String url = UriComponentsBuilder.fromUriString(googleBooksProperties.getUrl())
-                .queryParam("q", normalizedQuery)
-                .queryParam("key", googleBooksProperties.getKey())
-                .toUriString();
 
-        GoogleBooksApiResponseDto responseDto =
-                restTemplate.getForObject(url, GoogleBooksApiResponseDto.class);
+        GoogleBooksApiResponseDto responseDto = googleBooksClient.searchBooks(normalizedQuery);
 
         if (responseDto == null || responseDto.getItems() == null ||
                 responseDto.getItems().isEmpty()) {
@@ -42,10 +46,4 @@ public class GoogleBooksServiceImpl implements GoogleBooksService {
 
         return responseDto;
     }
-
-    /*Service is responsible for consuming the external Google Books API.
-    First, it validates that the search is not empty, then it normalizes the query,
-    constructs the URL using the configuration data loaded from application.yml,
-    makes the HTTP call with RestTemplate, and finally validates whether the
-    response contains results before returning it.*/
 }
