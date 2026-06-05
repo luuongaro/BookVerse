@@ -22,4 +22,5 @@ public interface GroupMemberMapper {
     @Mapping(target = "userName", source = "user.username")
     @Mapping(target = "userEmail", source = "user.email")
     GroupMemberResponseDto toResponseDto(GroupMemberEntity entity);
+
 }
