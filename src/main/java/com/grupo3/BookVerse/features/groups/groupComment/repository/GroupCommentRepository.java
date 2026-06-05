@@ -14,6 +14,11 @@ public interface GroupCommentRepository extends JpaRepository<GroupCommentEntity
 
     Optional<GroupCommentEntity> findByIdExternal(UUID idExternal);
 
+
+    Optional<GroupCommentEntity> findByIdExternalAndIsHiddenFalse(UUID idExternal);
+
+    List<GroupCommentEntity> findByIsHiddenFalseOrderByCreatedAtDesc();
+
     List<GroupCommentEntity> findByGroupIdExternalAndIsHiddenFalseOrderByCreatedAtAsc(UUID groupId);
 
     List<GroupCommentEntity> findByUserIdExternalAndIsHiddenFalseOrderByCreatedAtDesc(UUID userId);
