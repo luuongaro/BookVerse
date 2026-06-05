@@ -2,14 +2,13 @@ package com.grupo3.BookVerse.features.googleBooks.service.impl;
 
 import com.grupo3.BookVerse.common.exception.BadRequestException;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
-import com.grupo3.BookVerse.config.GoogleBooksProperties;
 import com.grupo3.BookVerse.features.googleBooks.client.GoogleBooksClient;
 import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBooksApiResponseDto;
 import com.grupo3.BookVerse.features.googleBooks.service.GoogleBooksService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+
 
 
 @Service
@@ -35,7 +34,7 @@ public class GoogleBooksServiceImpl implements GoogleBooksService {
         }
 
         String normalizedQuery = query.trim();
-
+        logGoogleBooksSearch(normalizedQuery);
 
         GoogleBooksApiResponseDto responseDto = googleBooksClient.searchBooks(normalizedQuery);
 
@@ -46,4 +45,11 @@ public class GoogleBooksServiceImpl implements GoogleBooksService {
 
         return responseDto;
     }
+
+
+    @Async
+    public void logGoogleBooksSearch(String query) {
+        System.out.println("Asynchronous log for Google Books search: " + query);
+    }
+
 }
