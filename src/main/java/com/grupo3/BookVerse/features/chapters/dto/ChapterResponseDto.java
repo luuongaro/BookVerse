@@ -17,6 +17,7 @@ public class ChapterResponseDto {
     private UUID idExternal;
 
     private UUID storyId;
+    private String storyTitle;
 
     private int chapterNumber;
 
