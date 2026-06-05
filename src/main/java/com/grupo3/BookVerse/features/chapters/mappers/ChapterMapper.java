@@ -12,7 +12,7 @@ public interface ChapterMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "idExternal", ignore = true)
     @Mapping(target = "story", ignore = true)
-    @Mapping(target = "isDeleted", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     ChapterEntity toEntity(ChapterRequestDto requestDto);
