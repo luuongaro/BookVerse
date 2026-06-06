@@ -64,7 +64,7 @@ public class ReviewReportEntity {
             status = ReviewReportStatus.PENDING;
         }
     }
-    }
+}
 
 
 

@@ -1,6 +1,7 @@
 package com.grupo3.BookVerse.features.books.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -30,5 +32,6 @@ public class BookRequestDto {
     @Size(max = 100, message = "Book genre cannot exceed 100 characters")
     private String genre;
 
-    private Set<Long> authorIds;
+    @NotNull(message = "Author ids are required")
+    private Set<UUID> authorIds;
 }
