@@ -4,6 +4,11 @@ import com.grupo3.BookVerse.features.subscriptions.domain.SubscriptionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
+import java.util.Optional;
+import java.util.UUID;
 
-public interface SubscriptionRepository extends JpaRepository<SubscriptionEntity, Long> { }
+@Repository
+public interface SubscriptionRepository extends JpaRepository<SubscriptionEntity, Long> {
+
+    Optional<SubscriptionEntity> findByIdExternal(UUID idExternal);
+}
