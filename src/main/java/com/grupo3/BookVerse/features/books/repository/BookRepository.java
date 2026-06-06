@@ -11,4 +11,6 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
 
     Optional<BookEntity> findByIdExternal(UUID idExternal);
 
+    boolean existsByIsbn(String isbn);
+
 }
