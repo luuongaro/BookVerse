@@ -1,6 +1,7 @@
 package com.grupo3.BookVerse.features.stories.repository;
 
 import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
+import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,6 +19,8 @@ public interface StoryRepository extends JpaRepository<StoryEntity, Long> {
     List<StoryEntity> findByIsDeletedFalseOrderByCreatedAtDesc();
 
     List<StoryEntity> findByAuthorIdAndIsDeletedFalseOrderByCreatedAtDesc(Long authorId);
+
+
 }
 
 

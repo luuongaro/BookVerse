@@ -19,25 +19,18 @@ public interface StoryMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "chapters", ignore = true)
-    @Mapping(target = "author", source = "authorId")
+    @Mapping(target = "author", ignore = true)
     @Mapping(target = "isHidden", ignore = true)
     @Mapping(target = "isDeleted", ignore = true)
     StoryEntity toEntity(StoryRequestDto dto);
 
-    @Mapping(target = "authorId", source = "author.id")
+    @Mapping(target = "authorId", source = "author.idExternal")
     @Mapping(target = "chaptersCount", expression = "java(mapChaptersCount(storyEntity.getChapters()))")
     StoryResponseDto toResponseDto(StoryEntity storyEntity);
 
     List<StoryResponseDto> toResponseDtoList(List<StoryEntity> stories);
 
-    default UserEntity map(Long authorId) {
-        if (authorId == null) {
-            return null;
-        }
-        UserEntity user = new UserEntity();
-        user.setId(authorId);
-        return user;
-    }
+
 
     default Integer mapChaptersCount(List<ChapterEntity> chapters) {
         return chapters != null ? chapters.size() : 0;

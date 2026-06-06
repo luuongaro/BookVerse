@@ -16,7 +16,7 @@ import java.util.UUID;
 public class StoryResponseDto {
 
     private UUID idExternal;
-    private Long authorId;
+    private UUID authorId;
     private String title;
     private String description;
     private boolean isPrivate;
