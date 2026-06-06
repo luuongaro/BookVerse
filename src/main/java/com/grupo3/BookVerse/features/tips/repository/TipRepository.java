@@ -15,7 +15,7 @@ public interface TipRepository extends JpaRepository<TipEntity, Long> {
 
     List<TipEntity> findAllByOrderByCreatedAtDesc();
 
-    List<TipEntity> findBySenderIdOrderByCreatedAtDesc(Long senderId);
+    List<TipEntity> findBySenderIdExternalOrderByCreatedAtDesc(UUID senderId);
 
-    List<TipEntity> findByReceiverIdOrderByCreatedAtDesc(Long receiverId);
+    List<TipEntity> findByReceiverIdExternalOrderByCreatedAtDesc(UUID receiverId);
 }
