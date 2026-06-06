@@ -6,6 +6,8 @@ import com.grupo3.BookVerse.features.groups.groupMember.dto.GroupMemberResponseD
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface GroupMemberMapper {
 
@@ -16,11 +18,12 @@ public interface GroupMemberMapper {
     @Mapping(target = "user", ignore = true)
     GroupMemberEntity toEntity(GroupMemberRequestDto requestDto);
 
-    @Mapping(target = "groupId", source = "group.id")
+    @Mapping(target = "groupId", source = "group.idExternal")
     @Mapping(target = "groupName", source = "group.name")
-    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "userId", source = "user.idExternal")
     @Mapping(target = "userName", source = "user.username")
     @Mapping(target = "userEmail", source = "user.email")
     GroupMemberResponseDto toResponseDto(GroupMemberEntity entity);
 
+    List<GroupMemberResponseDto> toResponseDtoList(List<GroupMemberEntity> entities);
 }

@@ -9,14 +9,11 @@ import java.util.UUID;
 
 public interface GroupMemberRepository extends JpaRepository<GroupMemberEntity, Long> {
 
-
     Optional<GroupMemberEntity> findByIdExternal(UUID idExternal);
 
-    List<GroupMemberEntity> findByGroupId(Long groupId);
+    List<GroupMemberEntity> findByGroupIdExternal(UUID groupId);
 
-    List<GroupMemberEntity> findByUserId(Long userId);
+    List<GroupMemberEntity> findByUserIdExternal(UUID userId);
 
     boolean existsByGroupIdAndUserId(Long groupId, Long userId);
-
-
 }

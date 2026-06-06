@@ -8,16 +8,15 @@ import java.util.UUID;
 
 public interface GroupMemberService {
 
-
     GroupMemberResponseDto createGroupMember(GroupMemberRequestDto groupMemberRequestDto);
 
     List<GroupMemberResponseDto> getAllGroupMembers();
 
     GroupMemberResponseDto getGroupMemberByIdExternal(UUID idExternal);
 
-    List<GroupMemberResponseDto> getGroupMembersByGroupId(Long groupId);
+    List<GroupMemberResponseDto> getGroupMembersByGroupId(UUID groupId);
 
-    List<GroupMemberResponseDto> getGroupMembersByUserId(Long userId);
+    List<GroupMemberResponseDto> getGroupMembersByUserId(UUID userId);
 
     void deleteGroupMember(UUID idExternal);
 }

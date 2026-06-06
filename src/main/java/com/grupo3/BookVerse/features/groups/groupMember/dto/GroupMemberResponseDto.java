@@ -12,13 +12,12 @@ import java.util.UUID;
 @Builder
 public class GroupMemberResponseDto {
 
-    private Long id;
     private UUID idExternal;
 
-    private Long groupId;
+    private UUID groupId;
     private String groupName;
 
-    private Long userId;
+    private UUID userId;
     private String userName;
     private String userEmail;
 
