@@ -14,10 +14,9 @@ public interface GroupProgressService {
 
     GroupProgressResponseDto getProgressByIdExternal(UUID idExternal);
 
-    List<GroupProgressResponseDto> getProgressByGroupId(Long groupId);
+    List<GroupProgressResponseDto> getProgressByGroupId(UUID groupId);
 
-    List<GroupProgressResponseDto> getProgressByUserId(Long userId);
+    List<GroupProgressResponseDto> getProgressByUserId(UUID userId);
 
     void deleteProgress(UUID idExternal);
 }
-
