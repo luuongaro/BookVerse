@@ -9,9 +9,9 @@ import com.grupo3.BookVerse.features.stories.repository.StoryRepository;
 import com.grupo3.BookVerse.features.stories.service.StoryService;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,39 +27,68 @@ public class StoryServiceImpl implements StoryService {
     @Override
     @Transactional
     public StoryResponseDto createStory(StoryRequestDto storyRequestDto) {
-        UserEntity author = findUserById(storyRequestDto.getAuthorId());
 
-        StoryEntity storyEntity = storyMapper.toEntity(storyRequestDto);
+        UserEntity author =
+                findUserByIdExternal(storyRequestDto.getAuthorId());
+
+        StoryEntity storyEntity =
+                storyMapper.toEntity(storyRequestDto);
+
         storyEntity.setAuthor(author);
 
-        StoryEntity savedStory = storyRepository.save(storyEntity);
+        StoryEntity savedStory =
+                storyRepository.save(storyEntity);
+
         return storyMapper.toResponseDto(savedStory);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<StoryResponseDto> getAllStories() {
-        List<StoryEntity> stories = storyRepository.findByIsDeletedFalseOrderByCreatedAtDesc();
+
+        List<StoryEntity> stories =
+                storyRepository.findByIsDeletedFalseOrderByCreatedAtDesc();
+
         return storyMapper.toResponseDtoList(stories);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public StoryResponseDto getStoryByIdExternal(UUID idExternal) {
-        StoryEntity storyEntity = findActiveStoryByIdExternal(idExternal);
-        return storyMapper.toResponseDto(storyEntity);
+
+        StoryEntity story =
+                findActiveStoryByIdExternal(idExternal);
+
+        return storyMapper.toResponseDto(story);
     }
 
     @Override
-    public List<StoryResponseDto> getStoriesByAuthorId(Long authorId) {
-        findUserById(authorId);
-        List<StoryEntity> stories = storyRepository.findByAuthorIdAndIsDeletedFalseOrderByCreatedAtDesc(authorId);
+    @Transactional(readOnly = true)
+    public List<StoryResponseDto> getStoriesByAuthorId(UUID authorId) {
+
+        UserEntity author =
+                findUserByIdExternal(authorId);
+
+        List<StoryEntity> stories =
+                storyRepository.findByAuthorIdAndIsDeletedFalseOrderByCreatedAtDesc(
+                        author.getId()
+                );
+
         return storyMapper.toResponseDtoList(stories);
     }
 
     @Override
     @Transactional
-    public StoryResponseDto updateStory(UUID idExternal, StoryRequestDto storyRequestDto) {
-        StoryEntity existingStory = findActiveStoryByIdExternal(idExternal);
-        UserEntity author = findUserById(storyRequestDto.getAuthorId());
+    public StoryResponseDto updateStory(
+            UUID idExternal,
+            StoryRequestDto storyRequestDto
+    ) {
+
+        StoryEntity existingStory =
+                findActiveStoryByIdExternal(idExternal);
+
+        UserEntity author =
+                findUserByIdExternal(storyRequestDto.getAuthorId());
 
         existingStory.setTitle(storyRequestDto.getTitle());
         existingStory.setDescription(storyRequestDto.getDescription());
@@ -67,26 +96,52 @@ public class StoryServiceImpl implements StoryService {
         existingStory.setPrice(storyRequestDto.getPrice());
         existingStory.setAuthor(author);
 
-        StoryEntity updatedStory = storyRepository.save(existingStory);
+        StoryEntity updatedStory =
+                storyRepository.save(existingStory);
+
         return storyMapper.toResponseDto(updatedStory);
     }
 
     @Override
     @Transactional
     public void deleteStory(UUID idExternal) {
-        StoryEntity storyEntity = findActiveStoryByIdExternal(idExternal);
-        storyEntity.setDeleted(true);
-        storyRepository.save(storyEntity);
+
+        StoryEntity story =
+                findActiveStoryByIdExternal(idExternal);
+
+        story.setDeleted(true);
+
+        storyRepository.save(story);
     }
 
     private StoryEntity findActiveStoryByIdExternal(UUID idExternal) {
+
         return storyRepository.findByIdExternalAndIsDeletedFalse(idExternal)
-                .orElseThrow(() -> new ResourceNotFoundException("Story not found with idExternal: " + idExternal));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Story not found with idExternal: " + idExternal
+                        )
+                );
     }
 
-    private UserEntity findUserById(Long userId) {
+    private UserEntity findUserByIdInternal(Long userId) {
+
         return userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User not found with id: " + userId
+                        )
+                );
+    }
+
+    private UserEntity findUserByIdExternal(UUID idExternal) {
+
+        return userRepository.findByIdExternal(idExternal)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User not found with idExternal: " + idExternal
+                        )
+                );
     }
 }
 

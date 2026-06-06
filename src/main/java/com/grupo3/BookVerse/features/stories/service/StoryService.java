@@ -14,7 +14,7 @@ public interface StoryService {
 
     StoryResponseDto getStoryByIdExternal(UUID idExternal);
 
-    List<StoryResponseDto> getStoriesByAuthorId(Long authorId);
+    List<StoryResponseDto> getStoriesByAuthorId(UUID authorId);
 
     StoryResponseDto updateStory(UUID idExternal, StoryRequestDto storyRequestDto);
 

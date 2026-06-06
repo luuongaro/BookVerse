@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -18,7 +19,7 @@ import java.math.BigDecimal;
 public class StoryRequestDto {
 
     @NotNull(message = "Author id is required")
-    private Long authorId;
+    private UUID authorId;
 
     @NotBlank(message = "Story title is required")
     @Size(max = 150, message = "Story title must not exceed 150 characters")
