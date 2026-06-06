@@ -9,5 +9,5 @@ import java.util.List;
 @Setter
 // DTO that receives the full response from Google Books API.
 public class GoogleBooksApiResponseDto {
-    private List<GoogleBooksResponseDto> items;
+    private List<GoogleBookVolumeDto> items;
 }

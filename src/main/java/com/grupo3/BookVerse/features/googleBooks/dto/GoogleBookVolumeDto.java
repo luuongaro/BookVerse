@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 //DTO that represents each item inside the "items" list
-public class GoogleBooksResponseDto {
+public class GoogleBookVolumeDto {
     private String id;
     private GoogleBookItemDto volumeInfo;
 }
