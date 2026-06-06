@@ -70,9 +70,10 @@ public class StoryServiceImpl implements StoryService {
                 findUserByIdExternal(authorId);
 
         List<StoryEntity> stories =
-                storyRepository.findByAuthorIdAndIsDeletedFalseOrderByCreatedAtDesc(
-                        author.getId()
-                );
+                storyRepository
+                        .findByAuthorIdAndIsDeletedFalseOrderByCreatedAtDesc(
+                                author.getId()
+                        );
 
         return storyMapper.toResponseDtoList(stories);
     }
@@ -123,17 +124,6 @@ public class StoryServiceImpl implements StoryService {
                         )
                 );
     }
-
-    private UserEntity findUserByIdInternal(Long userId) {
-
-        return userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "User not found with id: " + userId
-                        )
-                );
-    }
-
     private UserEntity findUserByIdExternal(UUID idExternal) {
 
         return userRepository.findByIdExternal(idExternal)
