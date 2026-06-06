@@ -27,6 +27,9 @@ public class GoogleBooksClient {
                 .queryParam("key", googleBooksProperties.getKey())
                 .toUriString();
 
+        //TESTEEEEEEEEEEEO !! BORRAR DESPUES !!!
+        System.out.println("Final URL: " + url);
+
         return restTemplate.getForObject(url, GoogleBooksApiResponseDto.class);
     }
 }
