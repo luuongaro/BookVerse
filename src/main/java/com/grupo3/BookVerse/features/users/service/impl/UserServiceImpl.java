@@ -3,7 +3,7 @@ package com.grupo3.BookVerse.features.users.service.impl;
 import com.grupo3.BookVerse.common.exception.DuplicateResourceException;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
 import com.grupo3.BookVerse.features.subscriptions.domain.SubscriptionEntity;
-import com.grupo3.BookVerse.features.subscriptions.SubscriptionRepository;
+import com.grupo3.BookVerse.features.subscriptions.repository.SubscriptionRepository;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.dto.UserRequestDto;
 import com.grupo3.BookVerse.features.users.dto.UserResponseDto;

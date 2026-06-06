@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface BookMapper {
 
+    List<BookResponseDto> toResponseDtoList(List<BookEntity> bookEntities);
+
     @Mapping(target = "authorIds", expression = "java(mapAuthorIds(bookEntity.getAuthors()))")
     @Mapping(target = "authorNames", expression = "java(mapAuthorNames(bookEntity.getAuthors()))")
     @Mapping(target = "readingGroupsCount", expression = "java(mapReadingGroupsCount(bookEntity.getReadingGroups()))")

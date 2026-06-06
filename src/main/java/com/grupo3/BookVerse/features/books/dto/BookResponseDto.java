@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -14,7 +15,7 @@ import java.util.Set;
 @Builder
 public class BookResponseDto {
 
-    private Long id;
+    private UUID idExternal;
     private String title;
     private String description;
     private String isbn;

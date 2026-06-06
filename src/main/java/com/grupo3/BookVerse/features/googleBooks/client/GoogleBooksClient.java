@@ -1,6 +1,5 @@
 package com.grupo3.BookVerse.features.googleBooks.client;
 
-
 import com.grupo3.BookVerse.config.GoogleBooksProperties;
 import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBooksApiResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +14,6 @@ public class GoogleBooksClient {
     private final GoogleBooksProperties googleBooksProperties;
     private final RestTemplate restTemplate;
 
-    /**
-     * Calls the Google Books API using the provided query
-     * and returns the raw response mapped to DTOs.
-     */
 
     public GoogleBooksApiResponseDto searchBooks(String query) {
 
@@ -26,9 +21,6 @@ public class GoogleBooksClient {
                 .queryParam("q",query)
                 .queryParam("key", googleBooksProperties.getKey())
                 .toUriString();
-
-
-        System.out.println("Final URL: " + url);
 
         return restTemplate.getForObject(url, GoogleBooksApiResponseDto.class);
     }

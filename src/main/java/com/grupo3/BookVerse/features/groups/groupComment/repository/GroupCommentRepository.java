@@ -12,13 +12,11 @@ import java.util.UUID;
 @Repository
 public interface GroupCommentRepository extends JpaRepository<GroupCommentEntity, Long> {
 
-    Optional<GroupCommentEntity> findByIdExternal(UUID idExternal);
+    Optional<GroupCommentEntity> findByIdExternalAndHiddenFalse(UUID idExternal);
 
-    Optional<GroupCommentEntity> findByIdExternalAndIsHiddenFalse(UUID idExternal);
+    List<GroupCommentEntity> findByHiddenFalseOrderByCreatedAtDesc();
 
-    List<GroupCommentEntity> findByIsHiddenFalseOrderByCreatedAtDesc();
+    List<GroupCommentEntity> findByGroupIdExternalAndHiddenFalseOrderByCreatedAtAsc(UUID groupId);
 
-    List<GroupCommentEntity> findByGroupIdExternalAndIsHiddenFalseOrderByCreatedAtAsc(UUID groupId);
-
-    List<GroupCommentEntity> findByUserIdExternalAndIsHiddenFalseOrderByCreatedAtDesc(UUID userId);
+    List<GroupCommentEntity> findByUserIdExternalAndHiddenFalseOrderByCreatedAtDesc(UUID userId);
 }
