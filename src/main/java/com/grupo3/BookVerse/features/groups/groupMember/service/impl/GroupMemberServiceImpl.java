@@ -12,9 +12,9 @@ import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEnt
 import com.grupo3.BookVerse.features.groups.readingGroups.repository.ReadingGroupRepository;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,24 +32,19 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     @Transactional
     public GroupMemberResponseDto createGroupMember(GroupMemberRequestDto groupMemberRequestDto) {
 
-        Long groupId = groupMemberRequestDto.getGroupId();
-        Long userId = groupMemberRequestDto.getUserId();
+        ReadingGroupEntity group = findGroupByIdExternal(groupMemberRequestDto.getGroupId());
+        UserEntity user = findUserByIdExternal(groupMemberRequestDto.getUserId());
 
-        if (groupMemberRepository.existsByGroupIdAndUserId(groupId, userId)) {
+        if (groupMemberRepository.existsByGroupIdAndUserId(group.getId(), user.getId())) {
             throw new DuplicateResourceException(
-                    "User with id " + userId + " is already a member of group with id " + groupId
+                    "User with idExternal " + user.getIdExternal()
+                            + " is already a member of group with idExternal " + group.getIdExternal()
             );
         }
 
-        ReadingGroupEntity readingGroupEntity = readingGroupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException("Group not found with id: " + groupId));
-
-        UserEntity userEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-
         GroupMemberEntity groupMemberEntity = groupMemberMapper.toEntity(groupMemberRequestDto);
-        groupMemberEntity.setGroup(readingGroupEntity);
-        groupMemberEntity.setUser(userEntity);
+        groupMemberEntity.setGroup(group);
+        groupMemberEntity.setUser(user);
 
         GroupMemberEntity savedGroupMember = groupMemberRepository.save(groupMemberEntity);
 
@@ -57,58 +52,67 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<GroupMemberResponseDto> getAllGroupMembers() {
         List<GroupMemberEntity> groupMembers = groupMemberRepository.findAll();
-        return groupMembers.stream()
-                .map(groupMemberMapper::toResponseDto)
-                .toList();
+        return groupMemberMapper.toResponseDtoList(groupMembers);
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public GroupMemberResponseDto getGroupMemberByIdExternal(UUID idExternal) {
         GroupMemberEntity groupMemberEntity = groupMemberRepository.findByIdExternal(idExternal)
-                .orElseThrow(() -> new ResourceNotFoundException("Group member not found with id: " + idExternal));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Group member not found with idExternal: " + idExternal
+                ));
 
         return groupMemberMapper.toResponseDto(groupMemberEntity);
     }
 
     @Override
-    @Transactional
-    public List<GroupMemberResponseDto> getGroupMembersByGroupId(Long groupId) {
+    @Transactional(readOnly = true)
+    public List<GroupMemberResponseDto> getGroupMembersByGroupId(UUID groupId) {
 
-        if (!readingGroupRepository.existsById(groupId)) {
-            throw new ResourceNotFoundException("Group not found with id: " + groupId);
-        }
+        findGroupByIdExternal(groupId);
 
-        List<GroupMemberEntity> groupMembers = groupMemberRepository.findByGroupId(groupId);
+        List<GroupMemberEntity> groupMembers = groupMemberRepository.findByGroupIdExternal(groupId);
 
-        return groupMembers.stream()
-                .map(groupMemberMapper::toResponseDto)
-                .toList();
+        return groupMemberMapper.toResponseDtoList(groupMembers);
     }
 
     @Override
-    @Transactional
-    public List<GroupMemberResponseDto> getGroupMembersByUserId(Long userId) {
+    @Transactional(readOnly = true)
+    public List<GroupMemberResponseDto> getGroupMembersByUserId(UUID userId) {
 
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("User not found with id: " + userId);
-        }
+        findUserByIdExternal(userId);
 
-        List<GroupMemberEntity> groupMembers = groupMemberRepository.findByUserId(userId);
+        List<GroupMemberEntity> groupMembers = groupMemberRepository.findByUserIdExternal(userId);
 
-        return groupMembers.stream()
-                .map(groupMemberMapper::toResponseDto)
-                .toList();
+        return groupMemberMapper.toResponseDtoList(groupMembers);
     }
 
     @Override
     @Transactional
     public void deleteGroupMember(UUID idExternal) {
         GroupMemberEntity groupMemberEntity = groupMemberRepository.findByIdExternal(idExternal)
-                .orElseThrow(() -> new ResourceNotFoundException("Group member not found with id: " + idExternal));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Group member not found with idExternal: " + idExternal
+                ));
 
         groupMemberRepository.delete(groupMemberEntity);
+    }
+
+    private ReadingGroupEntity findGroupByIdExternal(UUID groupId) {
+        return readingGroupRepository.findByIdExternal(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Group not found with idExternal: " + groupId
+                ));
+    }
+
+    private UserEntity findUserByIdExternal(UUID userId) {
+        return userRepository.findByIdExternal(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found with idExternal: " + userId
+                ));
     }
 }
