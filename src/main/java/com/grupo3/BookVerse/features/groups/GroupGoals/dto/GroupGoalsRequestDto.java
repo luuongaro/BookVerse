@@ -7,12 +7,12 @@ import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record GroupGoalsRequestDto(
 
         @NotNull(message = "groupId cannot be null")
-        @Positive(message = "groupId must be greater than 0")
-        Long groupId,
+        UUID groupId,
 
         @NotNull(message = "targetProgress cannot be null")
         @Positive(message = "targetProgress must be greater than 0")
@@ -23,8 +23,11 @@ public record GroupGoalsRequestDto(
         LocalDateTime targetDate,
 
         @NotNull(message = "averageProgress cannot be null")
-        @DecimalMin(value = "0.0", inclusive = true,
-                message = "averageProgress must be greater than or equal to 0")
+        @DecimalMin(
+                value = "0.0",
+                inclusive = true,
+                message = "averageProgress must be greater than or equal to 0"
+        )
         BigDecimal averageProgress,
 
         Boolean achieved

@@ -4,18 +4,19 @@ import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsRequestDto;
 import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsResponseDto;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface GroupGoalsService {
 
     GroupGoalsResponseDto save(GroupGoalsRequestDto groupGoalsRequestDto);
 
-    void delete(Long groupGoalsId);
+    void delete(UUID groupGoalsId);
 
-    GroupGoalsResponseDto update(Long groupGoalsId, GroupGoalsRequestDto groupGoalsRequestDto);
+    GroupGoalsResponseDto update(UUID groupGoalsId, GroupGoalsRequestDto groupGoalsRequestDto);
 
-    GroupGoalsResponseDto findById(Long groupGoalsId);
+    GroupGoalsResponseDto findById(UUID groupGoalsId);
 
     List<GroupGoalsResponseDto> findAll();
 
-    List<GroupGoalsResponseDto> findByGroupId(Long groupId);
+    List<GroupGoalsResponseDto> findByGroupId(UUID groupId);
 }

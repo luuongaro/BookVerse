@@ -1,4 +1,5 @@
 package com.grupo3.BookVerse.features.groups.GroupGoals.domain;
+
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -44,6 +45,9 @@ public class GroupGoalsEntity {
 
     @PrePersist
     public void prePersist() {
+        if (idExternal == null) {
+            idExternal = UUID.randomUUID();
+        }
         if (updatedAt == null) {
             updatedAt = LocalDateTime.now();
         }
