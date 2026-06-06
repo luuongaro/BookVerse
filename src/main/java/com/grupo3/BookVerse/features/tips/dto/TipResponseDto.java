@@ -13,8 +13,8 @@ import java.util.UUID;
 public class TipResponseDto {
 
     private UUID idExternal;
-    private Long senderUserId;
-    private Long receiverUserId;
+    private UUID senderUserId;
+    private UUID receiverUserId;
     private BigDecimal amount;
     private String message;
     private LocalDateTime createdAt;

@@ -11,10 +11,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface TipMapper {
 
-    // Maps only the simple fields from TipRequestDto to TipEntity.
-    // Ignores auto-generated fields and relationships,
-    // which are handled in the service layer.
-
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "idExternal", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -22,10 +18,9 @@ public interface TipMapper {
     @Mapping(target = "receiver", ignore = true)
     TipEntity toEntity(TipRequestDto dto);
 
-    @Mapping(target = "senderUserId", source = "sender.id")
-    @Mapping(target = "receiverUserId", source = "receiver.id")
+    @Mapping(target = "senderUserId", source = "sender.idExternal")
+    @Mapping(target = "receiverUserId", source = "receiver.idExternal")
     TipResponseDto toResponseDto(TipEntity tipEntity);
 
     List<TipResponseDto> toResponseDtoList(List<TipEntity> tips);
-
 }

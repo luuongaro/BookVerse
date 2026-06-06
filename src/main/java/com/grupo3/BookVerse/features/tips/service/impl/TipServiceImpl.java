@@ -10,9 +10,9 @@ import com.grupo3.BookVerse.features.tips.repository.TipRepository;
 import com.grupo3.BookVerse.features.tips.service.TipService;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,8 +33,8 @@ public class TipServiceImpl implements TipService {
             throw new BadRequestException("Sender and receiver cannot be the same user");
         }
 
-        UserEntity sender = findUserById(tipRequestDto.getSenderUserId());
-        UserEntity receiver = findUserById(tipRequestDto.getReceiverUserId());
+        UserEntity sender = findUserByIdExternal(tipRequestDto.getSenderUserId());
+        UserEntity receiver = findUserByIdExternal(tipRequestDto.getReceiverUserId());
 
         TipEntity tipEntity = tipMapper.toEntity(tipRequestDto);
         tipEntity.setSender(sender);
@@ -45,28 +45,32 @@ public class TipServiceImpl implements TipService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<TipResponseDto> getAllTips() {
         List<TipEntity> tips = tipRepository.findAllByOrderByCreatedAtDesc();
         return tipMapper.toResponseDtoList(tips);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public TipResponseDto getTipByIdExternal(UUID idExternal) {
         TipEntity tipEntity = findTipByIdExternal(idExternal);
         return tipMapper.toResponseDto(tipEntity);
     }
 
     @Override
-    public List<TipResponseDto> getTipsBySenderId(Long senderId) {
-        findUserById(senderId);
-        List<TipEntity> tips = tipRepository.findBySenderIdOrderByCreatedAtDesc(senderId);
+    @Transactional(readOnly = true)
+    public List<TipResponseDto> getTipsBySenderId(UUID senderId) {
+        findUserByIdExternal(senderId);
+        List<TipEntity> tips = tipRepository.findBySenderIdExternalOrderByCreatedAtDesc(senderId);
         return tipMapper.toResponseDtoList(tips);
     }
 
     @Override
-    public List<TipResponseDto> getTipsByReceiverId(Long receiverId) {
-        findUserById(receiverId);
-        List<TipEntity> tips = tipRepository.findByReceiverIdOrderByCreatedAtDesc(receiverId);
+    @Transactional(readOnly = true)
+    public List<TipResponseDto> getTipsByReceiverId(UUID receiverId) {
+        findUserByIdExternal(receiverId);
+        List<TipEntity> tips = tipRepository.findByReceiverIdExternalOrderByCreatedAtDesc(receiverId);
         return tipMapper.toResponseDtoList(tips);
     }
 
@@ -79,11 +83,15 @@ public class TipServiceImpl implements TipService {
 
     private TipEntity findTipByIdExternal(UUID idExternal) {
         return tipRepository.findByIdExternal(idExternal)
-                .orElseThrow(() -> new ResourceNotFoundException("Tip not found with idExternal: " + idExternal));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Tip not found with idExternal: " + idExternal)
+                );
     }
 
-    private UserEntity findUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+    private UserEntity findUserByIdExternal(UUID userId) {
+        return userRepository.findByIdExternal(userId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found with idExternal: " + userId)
+                );
     }
 }

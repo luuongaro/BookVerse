@@ -14,10 +14,9 @@ public interface TipService {
 
     TipResponseDto getTipByIdExternal(UUID idExternal);
 
-    List<TipResponseDto> getTipsBySenderId(Long senderId);
+    List<TipResponseDto> getTipsBySenderId(UUID senderId);
 
-    List<TipResponseDto> getTipsByReceiverId(Long receiverId);
+    List<TipResponseDto> getTipsByReceiverId(UUID receiverId);
 
     void deleteTip(UUID idExternal);
 }
-
