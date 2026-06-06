@@ -8,17 +8,17 @@ import com.grupo3.BookVerse.features.books.dto.BookResponseDto;
 import com.grupo3.BookVerse.features.books.mapper.BookMapper;
 import com.grupo3.BookVerse.features.books.repository.BookRepository;
 import com.grupo3.BookVerse.features.books.service.BookService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
@@ -26,66 +26,86 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
-    // Creates a new book after validating the ISBN is not already in use.
     public BookResponseDto createBook(BookRequestDto dto) {
 
         if (bookRepository.existsByIsbn(dto.getIsbn())) {
             throw new DuplicateResourceException("ISBN is already in use");
         }
 
-        BookEntity entity = bookMapper.toEntity(dto);
-        entity.setIdExternal(UUID.randomUUID());
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setUpdatedAt(LocalDateTime.now());
-        entity.setIsDeleted(false);
+        BookEntity book = bookMapper.toEntity(dto);
+
+        book.setIdExternal(UUID.randomUUID());
+        book.setCreatedAt(LocalDateTime.now());
+        book.setUpdatedAt(LocalDateTime.now());
+        book.setIsDeleted(false);
 
         try {
-            BookEntity saved = bookRepository.saveAndFlush(entity);
+            BookEntity saved = bookRepository.save(book);
             return bookMapper.toResponseDto(saved);
         } catch (DataIntegrityViolationException e) {
-            // Backstop for a concurrent insert that races past the check above
-            // and hits the UNIQUE constraint on isbn at the database level.
             throw new DuplicateResourceException("ISBN is already in use");
         }
     }
 
     @Override
-    // Retrieves all books and maps them to response DTOs.
+    @Transactional(readOnly = true)
     public List<BookResponseDto> getAllBooks() {
-        List<BookEntity> entities = bookRepository.findAll();
-        return bookMapper.toResponseDtoList(entities);
+
+        List<BookEntity> books =
+                bookRepository.findAll()
+                        .stream()
+                        .filter(book -> Boolean.FALSE.equals(book.getIsDeleted()))
+                        .toList();
+
+        return bookMapper.toResponseDtoList(books);
     }
 
     @Override
-    // Retrieves a book by external ID and maps it to a response DTO.
+    @Transactional(readOnly = true)
     public BookResponseDto getBookByIdExternal(UUID idExternal) {
-        BookEntity book = bookRepository.findByIdExternal(idExternal)
-                .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
+
+        BookEntity book = findBookByIdExternal(idExternal);
 
         return bookMapper.toResponseDto(book);
     }
 
     @Override
     @Transactional
-    // Updates an existing book after validating that it exists.
     public BookResponseDto updateBook(UUID idExternal, BookRequestDto dto) {
-        BookEntity existing = bookRepository.findByIdExternal(idExternal)
-                .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
+
+        BookEntity existing = findBookByIdExternal(idExternal);
 
         bookMapper.updateEntityFromDto(dto, existing);
+
         existing.setUpdatedAt(LocalDateTime.now());
 
         BookEntity saved = bookRepository.save(existing);
+
         return bookMapper.toResponseDto(saved);
     }
 
     @Override
     @Transactional
-    // Deletes a book by external ID after validating that it exists.
     public void deleteBook(UUID idExternal) {
-        BookEntity existing = bookRepository.findByIdExternal(idExternal)
-                .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
 
-        bookRepository.delete(existing);
+        BookEntity existing = findBookByIdExternal(idExternal);
+
+        existing.setIsDeleted(true);
+        existing.setUpdatedAt(LocalDateTime.now());
+
+        bookRepository.save(existing);
+    }
+
+    private BookEntity findBookByIdExternal(UUID idExternal) {
+
+        return bookRepository.findByIdExternal(idExternal)
+                .filter(book -> Boolean.FALSE.equals(book.getIsDeleted()))
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Book not found with idExternal: " + idExternal
+                        )
+                );
     }
 }
+
+
