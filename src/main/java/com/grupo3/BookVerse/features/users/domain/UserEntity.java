@@ -41,10 +41,6 @@ public class UserEntity {
     @Column(unique = true, nullable = false)
     private String email;
 
-    //el campo se llama passwordHash,
-    //password = contraseña sin procesar
-    //passwordHash = contraseña ya hasheada
-    // pero por ahora funciona como placeholder hasta implementar seguridad real
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 

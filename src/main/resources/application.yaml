@@ -2,7 +2,7 @@ spring:
   application:
     name: BookVerse
   datasource:
-    url: jdbc:postgresql://localhost:5432/bookVerse
+    url: ${BOOKS_VERSE_URL}
     username: ${DB_USER}
     password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
