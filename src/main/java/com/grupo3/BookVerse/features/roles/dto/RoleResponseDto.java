@@ -11,12 +11,14 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
 public class RoleResponseDto {
 
-    private Long id;
     private UUID idExternal;
+
     private String name;
-    private Integer usersCount; // to find out how many users there are with "x" role
+
+    // Number of users assigned to this role
+    private Integer usersCount;
 
 }
+
