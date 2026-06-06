@@ -10,7 +10,7 @@ import com.grupo3.BookVerse.features.chapters.repository.ChapterRepository;
 import com.grupo3.BookVerse.features.chapters.service.ChapterService;
 import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
 import com.grupo3.BookVerse.features.stories.repository.StoryRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +46,7 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     // Retrieves all non-deleted chapters ordered by creation date descending.
+    @Transactional(readOnly = true)
     public List<ChapterResponseDto> getAllChapters() {
         return chapterRepository.findByIsDeletedFalseOrderByCreatedAtDesc().stream()
                 .map(chapterMapper::toResponseDto)
@@ -54,6 +55,7 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     // Retrieves a chapter by its external ID and maps it to a response DTO.
+    @Transactional(readOnly = true)
     public ChapterResponseDto getChapterByIdExternal(UUID idExternal) {
         ChapterEntity chapter = chapterRepository.findByIdExternalAndIsDeletedFalse(idExternal)
                 .orElseThrow(() -> new ResourceNotFoundException("Chapter not found"));
@@ -63,6 +65,7 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     // Retrieves all non-deleted chapters of a story ordered by chapter number ascending.
+    @Transactional(readOnly = true)
     public List<ChapterResponseDto> getChaptersByStoryId(UUID storyId) {
         StoryEntity story = storyRepository.findByIdExternalAndIsDeletedFalse(storyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Story not found"));
