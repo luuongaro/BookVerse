@@ -11,9 +11,9 @@ import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEnt
 import com.grupo3.BookVerse.features.groups.readingGroups.repository.ReadingGroupRepository;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -50,6 +50,7 @@ public class GroupProgressServiceImpl implements GroupProgressService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<GroupProgressResponseDto> getAllProgress() {
         List<GroupProgressEntity> list =
                 groupProgressRepository.findAllByOrderByUpdatedAtDesc();
@@ -60,15 +61,19 @@ public class GroupProgressServiceImpl implements GroupProgressService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public GroupProgressResponseDto getProgressByIdExternal(UUID idExternal) {
         GroupProgressEntity progress = findProgressByExternalId(idExternal);
         return groupProgressMapper.toResponseDto(progress);
     }
 
     @Override
-    public List<GroupProgressResponseDto> getProgressByGroupId(Long groupId) {
+    @Transactional(readOnly = true)
+    public List<GroupProgressResponseDto> getProgressByGroupId(UUID groupId) {
+        ReadingGroupEntity group = findGroupByExternalId(groupId);
+
         List<GroupProgressEntity> list =
-                groupProgressRepository.findByGroupIdOrderByUpdatedAtDesc(groupId);
+                groupProgressRepository.findByGroupIdOrderByUpdatedAtDesc(group.getId());
 
         return list.stream()
                 .map(groupProgressMapper::toResponseDto)
@@ -76,9 +81,12 @@ public class GroupProgressServiceImpl implements GroupProgressService {
     }
 
     @Override
-    public List<GroupProgressResponseDto> getProgressByUserId(Long userId) {
+    @Transactional(readOnly = true)
+    public List<GroupProgressResponseDto> getProgressByUserId(UUID userId) {
+        UserEntity user = findUserByExternalId(userId);
+
         List<GroupProgressEntity> list =
-                groupProgressRepository.findByUserIdOrderByUpdatedAtDesc(userId);
+                groupProgressRepository.findByUserIdOrderByUpdatedAtDesc(user.getId());
 
         return list.stream()
                 .map(groupProgressMapper::toResponseDto)
@@ -91,8 +99,6 @@ public class GroupProgressServiceImpl implements GroupProgressService {
         GroupProgressEntity progress = findProgressByExternalId(idExternal);
         groupProgressRepository.delete(progress);
     }
-
-
 
     private GroupProgressEntity findProgressByExternalId(UUID idExternal) {
         return groupProgressRepository.findByIdExternal(idExternal)
@@ -111,6 +117,4 @@ public class GroupProgressServiceImpl implements GroupProgressService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "User not found with idExternal: " + userExternalId));
     }
-
-
 }
