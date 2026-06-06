@@ -14,9 +14,9 @@ public interface ReadingGroupService {
 
     ReadingGroupResponseDto getGroupByIdExternal(UUID idExternal);
 
-    List<ReadingGroupResponseDto> getGroupsByBookId(UUID bookId);
+    List<ReadingGroupResponseDto> getGroupsByBookIdExternal(UUID bookId);
 
-    List<ReadingGroupResponseDto> getGroupsByUserId(UUID userId);
+    List<ReadingGroupResponseDto> getGroupsByUserIdExternal(UUID userId);
 
     ReadingGroupResponseDto updateGroup(UUID idExternal, ReadingGroupRequestDto dto);
 

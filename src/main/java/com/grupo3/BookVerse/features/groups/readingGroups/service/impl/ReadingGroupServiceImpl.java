@@ -11,9 +11,9 @@ import com.grupo3.BookVerse.features.groups.readingGroups.repository.ReadingGrou
 import com.grupo3.BookVerse.features.groups.readingGroups.service.ReadingGroupService;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -43,18 +43,21 @@ public class ReadingGroupServiceImpl implements ReadingGroupService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ReadingGroupResponseDto> getAllGroups() {
         return mapper.toResponseDtoList(repository.findAll());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ReadingGroupResponseDto getGroupByIdExternal(UUID idExternal) {
         ReadingGroupEntity entity = findGroupByIdExternal(idExternal);
         return mapper.toResponseDto(entity);
     }
 
     @Override
-    public List<ReadingGroupResponseDto> getGroupsByBookId(UUID bookId) {
+    @Transactional(readOnly = true)
+    public List<ReadingGroupResponseDto> getGroupsByBookIdExternal(UUID bookId) {
 
         findBookById(bookId);
 
@@ -65,7 +68,8 @@ public class ReadingGroupServiceImpl implements ReadingGroupService {
     }
 
     @Override
-    public List<ReadingGroupResponseDto> getGroupsByUserId(UUID userId) {
+    @Transactional(readOnly = true)
+    public List<ReadingGroupResponseDto> getGroupsByUserIdExternal(UUID userId) {
 
         findUserById(userId);
 
@@ -100,22 +104,27 @@ public class ReadingGroupServiceImpl implements ReadingGroupService {
         repository.delete(entity);
     }
 
-
     private ReadingGroupEntity findGroupByIdExternal(UUID idExternal) {
         return repository.findByIdExternal(idExternal)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("ReadingGroup not found with idExternal: " + idExternal));
+                        new ResourceNotFoundException(
+                                "Reading group not found with idExternal: " + idExternal
+                        ));
     }
 
     private BookEntity findBookById(UUID idExternal) {
         return bookRepository.findByIdExternal(idExternal)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Book not found with idExternal: " + idExternal));
+                        new ResourceNotFoundException(
+                                "Book not found with idExternal: " + idExternal
+                        ));
     }
 
     private UserEntity findUserById(UUID idExternal) {
         return userRepository.findByIdExternal(idExternal)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found with idExternal: " + idExternal));
+                        new ResourceNotFoundException(
+                                "User not found with idExternal: " + idExternal
+                        ));
     }
 }
