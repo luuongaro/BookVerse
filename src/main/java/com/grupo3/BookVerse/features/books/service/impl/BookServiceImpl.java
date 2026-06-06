@@ -37,7 +37,7 @@ public class BookServiceImpl implements BookService {
         book.setIdExternal(UUID.randomUUID());
         book.setCreatedAt(LocalDateTime.now());
         book.setUpdatedAt(LocalDateTime.now());
-        book.setIsDeleted(false);
+        book.setDeleted(false);
 
         try {
             BookEntity saved = bookRepository.save(book);
@@ -50,22 +50,13 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public List<BookResponseDto> getAllBooks() {
-
-        List<BookEntity> books =
-                bookRepository.findAll()
-                        .stream()
-                        .filter(book -> Boolean.FALSE.equals(book.getIsDeleted()))
-                        .toList();
-
-        return bookMapper.toResponseDtoList(books);
+        return bookMapper.toResponseDtoList(bookRepository.findByDeletedFalse());
     }
 
     @Override
     @Transactional(readOnly = true)
     public BookResponseDto getBookByIdExternal(UUID idExternal) {
-
         BookEntity book = findBookByIdExternal(idExternal);
-
         return bookMapper.toResponseDto(book);
     }
 
@@ -75,8 +66,11 @@ public class BookServiceImpl implements BookService {
 
         BookEntity existing = findBookByIdExternal(idExternal);
 
-        bookMapper.updateEntityFromDto(dto, existing);
+        if (!existing.getIsbn().equals(dto.getIsbn()) && bookRepository.existsByIsbn(dto.getIsbn())) {
+            throw new DuplicateResourceException("ISBN is already in use");
+        }
 
+        bookMapper.updateEntityFromDto(dto, existing);
         existing.setUpdatedAt(LocalDateTime.now());
 
         BookEntity saved = bookRepository.save(existing);
@@ -90,16 +84,15 @@ public class BookServiceImpl implements BookService {
 
         BookEntity existing = findBookByIdExternal(idExternal);
 
-        existing.setIsDeleted(true);
+        existing.setDeleted(true);
         existing.setUpdatedAt(LocalDateTime.now());
 
         bookRepository.save(existing);
     }
 
     private BookEntity findBookByIdExternal(UUID idExternal) {
-
         return bookRepository.findByIdExternal(idExternal)
-                .filter(book -> Boolean.FALSE.equals(book.getIsDeleted()))
+                .filter(book -> Boolean.FALSE.equals(book.getDeleted()))
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Book not found with idExternal: " + idExternal
@@ -107,5 +100,3 @@ public class BookServiceImpl implements BookService {
                 );
     }
 }
-
-

@@ -24,7 +24,7 @@ public class BookResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private Set<Long> authorIds;
+    private Set<UUID> authorIds;
     private Set<String> authorNames;
     private Integer readingGroupsCount;
     private Integer readingStatusesCount;

@@ -13,6 +13,7 @@ import org.mapstruct.MappingTarget;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
@@ -28,7 +29,7 @@ public interface BookMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "idExternal", ignore = true)
-    @Mapping(target = "isDeleted", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "readingGroups", ignore = true)
@@ -38,15 +39,19 @@ public interface BookMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "idExternal", ignore = true)
-    @Mapping(target = "isDeleted", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "readingGroups", ignore = true)
     @Mapping(target = "readingStatuses", ignore = true)
     @Mapping(target = "authors", expression = "java(mapAuthors(bookRequestDto.getAuthorIds()))")
-    void updateEntityFromDto(BookRequestDto bookRequestDto, @MappingTarget BookEntity bookEntity);
+    void updateEntityFromDto(
+            BookRequestDto bookRequestDto,
+            @MappingTarget BookEntity bookEntity
+    );
 
-    default Set<AuthorEntity> mapAuthors(Set<Long> authorIds) {
+    default Set<AuthorEntity> mapAuthors(Set<UUID> authorIds) {
+
         if (authorIds == null || authorIds.isEmpty()) {
             return Collections.emptySet();
         }
@@ -56,27 +61,31 @@ public interface BookMapper {
                 .collect(Collectors.toSet());
     }
 
-    default AuthorEntity mapAuthor(Long authorId) {
+    default AuthorEntity mapAuthor(UUID authorId) {
+
         if (authorId == null) {
             return null;
         }
 
         AuthorEntity author = new AuthorEntity();
-        author.setId(authorId);
+        author.setIdExternal(authorId);
+
         return author;
     }
 
-    default Set<Long> mapAuthorIds(Set<AuthorEntity> authors) {
+    default Set<UUID> mapAuthorIds(Set<AuthorEntity> authors) {
+
         if (authors == null || authors.isEmpty()) {
             return Collections.emptySet();
         }
 
         return authors.stream()
-                .map(AuthorEntity::getId)
+                .map(AuthorEntity::getIdExternal)
                 .collect(Collectors.toSet());
     }
 
     default Set<String> mapAuthorNames(Set<AuthorEntity> authors) {
+
         if (authors == null || authors.isEmpty()) {
             return Collections.emptySet();
         }

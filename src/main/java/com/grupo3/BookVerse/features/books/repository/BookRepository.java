@@ -1,9 +1,9 @@
 package com.grupo3.BookVerse.features.books.repository;
 
-
 import com.grupo3.BookVerse.features.books.domain.BookEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,4 +13,5 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
 
     boolean existsByIsbn(String isbn);
 
+    List<BookEntity> findByDeletedFalse();
 }

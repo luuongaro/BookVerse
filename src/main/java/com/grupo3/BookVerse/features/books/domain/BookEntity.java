@@ -40,7 +40,7 @@ public class BookEntity {
     private String genre;
 
     @Column(nullable = false)
-    private Boolean isDeleted;
+    private Boolean deleted;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
