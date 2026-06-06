@@ -17,6 +17,8 @@ import com.grupo3.BookVerse.features.users.repository.UserRepository;
 import lombok.AllArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 import java.util.UUID;
@@ -35,6 +37,7 @@ public class ReviewReportServiceImpl implements ReviewReportService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public List<ReviewReportResponseDto> getAllReports() {
 
         return reviewReportRepository.findAll()
@@ -44,6 +47,7 @@ public class ReviewReportServiceImpl implements ReviewReportService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ReviewReportResponseDto getReportById(UUID reportId) {
 
         return reviewReportRepository.findByIdExternal(reportId)
@@ -56,6 +60,7 @@ public class ReviewReportServiceImpl implements ReviewReportService {
     }
 
     @Override
+    @Transactional
     public ReviewReportResponseDto save(ReviewReportRequestDto reviewReportRequestDto) {
 
         ReviewReportEntity toBeSaved = reviewReportMapper.toEntity(reviewReportRequestDto);
@@ -90,6 +95,7 @@ public class ReviewReportServiceImpl implements ReviewReportService {
     }
 
     @Override
+    @Transactional
     public void delete(UUID reportId) {
 
         ReviewReportEntity toBeDeleted =
