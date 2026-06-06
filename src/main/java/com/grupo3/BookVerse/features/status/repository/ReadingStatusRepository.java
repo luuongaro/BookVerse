@@ -15,9 +15,4 @@ public interface ReadingStatusRepository extends JpaRepository<ReadingStatusEnti
 
     List<ReadingStatusEntity> findByUserIdExternal(UUID userId);
 
-    List<ReadingStatusEntity> findByUserIdExternalAndStatus(
-            UUID userId,
-            ReadingStatusEnum status
-    );
-
 }
