@@ -16,13 +16,11 @@ public interface GroupCommentMapper {
     @Mapping(target = "idExternal", ignore = true)
     @Mapping(target = "group", ignore = true)
     @Mapping(target = "user", ignore = true)
-    @Mapping(target = "isHidden", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     GroupCommentEntity toEntity(GroupCommentRequestDto dto);
 
     @Mapping(target = "groupId", source = "group.idExternal")
     @Mapping(target = "userId", source = "user.idExternal")
-    @Mapping(target = "hidden", source = "hidden")
     GroupCommentResponseDto toResponseDto(GroupCommentEntity comment);
 
     List<GroupCommentResponseDto> toResponseDtoList(List<GroupCommentEntity> comments);

@@ -12,7 +12,7 @@ import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEnt
 import com.grupo3.BookVerse.features.groups.readingGroups.repository.ReadingGroupRepository;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -53,6 +53,7 @@ public class GroupCommentServiceImpl implements GroupCommentService {
     }
 
     @Override
+    @Transactional (readOnly = true)
     public List<GroupCommentResponseDto> findAll() {
 
         List<GroupCommentEntity> comments =
@@ -62,6 +63,7 @@ public class GroupCommentServiceImpl implements GroupCommentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public GroupCommentResponseDto findById(UUID commentId) {
 
         GroupCommentEntity comment =
@@ -112,6 +114,7 @@ public class GroupCommentServiceImpl implements GroupCommentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<GroupCommentResponseDto> findByGroupId(UUID groupId) {
 
         findGroupByIdExternal(groupId);
@@ -124,6 +127,7 @@ public class GroupCommentServiceImpl implements GroupCommentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<GroupCommentResponseDto> findByUserId(UUID userId) {
 
         findUserByIdExternal(userId);
@@ -154,6 +158,7 @@ public class GroupCommentServiceImpl implements GroupCommentService {
                                 "Reading group not found with idExternal: " + groupId
                         ));
     }
+
 
     private UserEntity findUserByIdExternal(UUID userId) {
 
