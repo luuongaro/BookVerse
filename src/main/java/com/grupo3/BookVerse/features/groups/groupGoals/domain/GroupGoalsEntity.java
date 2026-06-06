@@ -1,0 +1,63 @@
+package com.grupo3.BookVerse.features.groups.GroupGoals.domain;
+
+import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Entity
+@Table(name = "group_goals")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class GroupGoalsEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "id_external", unique = true, nullable = false)
+    private UUID idExternal;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "group_id", nullable = false)
+    private ReadingGroupEntity group;
+
+    @Column(name = "target_progress", nullable = false)
+    private Integer targetProgress;
+
+    @Column(name = "target_date", nullable = false)
+    private LocalDateTime targetDate;
+
+    @Column(name = "average_progress", nullable = false, precision = 5, scale = 2)
+    private BigDecimal averageProgress;
+
+    @Column(name = "is_achieved", nullable = false)
+    private Boolean achieved = false;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        if (idExternal == null) {
+            idExternal = UUID.randomUUID();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
+        if (achieved == null) {
+            achieved = false;
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+}
