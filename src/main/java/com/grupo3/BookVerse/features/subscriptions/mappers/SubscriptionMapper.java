@@ -1,6 +1,7 @@
 package com.grupo3.BookVerse.features.subscriptions.mappers;
 
 import com.grupo3.BookVerse.features.subscriptions.domain.SubscriptionEntity;
+import com.grupo3.BookVerse.features.subscriptions.domain.SubscriptionType;
 import com.grupo3.BookVerse.features.subscriptions.dto.SubscriptionRequestDto;
 import com.grupo3.BookVerse.features.subscriptions.dto.SubscriptionResponseDto;
 import org.mapstruct.Mapper;
@@ -8,7 +9,7 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", imports = SubscriptionEntity.class)
+@Mapper(componentModel = "spring", imports = SubscriptionType.class)
 public interface SubscriptionMapper {
 
     @Mapping(target = "id", ignore = true)
@@ -16,7 +17,7 @@ public interface SubscriptionMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "users", ignore = true)
-    @Mapping(target = "type", expression = "java(dto.getType() != null ? SubscriptionEntity.SubscriptionType.valueOf(dto.getType()) : null)")
+    @Mapping(target = "type", expression = "java(dto.getType() != null ? SubscriptionType.valueOf(dto.getType()) : null)")
     SubscriptionEntity toEntity(SubscriptionRequestDto dto);
 
     @Mapping(target = "type", expression = "java(entity.getType() != null ? entity.getType().name() : null)")
