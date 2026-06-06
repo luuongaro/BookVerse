@@ -33,14 +33,15 @@ public class GroupCommentEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(name = "progress_milestone")
     private Integer progressMilestone;
 
+    @Builder.Default
     @Column(name = "is_hidden", nullable = false)
-    private boolean isHidden;
+    private boolean hidden = false;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
