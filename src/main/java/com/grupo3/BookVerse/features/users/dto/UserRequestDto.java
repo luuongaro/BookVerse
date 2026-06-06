@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+import java.util.UUID;
+
 
 public record UserRequestDto(
 
@@ -30,5 +32,5 @@ public record UserRequestDto(
         String password,
 
         @NotNull(message = "Subscription id is required.")
-        Long subscriptionId
+        UUID subscriptionId
 ) {}
