@@ -1,7 +1,7 @@
 package com.grupo3.BookVerse.features.subscriptions.service.impl;
 
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
-import com.grupo3.BookVerse.features.subscriptions.SubscriptionRepository;
+import com.grupo3.BookVerse.features.subscriptions.repository.SubscriptionRepository;
 import com.grupo3.BookVerse.features.subscriptions.domain.SubscriptionEntity;
 import com.grupo3.BookVerse.features.subscriptions.dto.SubscriptionRequestDto;
 import com.grupo3.BookVerse.features.subscriptions.dto.SubscriptionResponseDto;

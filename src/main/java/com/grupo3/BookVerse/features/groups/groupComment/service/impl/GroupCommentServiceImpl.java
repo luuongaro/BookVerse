@@ -57,7 +57,7 @@ public class GroupCommentServiceImpl implements GroupCommentService {
     public List<GroupCommentResponseDto> findAll() {
 
         List<GroupCommentEntity> comments =
-                groupCommentRepository.findByIsHiddenFalseOrderByCreatedAtDesc();
+                groupCommentRepository.findByHiddenFalseOrderByCreatedAtDesc();
 
         return groupCommentMapper.toResponseDtoList(comments);
     }
@@ -121,7 +121,7 @@ public class GroupCommentServiceImpl implements GroupCommentService {
 
         List<GroupCommentEntity> comments =
                 groupCommentRepository
-                        .findByGroupIdExternalAndIsHiddenFalseOrderByCreatedAtAsc(groupId);
+                        .findByGroupIdExternalAndHiddenFalseOrderByCreatedAtAsc(groupId);
 
         return groupCommentMapper.toResponseDtoList(comments);
     }
@@ -134,7 +134,7 @@ public class GroupCommentServiceImpl implements GroupCommentService {
 
         List<GroupCommentEntity> comments =
                 groupCommentRepository
-                        .findByUserIdExternalAndIsHiddenFalseOrderByCreatedAtDesc(userId);
+                        .findByUserIdExternalAndHiddenFalseOrderByCreatedAtDesc(userId);
 
         return groupCommentMapper.toResponseDtoList(comments);
     }
@@ -142,7 +142,7 @@ public class GroupCommentServiceImpl implements GroupCommentService {
     private GroupCommentEntity findActiveCommentByIdExternal(UUID idExternal) {
 
         return groupCommentRepository
-                .findByIdExternalAndIsHiddenFalse(idExternal)
+                .findByIdExternalAndHiddenFalse(idExternal)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Group comment not found with idExternal: " + idExternal
