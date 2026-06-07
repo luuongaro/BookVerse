@@ -1,10 +1,10 @@
 package com.grupo3.BookVerse.auth.authController;
+
 import com.grupo3.BookVerse.auth.authService.AuthService;
 import com.grupo3.BookVerse.auth.dtos.AuthRequest;
 import com.grupo3.BookVerse.auth.dtos.AuthResponse;
 import com.grupo3.BookVerse.auth.dtos.RegisterRequest;
 import com.grupo3.BookVerse.features.users.dto.UserResponseDto;
-import com.grupo3.BookVerse.features.users.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
-    private final UserService userService;
 
     @PostMapping("/login")
     @Operation(
@@ -64,7 +63,6 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(authService.register(registerRequest));
     }
-
 
 
 }

@@ -28,7 +28,7 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private Long jwtExpiration;
 
-
+    // In BookVerse, the JWT subject is the user's email
     public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
     }
