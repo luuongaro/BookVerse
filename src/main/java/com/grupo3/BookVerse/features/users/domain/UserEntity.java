@@ -56,16 +56,6 @@ public class UserEntity implements UserDetails {
     @Column(name = "status", nullable = false)
     private UserStatus status;
 
-    @PrePersist
-    protected void onCreate() {
-        if (idExternal == null) {
-            idExternal = UUID.randomUUID();
-        }
-        if (status == null) {
-            status = UserStatus.ACTIVE;
-        }
-    }
-
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -110,6 +100,16 @@ public class UserEntity implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ReadingStatusEntity> readingStatuses = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        if (idExternal == null) {
+            idExternal = UUID.randomUUID();
+        }
+        if (status == null) {
+            status = UserStatus.ACTIVE;
+        }
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
