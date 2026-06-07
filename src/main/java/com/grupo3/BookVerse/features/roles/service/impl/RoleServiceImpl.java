@@ -13,11 +13,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
+
+    private static final Set<String> ALLOWED_ROLES = Set.of(
+            "ROLE_ADMIN",
+            "ROLE_MODERATOR",
+            "ROLE_USER"
+    );
 
     private final RoleRepository roleRepository;
     private final RoleMapper roleMapper;
@@ -26,8 +33,7 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     public RoleResponseDto createRole(RoleRequestDto roleRequestDto) {
 
-        String name =
-                roleRequestDto.getName().trim().toUpperCase();
+        String name = normalizeAndValidateRoleName(roleRequestDto.getName());
 
         if (roleRepository.existsByNameIgnoreCase(name)) {
             throw new DuplicateResourceException(
@@ -35,13 +41,10 @@ public class RoleServiceImpl implements RoleService {
             );
         }
 
-        RoleEntity role =
-                roleMapper.toEntity(roleRequestDto);
-
+        RoleEntity role = roleMapper.toEntity(roleRequestDto);
         role.setName(name);
 
-        RoleEntity saved =
-                roleRepository.save(role);
+        RoleEntity saved = roleRepository.save(role);
 
         return roleMapper.toResponseDto(saved);
     }
@@ -49,20 +52,14 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(readOnly = true)
     public List<RoleResponseDto> getAllRoles() {
-
-        List<RoleEntity> roles =
-                roleRepository.findAll();
-
+        List<RoleEntity> roles = roleRepository.findAll();
         return roleMapper.toResponseDtoList(roles);
     }
 
     @Override
     @Transactional(readOnly = true)
     public RoleResponseDto getRoleByIdExternal(UUID idExternal) {
-
-        RoleEntity role =
-                findRoleByIdExternal(idExternal);
-
+        RoleEntity role = findRoleByIdExternal(idExternal);
         return roleMapper.toResponseDto(role);
     }
 
@@ -70,11 +67,9 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     public RoleResponseDto updateRole(UUID idExternal, RoleRequestDto roleRequestDto) {
 
-        RoleEntity existing =
-                findRoleByIdExternal(idExternal);
+        RoleEntity existing = findRoleByIdExternal(idExternal);
 
-        String name =
-                roleRequestDto.getName().trim().toUpperCase();
+        String name = normalizeAndValidateRoleName(roleRequestDto.getName());
 
         if (roleRepository.existsByNameIgnoreCase(name)
                 && !existing.getName().equalsIgnoreCase(name)) {
@@ -86,8 +81,7 @@ public class RoleServiceImpl implements RoleService {
 
         existing.setName(name);
 
-        RoleEntity updated =
-                roleRepository.save(existing);
+        RoleEntity updated = roleRepository.save(existing);
 
         return roleMapper.toResponseDto(updated);
     }
@@ -95,35 +89,45 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     public void deleteRole(UUID idExternal) {
-
-        RoleEntity role =
-                findRoleByIdExternal(idExternal);
-
+        RoleEntity role = findRoleByIdExternal(idExternal);
         roleRepository.delete(role);
     }
 
     @Override
     @Transactional(readOnly = true)
     public RoleResponseDto getRoleByName(String name) {
+        String normalizedName = normalizeAndValidateRoleName(name);
 
-        RoleEntity role =
-                roleRepository.findByNameIgnoreCase(name)
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Role not found with name: " + name
-                                )
-                        );
+        RoleEntity role = roleRepository.findByNameIgnoreCase(normalizedName)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Role not found with name: " + normalizedName
+                        )
+                );
 
         return roleMapper.toResponseDto(role);
     }
 
     private RoleEntity findRoleByIdExternal(UUID idExternal) {
-
         return roleRepository.findByIdExternal(idExternal)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Role not found with idExternal: " + idExternal
                         )
                 );
+    }
+
+    private String normalizeAndValidateRoleName(String roleName) {
+        String normalizedRoleName = roleName.trim().toUpperCase();
+
+        if (!normalizedRoleName.startsWith("ROLE_")) {
+            normalizedRoleName = "ROLE_" + normalizedRoleName;
+        }
+
+        if (!ALLOWED_ROLES.contains(normalizedRoleName)) {
+            throw new IllegalArgumentException("Invalid role name: " + normalizedRoleName);
+        }
+
+        return normalizedRoleName;
     }
 }

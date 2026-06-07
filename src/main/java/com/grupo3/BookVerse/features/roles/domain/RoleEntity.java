@@ -4,18 +4,17 @@ import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table (name = "roles")
+@Table(name = "roles")
 @Getter
 @Setter
 @AllArgsConstructor
-@Builder
 @NoArgsConstructor
-
+@Builder
 public class RoleEntity {
 
     @Id
@@ -29,7 +28,8 @@ public class RoleEntity {
     private String name;
 
     @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
-    private List<UserEntity> users = new ArrayList<>();
+    @Builder.Default
+    private Set<UserEntity> users = new HashSet<>();
 
     @PrePersist
     protected void onCreate() {

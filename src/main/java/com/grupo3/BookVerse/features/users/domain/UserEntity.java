@@ -14,9 +14,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "users")
@@ -71,16 +69,14 @@ public class UserEntity {
     @Column(name="updated_at")
     private LocalDateTime updatedAt;
 
-
-    //Associations:
-
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "role_users",
             joinColumns = @JoinColumn(name = "user_id", nullable = false),
             inverseJoinColumns = @JoinColumn(name = "role_id", nullable = false)
     )
-    private List<RoleEntity> roles = new ArrayList<>();
+    @Builder.Default
+    private Set<RoleEntity> roles = new HashSet<>();
 
 
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
