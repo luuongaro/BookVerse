@@ -12,6 +12,7 @@ import java.util.UUID;
 public interface SubscriptionRepository extends JpaRepository<SubscriptionEntity, Long> {
 
     Optional<SubscriptionEntity> findByIdExternal(UUID idExternal);
+
     boolean existsByType(SubscriptionType type);
 
     Optional<SubscriptionEntity> findByType(SubscriptionType type);

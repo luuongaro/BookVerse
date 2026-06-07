@@ -42,7 +42,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt = authHeader.substring(7);
 
         try {
-
             final String email = jwtService.extractEmail(jwt);
 
             Authentication authentication =
@@ -73,28 +72,41 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
         } catch (JwtException exception) {
+            writeUnauthorizedResponse(response, request, "Invalid or expired JWT token");
+            return;
 
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-
-            response.getWriter().write(
-                    String.format(
-                            """
-                            {
-                                "error":"Invalid or expired JWT token",
-                                "status":%d,
-                                "path":"%s"
-                            }
-                            """,
-                            HttpServletResponse.SC_UNAUTHORIZED,
-                            request.getRequestURI()
-                    )
-            );
-
-            response.getWriter().flush();
+        } catch (Exception exception) {
+            writeUnauthorizedResponse(response, request, "Authentication error");
             return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void writeUnauthorizedResponse(
+            HttpServletResponse response,
+            HttpServletRequest request,
+            String message
+    ) throws IOException {
+
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+
+        response.getWriter().write(
+                String.format(
+                        """
+                        {
+                            "error":"%s",
+                            "status":%d,
+                            "path":"%s"
+                        }
+                        """,
+                        message,
+                        HttpServletResponse.SC_UNAUTHORIZED,
+                        request.getRequestURI()
+                )
+        );
+
+        response.getWriter().flush();
     }
 }

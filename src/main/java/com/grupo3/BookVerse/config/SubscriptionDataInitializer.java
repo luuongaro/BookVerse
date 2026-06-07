@@ -39,7 +39,7 @@ public class SubscriptionDataInitializer implements CommandLineRunner {
                     .maxStoriesPublished(type == SubscriptionType.FREE ? 5 : Integer.MAX_VALUE)
                     .advancedStatsEnabled(type == SubscriptionType.PREMIUM)
                     .startDate(LocalDateTime.now())
-                    .endDate(LocalDateTime.of(2099, 12, 31, 23, 59))
+                    .endDate(null)
                     .build();
 
             subscriptionRepository.save(subscription);
