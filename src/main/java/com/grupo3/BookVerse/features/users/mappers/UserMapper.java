@@ -28,6 +28,7 @@ public interface UserMapper {
     @Mapping(target = "readingStatuses", ignore = true)
     UserEntity toEntity(UserRequestDto dto);
 
+    @Mapping(target = "username", expression = "java(user.getProfileUsername())")
     @Mapping(target = "status", expression = "java(user.getStatus() != null ? user.getStatus().name() : null)")
     UserResponseDto toResponseDto(UserEntity user);
 
