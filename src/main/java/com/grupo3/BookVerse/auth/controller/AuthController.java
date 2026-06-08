@@ -1,9 +1,9 @@
 package com.grupo3.BookVerse.auth.controller;
 
-import com.grupo3.BookVerse.auth.service.AuthService;
 import com.grupo3.BookVerse.auth.dtos.AuthRequest;
 import com.grupo3.BookVerse.auth.dtos.AuthResponse;
 import com.grupo3.BookVerse.auth.dtos.RegisterRequest;
+import com.grupo3.BookVerse.auth.service.AuthService;
 import com.grupo3.BookVerse.features.users.dto.UserResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,7 +14,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")

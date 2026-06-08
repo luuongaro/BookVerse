@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.groups.GroupGoals.domain;
+package com.grupo3.BookVerse.features.groups.groupGoals.domain;
 
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import jakarta.persistence.*;

@@ -1,12 +1,12 @@
-package com.grupo3.BookVerse.features.groups.GroupGoals.service.impl;
+package com.grupo3.BookVerse.features.groups.groupGoals.service.impl;
 
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
-import com.grupo3.BookVerse.features.groups.GroupGoals.domain.GroupGoalsEntity;
-import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsRequestDto;
-import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsResponseDto;
-import com.grupo3.BookVerse.features.groups.GroupGoals.mappers.GroupGoalsMapper;
-import com.grupo3.BookVerse.features.groups.GroupGoals.repository.GroupGoalsRepository;
-import com.grupo3.BookVerse.features.groups.GroupGoals.service.GroupGoalsService;
+import com.grupo3.BookVerse.features.groups.groupGoals.domain.GroupGoalsEntity;
+import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsRequestDto;
+import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsResponseDto;
+import com.grupo3.BookVerse.features.groups.groupGoals.mappers.GroupGoalsMapper;
+import com.grupo3.BookVerse.features.groups.groupGoals.repository.GroupGoalsRepository;
+import com.grupo3.BookVerse.features.groups.groupGoals.service.GroupGoalsService;
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import com.grupo3.BookVerse.features.groups.readingGroups.repository.ReadingGroupRepository;
 import lombok.RequiredArgsConstructor;

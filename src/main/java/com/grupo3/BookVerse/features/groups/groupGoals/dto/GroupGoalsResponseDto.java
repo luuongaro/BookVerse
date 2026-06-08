@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.groups.GroupGoals.dto;
+package com.grupo3.BookVerse.features.groups.groupGoals.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
