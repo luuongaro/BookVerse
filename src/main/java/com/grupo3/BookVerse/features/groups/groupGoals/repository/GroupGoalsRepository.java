@@ -1,6 +1,6 @@
-package com.grupo3.BookVerse.features.groups.GroupGoals.repository;
+package com.grupo3.BookVerse.features.groups.groupGoals.repository;
 
-import com.grupo3.BookVerse.features.groups.GroupGoals.domain.GroupGoalsEntity;
+import com.grupo3.BookVerse.features.groups.groupGoals.domain.GroupGoalsEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
