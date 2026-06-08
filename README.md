@@ -204,12 +204,16 @@ All remaining API endpoints require a valid JWT token.
 
 ### JWT Authentication Flow
 
-1. User registers or logs1. User registers or logs in
-
-``http
-Authorization: Bearer <token>
-2. Backend validates credentials
+1. User registers or logs in
+2. Backend validates the provided credentials
 3. A JWT token is generated and returned
+4. The token must be included in the `Authorization` header for protected endpoints
+
+Example:
+
+```http
+Authorization: Bearer <token>
+```
 
 ## Getting Started
 
