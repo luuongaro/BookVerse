@@ -1,9 +1,7 @@
 package com.grupo3.BookVerse.features.roles.service.impl;
 
-import com.grupo3.BookVerse.common.exception.DuplicateResourceException;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
 import com.grupo3.BookVerse.features.roles.domain.RoleEntity;
-import com.grupo3.BookVerse.features.roles.dto.RoleRequestDto;
 import com.grupo3.BookVerse.features.roles.dto.RoleResponseDto;
 import com.grupo3.BookVerse.features.roles.mappers.RoleMapper;
 import com.grupo3.BookVerse.features.roles.repository.RoleRepository;
@@ -13,41 +11,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
 
-    private static final Set<String> ALLOWED_ROLES = Set.of(
-            "ROLE_ADMIN",
-            "ROLE_MODERATOR",
-            "ROLE_USER"
-    );
-
     private final RoleRepository roleRepository;
     private final RoleMapper roleMapper;
-
-    @Override
-    @Transactional
-    public RoleResponseDto createRole(RoleRequestDto roleRequestDto) {
-
-        String name = normalizeAndValidateRoleName(roleRequestDto.getName());
-
-        if (roleRepository.existsByNameIgnoreCase(name)) {
-            throw new DuplicateResourceException(
-                    "Role already exists with name: " + name
-            );
-        }
-
-        RoleEntity role = roleMapper.toEntity(roleRequestDto);
-        role.setName(name);
-
-        RoleEntity saved = roleRepository.save(role);
-
-        return roleMapper.toResponseDto(saved);
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -64,39 +35,9 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    @Transactional
-    public RoleResponseDto updateRole(UUID idExternal, RoleRequestDto roleRequestDto) {
-
-        RoleEntity existing = findRoleByIdExternal(idExternal);
-
-        String name = normalizeAndValidateRoleName(roleRequestDto.getName());
-
-        if (roleRepository.existsByNameIgnoreCase(name)
-                && !existing.getName().equalsIgnoreCase(name)) {
-
-            throw new DuplicateResourceException(
-                    "Role already exists with name: " + name
-            );
-        }
-
-        existing.setName(name);
-
-        RoleEntity updated = roleRepository.save(existing);
-
-        return roleMapper.toResponseDto(updated);
-    }
-
-    @Override
-    @Transactional
-    public void deleteRole(UUID idExternal) {
-        RoleEntity role = findRoleByIdExternal(idExternal);
-        roleRepository.delete(role);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public RoleResponseDto getRoleByName(String name) {
-        String normalizedName = normalizeAndValidateRoleName(name);
+        String normalizedName = normalizeRoleName(name);
 
         RoleEntity role = roleRepository.findByNameIgnoreCase(normalizedName)
                 .orElseThrow(() ->
@@ -117,15 +58,11 @@ public class RoleServiceImpl implements RoleService {
                 );
     }
 
-    private String normalizeAndValidateRoleName(String roleName) {
+    private String normalizeRoleName(String roleName) {
         String normalizedRoleName = roleName.trim().toUpperCase();
 
         if (!normalizedRoleName.startsWith("ROLE_")) {
             normalizedRoleName = "ROLE_" + normalizedRoleName;
-        }
-
-        if (!ALLOWED_ROLES.contains(normalizedRoleName)) {
-            throw new IllegalArgumentException("Invalid role name: " + normalizedRoleName);
         }
 
         return normalizedRoleName;
