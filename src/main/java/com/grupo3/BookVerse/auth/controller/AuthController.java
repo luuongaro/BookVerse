@@ -1,6 +1,6 @@
-package com.grupo3.BookVerse.auth.authController;
+package com.grupo3.BookVerse.auth.controller;
 
-import com.grupo3.BookVerse.auth.authService.AuthService;
+import com.grupo3.BookVerse.auth.service.AuthService;
 import com.grupo3.BookVerse.auth.dtos.AuthRequest;
 import com.grupo3.BookVerse.auth.dtos.AuthResponse;
 import com.grupo3.BookVerse.auth.dtos.RegisterRequest;
