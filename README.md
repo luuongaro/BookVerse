@@ -34,6 +34,10 @@ The system includes the following main functional areas:
 - Subscription management
 - Tips (user-to-user interaction)
 
+## External Integrations
+
+- Google Books API for retrieving external book information and metadata
+
 ## Domain Model
 
 The core entities of the system include:
@@ -81,11 +85,15 @@ The project follows a Git Flow approach with branches:
 - Java
 - Spring Boot
 - Spring Data JPA
+- Spring Security
+- JWT Authentication
 - Hibernate
 - MapStruct
 - Lombok
 - PostgreSQL
 - Maven
+- Swagger / OpenAPI
+- Aspect-Oriented Programming (AOP)
 
 Tools used during development:
 
@@ -109,7 +117,11 @@ BookVerse aims to centralize these features into a single backend system.
 - Use of bidirectional relationships between entities
 - Inclusion of `idExternal` as part of entity identification strategy
 - Exception handling centralized using global handlers
-- Validation of input data using annotations such as @Valid, @NotNull and @Size
+- Validation of input data using annotations such as `@Valid`, `@NotNull`, and `@Size`
+- JWT-based stateless authentication
+- Login process using email instead of username
+- Automatic initialization of roles, subscriptions, and default admin account
+- Role-based access control using Spring Security
 
 ## Non-Functional Requirements
 
@@ -119,11 +131,17 @@ BookVerse aims to centralize these features into a single backend system.
 - Response time under defined thresholds for queries
 - Extensible architecture for future features
 - Centralized error handling and logging
+- Stateless authentication using JWT
+- Secure password storage using BCrypt hashing
+- Centralized security exception handling
+
 
 ## Future Improvements
 
-- Integration with Google Books API for extended book metadata
-- API documentation (Swagger/OpenAPI)
+- Frontend application development
+- Real-time notifications and messaging
+- Support for donations/tips to content creators
+- Recommendation system based on reading preferences
 - Automated testing (unit and integration tests)
 - Containerization with Docker
 
@@ -134,12 +152,64 @@ This allows easy verification of the system without requiring a frontend.
 
 ## Security
 
-Authentication and authorization are planned using Spring Security with JWT to ensure secure access to the system.
+BookVerse implements authentication and authorization using Spring Security and JWT (JSON Web Token).
 
-## API Documentation
+### Authentication Features
 
-API documentation is planned using Swagger/OpenAPI to provide interactive endpoint exploration.
+- JWT-based authentication
+- Login using email and password
+- Stateless session management
+- Password encryption using BCrypt
+- Protected endpoints with token validation
+- Custom `AuthenticationEntryPoint` for consistent `401 Unauthorized` responses
 
+### Role-Based Access Control
+
+The system uses predefined roles:
+
+- ROLE_USER
+- ROLE_MODERATOR
+- ROLE_ADMIN
+
+Roles are managed using Spring Security authorities and are automatically assigned or validated depending on the authentication flow.
+
+### Automatic Initializers
+
+The application automatically initializes essential security data on startup:
+
+### Default roles
+- `ROLE_USER`
+- `ROLE_MODERATOR`
+- `ROLE_ADMIN`
+
+### Default subscriptions
+- `FREE`
+- `PREMIUM`
+
+### Default administrator user
+
+A default administrator account is automatically created during application startup.
+
+## Public Endpoints
+
+The following endpoints are accessible without authentication:
+
+- `/api/auth/login`
+- `/api/auth/register`
+- Swagger/OpenAPI endpoints
+
+### Protected Endpoints
+
+All remaining API endpoints require a valid JWT token.
+
+### JWT Authentication Flow
+
+1. User registers or logs1. User registers or logs in
+
+``http
+Authorization: Bearer <token>
+2. Backend validates credentials
+3. A JWT token is generated and returned
 
 ## Getting Started
 
@@ -158,7 +228,12 @@ API documentation is planned using Swagger/OpenAPI to provide interactive endpoi
 
     cd BookVerse
 
-3. Configure the database in `application.yml` (URL, username and password)
+3. Configure environment variables:
+
+- Database credentials
+- JWT configuration
+- Google Books API credentials
+- Default administrator credentials
 
 4. Run the application:
 
@@ -167,6 +242,9 @@ API documentation is planned using Swagger/OpenAPI to provide interactive endpoi
 5. Access the API at:
 
     http://localhost:8080
-
+   
+6. Access Swagger UI:
+    http://localhost:8080/swagger-ui/index.html
+   
 ## Repository
 https://github.com/luuongaro/BookVerse
