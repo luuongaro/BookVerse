@@ -1,7 +1,7 @@
 package com.grupo3.BookVerse.features.users.controller;
 
-import com.grupo3.BookVerse.features.users.dto.UserRequestDto;
 import com.grupo3.BookVerse.features.users.dto.UserResponseDto;
+import com.grupo3.BookVerse.features.users.dto.UserUpdateRequestDto;
 import com.grupo3.BookVerse.features.users.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,10 +40,7 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-
-        return ResponseEntity.ok(
-                userService.getAllUsers()
-        );
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @GetMapping("/{idExternal}")
@@ -59,7 +55,6 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
     public ResponseEntity<UserResponseDto> getUserByIdExternal(
-
             @Parameter(
                     description = "External UUID of the user",
                     required = true,
@@ -67,10 +62,7 @@ public class UserController {
             )
             @PathVariable UUID idExternal
     ) {
-
-        return ResponseEntity.ok(
-                userService.getUserByIdExternal(idExternal)
-        );
+        return ResponseEntity.ok(userService.getUserByIdExternal(idExternal));
     }
 
     @PutMapping("/{idExternal}")
@@ -86,20 +78,15 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
     public ResponseEntity<UserResponseDto> updateUser(
-
             @Parameter(
                     description = "External UUID of the user to update",
                     required = true,
                     example = "550e8400-e29b-41d4-a716-446655440000"
             )
             @PathVariable UUID idExternal,
-
-            @Valid @RequestBody UserRequestDto dto
+            @Valid @RequestBody UserUpdateRequestDto dto
     ) {
-
-        return ResponseEntity.ok(
-                userService.updateUser(idExternal, dto)
-        );
+        return ResponseEntity.ok(userService.updateUser(idExternal, dto));
     }
 
     @DeleteMapping("/{idExternal}")
@@ -114,7 +101,6 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
     public ResponseEntity<Void> deleteUser(
-
             @Parameter(
                     description = "External UUID of the user to delete",
                     required = true,
@@ -122,9 +108,7 @@ public class UserController {
             )
             @PathVariable UUID idExternal
     ) {
-
         userService.deleteUser(idExternal);
-
         return ResponseEntity.noContent().build();
     }
 }
