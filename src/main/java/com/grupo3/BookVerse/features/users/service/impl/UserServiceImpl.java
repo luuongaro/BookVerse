@@ -9,6 +9,7 @@ import com.grupo3.BookVerse.features.subscriptions.repository.SubscriptionReposi
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.dto.UserRequestDto;
 import com.grupo3.BookVerse.features.users.dto.UserResponseDto;
+import com.grupo3.BookVerse.features.users.dto.UserUpdateRequestDto;
 import com.grupo3.BookVerse.features.users.mappers.UserMapper;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
 import com.grupo3.BookVerse.features.users.service.UserService;
@@ -78,30 +79,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponseDto updateUser(UUID idExternal, UserRequestDto dto) {
+    public UserResponseDto updateUser(UUID idExternal, UserUpdateRequestDto dto) {
 
         UserEntity existing = findUserByIdExternal(idExternal);
 
-        if (!existing.getEmail().equals(dto.email())
+        if (!existing.getEmail().equalsIgnoreCase(dto.email())
                 && userRepository.existsByEmail(dto.email())) {
             throw new DuplicateResourceException("Email is already in use");
         }
 
-        if (!existing.getUsername().equals(dto.username())
+        if (!existing.getProfileUsername().equalsIgnoreCase(dto.username())
                 && userRepository.existsByUsername(dto.username())) {
             throw new DuplicateResourceException("Username is already in use");
         }
 
-        SubscriptionEntity subscription =
-                findSubscriptionByIdExternal(dto.subscriptionId());
-
-        existing.setUsername(dto.username());
-        existing.setEmail(dto.email());
-        existing.setSubscription(subscription);
-
-        if (dto.password() != null && !dto.password().isBlank()) {
-            existing.setPasswordHash(passwordEncoder.encode(dto.password()));
-        }
+        userMapper.updateEntityFromDto(dto, existing);
 
         UserEntity updated = userRepository.save(existing);
 
