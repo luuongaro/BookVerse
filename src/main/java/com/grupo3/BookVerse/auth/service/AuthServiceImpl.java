@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.auth.authService;
+package com.grupo3.BookVerse.auth.service;
 import com.grupo3.BookVerse.auth.dtos.AuthRequest;
 import com.grupo3.BookVerse.auth.dtos.AuthResponse;
 import com.grupo3.BookVerse.auth.dtos.RegisterRequest;
