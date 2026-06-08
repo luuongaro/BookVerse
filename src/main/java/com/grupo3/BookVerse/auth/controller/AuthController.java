@@ -49,7 +49,7 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(
             summary = "Register a new user",
-            description = "Creates a new user account in BookVerse."
+            description = "Creates a new user account in BookVerse with the default FREE subscription and ROLE_USER."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User registered successfully"),
