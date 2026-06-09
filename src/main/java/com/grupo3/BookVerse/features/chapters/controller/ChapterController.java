@@ -1,7 +1,8 @@
 package com.grupo3.BookVerse.features.chapters.controller;
 
-import com.grupo3.BookVerse.features.chapters.dto.ChapterRequestDto;
+import com.grupo3.BookVerse.features.chapters.dto.ChapterCreateRequestDto;
 import com.grupo3.BookVerse.features.chapters.dto.ChapterResponseDto;
+import com.grupo3.BookVerse.features.chapters.dto.ChapterUpdateRequestDto;
 import com.grupo3.BookVerse.features.chapters.service.ChapterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,16 +25,37 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(
         name = "Chapters",
-        description = "Endpoints for managing chapters in BookVerse"
+        description = "Endpoints for managing story chapters in BookVerse"
 )
 public class ChapterController {
 
     private final ChapterService chapterService;
 
+    @PostMapping
+    @Operation(
+            summary = "Create a new chapter",
+            description = "Creates a new chapter for an existing story. Chapter number is assigned automatically per story.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Chapter created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Story not found", content = @Content)
+    })
+    public ResponseEntity<ChapterResponseDto> createChapter(
+            @Valid @RequestBody ChapterCreateRequestDto chapterCreateRequestDto
+    ) {
+        return new ResponseEntity<>(
+                chapterService.createChapter(chapterCreateRequestDto),
+                HttpStatus.CREATED
+        );
+    }
+
     @GetMapping
     @Operation(
             summary = "Get all chapters",
-            description = "Retrieves a list of all chapters registered in the system.",
+            description = "Retrieves all active chapters in the system.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -47,7 +69,7 @@ public class ChapterController {
     @GetMapping("/{idExternal}")
     @Operation(
             summary = "Get chapter by external id",
-            description = "Retrieves a chapter using its external UUID identifier.",
+            description = "Retrieves an active chapter by its external UUID identifier.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -68,80 +90,10 @@ public class ChapterController {
         );
     }
 
-    @PostMapping
-    @Operation(
-            summary = "Create a new chapter",
-            description = "Creates a new chapter associated with a story.",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Chapter created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Referenced story not found", content = @Content)
-    })
-    public ResponseEntity<ChapterResponseDto> createChapter(
-            @Valid @RequestBody ChapterRequestDto dto
-    ) {
-        return new ResponseEntity<>(
-                chapterService.createChapter(dto),
-                HttpStatus.CREATED
-        );
-    }
-
-    @PutMapping("/{idExternal}")
-    @Operation(
-            summary = "Update a chapter",
-            description = "Updates an existing chapter identified by its external UUID.",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Chapter updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Chapter not found", content = @Content)
-    })
-    public ResponseEntity<ChapterResponseDto> updateChapter(
-            @Parameter(
-                    description = "External UUID of the chapter to update",
-                    required = true,
-                    example = "550e8400-e29b-41d4-a716-446655440000"
-            )
-            @PathVariable UUID idExternal,
-            @Valid @RequestBody ChapterRequestDto dto
-    ) {
-        return ResponseEntity.ok(
-                chapterService.updateChapter(idExternal, dto)
-        );
-    }
-
-    @DeleteMapping("/{idExternal}")
-    @Operation(
-            summary = "Delete a chapter",
-            description = "Deletes a chapter identified by its external UUID.",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Chapter deleted successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Chapter not found", content = @Content)
-    })
-    public ResponseEntity<Void> deleteChapter(
-            @Parameter(
-                    description = "External UUID of the chapter to delete",
-                    required = true,
-                    example = "550e8400-e29b-41d4-a716-446655440000"
-            )
-            @PathVariable UUID idExternal
-    ) {
-        chapterService.deleteChapter(idExternal);
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/story/{storyId}")
     @Operation(
             summary = "Get chapters by story",
-            description = "Retrieves all chapters associated with a specific story.",
+            description = "Retrieves all active chapters for a specific active story, ordered by chapter number ascending.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -161,5 +113,53 @@ public class ChapterController {
                 chapterService.getChaptersByStoryId(storyId)
         );
     }
-}
 
+    @PutMapping("/{idExternal}")
+    @Operation(
+            summary = "Update a chapter",
+            description = "Updates an existing chapter. Story association and chapter number cannot be changed.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Chapter updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Chapter not found", content = @Content)
+    })
+    public ResponseEntity<ChapterResponseDto> updateChapter(
+            @Parameter(
+                    description = "External UUID of the chapter to update",
+                    required = true,
+                    example = "550e8400-e29b-41d4-a716-446655440000"
+            )
+            @PathVariable UUID idExternal,
+            @Valid @RequestBody ChapterUpdateRequestDto chapterUpdateRequestDto
+    ) {
+        return ResponseEntity.ok(
+                chapterService.updateChapter(idExternal, chapterUpdateRequestDto)
+        );
+    }
+
+    @DeleteMapping("/{idExternal}")
+    @Operation(
+            summary = "Delete a chapter",
+            description = "Soft deletes an active chapter identified by its external UUID.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Chapter deleted successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Chapter not found", content = @Content)
+    })
+    public ResponseEntity<Void> deleteChapter(
+            @Parameter(
+                    description = "External UUID of the chapter to delete",
+                    required = true,
+                    example = "550e8400-e29b-41d4-a716-446655440000"
+            )
+            @PathVariable UUID idExternal
+    ) {
+        chapterService.deleteChapter(idExternal);
+        return ResponseEntity.noContent().build();
+    }
+}

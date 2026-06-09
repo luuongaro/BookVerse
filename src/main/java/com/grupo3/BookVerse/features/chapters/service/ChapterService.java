@@ -1,15 +1,15 @@
 package com.grupo3.BookVerse.features.chapters.service;
 
-
-import com.grupo3.BookVerse.features.chapters.dto.ChapterRequestDto;
+import com.grupo3.BookVerse.features.chapters.dto.ChapterCreateRequestDto;
 import com.grupo3.BookVerse.features.chapters.dto.ChapterResponseDto;
+import com.grupo3.BookVerse.features.chapters.dto.ChapterUpdateRequestDto;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface ChapterService {
 
-    ChapterResponseDto createChapter(ChapterRequestDto chapterRequestDto);
+    ChapterResponseDto createChapter(ChapterCreateRequestDto chapterCreateRequestDto);
 
     List<ChapterResponseDto> getAllChapters();
 
@@ -17,8 +17,7 @@ public interface ChapterService {
 
     List<ChapterResponseDto> getChaptersByStoryId(UUID storyId);
 
-    ChapterResponseDto updateChapter(UUID idExternal,
-                                     ChapterRequestDto chapterRequestDto);
+    ChapterResponseDto updateChapter(UUID idExternal, ChapterUpdateRequestDto chapterUpdateRequestDto);
 
     void deleteChapter(UUID idExternal);
 }
