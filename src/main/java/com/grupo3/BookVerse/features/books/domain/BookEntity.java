@@ -1,6 +1,5 @@
 package com.grupo3.BookVerse.features.books.domain;
 
-import com.grupo3.BookVerse.features.authors.domain.AuthorEntity;
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import com.grupo3.BookVerse.features.status.domain.ReadingStatusEntity;
 import jakarta.persistence.*;
@@ -27,17 +26,41 @@ public class BookEntity {
     @Column(name = "id_external", unique = true, nullable = false)
     private UUID idExternal;
 
+    @Column(name = "google_book_id", unique = true, nullable = false)
+    private String googleBookId;
+
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(length = 20)
     private String isbn;
 
-    @Column(nullable = false)
-    private String genre;
+    @Column(name = "thumbnail_url")
+    private String thumbnailUrl;
+
+    @Column
+    private String publisher;
+
+    @Column(name = "published_date")
+    private String publishedDate;
+
+    @Column
+    private String language;
+
+    @Column
+    private String categories;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "book_author_names",
+            joinColumns = @JoinColumn(name = "book_id")
+    )
+    @Column(name = "author_name")
+    @Builder.Default
+    private Set<String> authors = new HashSet<>();
 
     @Column(nullable = false)
     private Boolean deleted;
@@ -48,17 +71,24 @@ public class BookEntity {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    @ManyToMany
-    @JoinTable(
-            name = "book_authors",
-            joinColumns = @JoinColumn(name = "book_id"),
-            inverseJoinColumns = @JoinColumn(name = "author_id")
-    )
-    private Set<AuthorEntity> authors = new HashSet<>();
-
     @OneToMany(mappedBy = "book", fetch = FetchType.LAZY)
+    @Builder.Default
     private List<ReadingGroupEntity> readingGroups = new ArrayList<>();
 
     @OneToMany(mappedBy = "book", fetch = FetchType.LAZY)
+    @Builder.Default
     private List<ReadingStatusEntity> readingStatuses = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        this.idExternal = UUID.randomUUID();
+        this.deleted = false;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }
