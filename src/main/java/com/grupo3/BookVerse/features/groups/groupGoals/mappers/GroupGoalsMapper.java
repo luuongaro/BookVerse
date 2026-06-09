@@ -1,8 +1,8 @@
-package com.grupo3.BookVerse.features.groups.GroupGoals.mappers;
+package com.grupo3.BookVerse.features.groups.groupGoals.mappers;
 
-import com.grupo3.BookVerse.features.groups.GroupGoals.domain.GroupGoalsEntity;
-import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsRequestDto;
-import com.grupo3.BookVerse.features.groups.GroupGoals.dto.GroupGoalsResponseDto;
+import com.grupo3.BookVerse.features.groups.groupGoals.domain.GroupGoalsEntity;
+import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsRequestDto;
+import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;

@@ -17,7 +17,6 @@ public class RoleResponseDto {
 
     private String name;
 
-    // Number of users assigned to this role
     private Integer usersCount;
 
 }

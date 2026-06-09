@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.groups.GroupGoals.dto;
+package com.grupo3.BookVerse.features.groups.groupGoals.dto;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Future;
@@ -25,7 +25,6 @@ public record GroupGoalsRequestDto(
         @NotNull(message = "averageProgress cannot be null")
         @DecimalMin(
                 value = "0.0",
-                inclusive = true,
                 message = "averageProgress must be greater than or equal to 0"
         )
         BigDecimal averageProgress,
