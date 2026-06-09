@@ -18,6 +18,5 @@ public class ChapterSummaryDto {
     private Integer chapterNumber;
     private String title;
     private boolean published;
-    private boolean hidden;
     private LocalDateTime createdAt;
 }

@@ -15,25 +15,13 @@ import java.util.UUID;
 public class ChapterResponseDto {
 
     private UUID idExternal;
-
     private UUID storyId;
     private String storyTitle;
-
     private int chapterNumber;
-
     private String title;
-
     private String content;
-
-    private int pageCount;
-
-    private boolean isPublished;
-
-    private boolean isHidden;
-
-    private boolean isDeleted;
-
+    private boolean published;
+    private boolean deleted;
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
 }

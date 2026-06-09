@@ -9,14 +9,11 @@ import java.util.UUID;
 
 public interface ChapterRepository extends JpaRepository<ChapterEntity, Long> {
 
-    Optional<ChapterEntity> findByIdExternalAndIsDeletedFalse(UUID idExternal);
+    Optional<ChapterEntity> findByIdExternalAndDeletedFalse(UUID idExternal);
 
-    List<ChapterEntity> findByIsDeletedFalseOrderByCreatedAtDesc();
+    List<ChapterEntity> findAllByDeletedFalseOrderByCreatedAtDesc();
 
-    List<ChapterEntity> findByStoryIdAndIsDeletedFalseOrderByChapterNumberAsc(Long storyId);
+    List<ChapterEntity> findByStoryIdAndDeletedFalseOrderByChapterNumberAsc(Long storyId);
 
-    Optional<ChapterEntity> findByStoryIdAndChapterNumber(Long storyId, int chapterNumber);
-
-    boolean existsByStoryIdAndChapterNumber(Long storyId, int chapterNumber);
-
+    Optional<ChapterEntity> findTopByStoryIdOrderByChapterNumberDesc(Long storyId);
 }
