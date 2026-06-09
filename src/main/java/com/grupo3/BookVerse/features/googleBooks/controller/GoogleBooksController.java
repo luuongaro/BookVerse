@@ -1,5 +1,6 @@
 package com.grupo3.BookVerse.features.googleBooks.controller;
 
+import com.grupo3.BookVerse.common.exception.BadRequestException;
 import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBooksApiResponseDto;
 import com.grupo3.BookVerse.features.googleBooks.service.GoogleBooksService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,16 +10,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/google-books")
 @RequiredArgsConstructor
-@Validated
 @Tag(
         name = "Google Books Integration",
         description = "Endpoints for consuming the Google Books external API"
@@ -30,25 +28,50 @@ public class GoogleBooksController {
     @GetMapping("/search")
     @Operation(
             summary = "Search books using Google Books API",
-            description = "Acts as an integration endpoint with the Google Books external API, returning book search results for the provided query string.",
+            description = "Searches books using a general query, a title, or an author.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Books retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid or empty query parameter", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid search parameters", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "No books found", content = @Content),
             @ApiResponse(responseCode = "500", description = "Error while calling Google Books API", content = @Content)
     })
     public ResponseEntity<GoogleBooksApiResponseDto> searchBooks(
-            @Parameter(
-                    description = "Query string used to search books in Google Books",
-                    required = true,
-                    example = "Harry Potter"
-            )
-            @RequestParam
-            @NotBlank(message = "Query is required")
-            String query
+            @Parameter(description = "General query string", example = "Harry Potter")
+            @RequestParam(required = false) String query,
+
+            @Parameter(description = "Book title", example = "Harry Potter")
+            @RequestParam(required = false) String title,
+
+            @Parameter(description = "Book author", example = "J K Rowling")
+            @RequestParam(required = false) String author
     ) {
-        return ResponseEntity.ok(googleBooksService.searchBooks(query));
+        int providedParams = countProvidedParams(query, title, author);
+
+        if (providedParams != 1) {
+            throw new BadRequestException("You must provide exactly one search parameter: query, title, or author");
+        }
+
+        if (query != null && !query.isBlank()) {
+            return ResponseEntity.ok(googleBooksService.searchBooks(query));
+        }
+
+        if (title != null && !title.isBlank()) {
+            return ResponseEntity.ok(googleBooksService.searchBooksByTitle(title));
+        }
+
+        return ResponseEntity.ok(googleBooksService.searchBooksByAuthor(author));
+    }
+
+    private int countProvidedParams(String query, String title, String author) {
+        int count = 0;
+
+        if (query != null && !query.isBlank()) count++;
+        if (title != null && !title.isBlank()) count++;
+        if (author != null && !author.isBlank()) count++;
+
+        return count;
     }
 }
