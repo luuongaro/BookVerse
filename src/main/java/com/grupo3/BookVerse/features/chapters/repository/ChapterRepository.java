@@ -1,9 +1,10 @@
 package com.grupo3.BookVerse.features.chapters.repository;
 
 import com.grupo3.BookVerse.features.chapters.domain.ChapterEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,9 +12,9 @@ public interface ChapterRepository extends JpaRepository<ChapterEntity, Long> {
 
     Optional<ChapterEntity> findByIdExternalAndDeletedFalse(UUID idExternal);
 
-    List<ChapterEntity> findAllByDeletedFalseOrderByCreatedAtDesc();
+    Page<ChapterEntity> findAllByDeletedFalseOrderByCreatedAtDesc(Pageable pageable);
 
-    List<ChapterEntity> findByStoryIdAndDeletedFalseOrderByChapterNumberAsc(Long storyId);
+    Page<ChapterEntity> findByStoryIdAndDeletedFalseOrderByChapterNumberAsc(Long storyId, Pageable pageable);
 
     Optional<ChapterEntity> findTopByStoryIdOrderByChapterNumberDesc(Long storyId);
 }

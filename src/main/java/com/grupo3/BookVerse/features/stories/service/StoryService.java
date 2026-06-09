@@ -2,21 +2,23 @@ package com.grupo3.BookVerse.features.stories.service;
 
 import com.grupo3.BookVerse.features.stories.dto.StoryRequestDto;
 import com.grupo3.BookVerse.features.stories.dto.StoryResponseDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface StoryService {
 
     StoryResponseDto createStory(StoryRequestDto storyRequestDto);
 
-    List<StoryResponseDto> getAllStories();
+    Page<StoryResponseDto> getAllStories(Pageable pageable);
 
     StoryResponseDto getStoryByIdExternal(UUID idExternal);
 
-    List<StoryResponseDto> getStoriesByAuthorId(UUID authorId);
+    Page<StoryResponseDto> getStoriesByAuthorId(UUID authorId, Pageable pageable);
 
     StoryResponseDto updateStory(UUID idExternal, StoryRequestDto storyRequestDto);
 
     void deleteStory(UUID idExternal);
+
 }

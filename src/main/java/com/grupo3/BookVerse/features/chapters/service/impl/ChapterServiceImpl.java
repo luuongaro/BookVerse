@@ -11,10 +11,11 @@ import com.grupo3.BookVerse.features.chapters.service.ChapterService;
 import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
 import com.grupo3.BookVerse.features.stories.repository.StoryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -47,10 +48,11 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ChapterResponseDto> getAllChapters() {
-        return chapterRepository.findAllByDeletedFalseOrderByCreatedAtDesc().stream()
-                .map(chapterMapper::toResponseDto)
-                .toList();
+    public Page<ChapterResponseDto> getAllChapters(Pageable pageable) {
+        Page<ChapterEntity> chapters =
+                chapterRepository.findAllByDeletedFalseOrderByCreatedAtDesc(pageable);
+
+        return chapters.map(chapterMapper::toResponseDto);
     }
 
     @Override
@@ -66,13 +68,14 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ChapterResponseDto> getChaptersByStoryId(UUID storyId) {
+    public Page<ChapterResponseDto> getChaptersByStoryId(UUID storyId, Pageable pageable) {
         StoryEntity story = storyRepository.findByIdExternalAndDeletedFalse(storyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Story not found"));
 
-        return chapterRepository.findByStoryIdAndDeletedFalseOrderByChapterNumberAsc(story.getId()).stream()
-                .map(chapterMapper::toResponseDto)
-                .toList();
+        Page<ChapterEntity> chapters =
+                chapterRepository.findByStoryIdAndDeletedFalseOrderByChapterNumberAsc(story.getId(), pageable);
+
+        return chapters.map(chapterMapper::toResponseDto);
     }
 
     @Override

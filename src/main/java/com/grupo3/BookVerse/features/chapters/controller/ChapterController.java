@@ -13,11 +13,12 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -55,15 +56,15 @@ public class ChapterController {
     @GetMapping
     @Operation(
             summary = "Get all chapters",
-            description = "Retrieves all active chapters in the system.",
+            description = "Retrieves a paginated list of all active chapters in the system.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Chapters retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public ResponseEntity<List<ChapterResponseDto>> getAllChapters() {
-        return ResponseEntity.ok(chapterService.getAllChapters());
+    public ResponseEntity<Page<ChapterResponseDto>> getAllChapters(Pageable pageable) {
+        return ResponseEntity.ok(chapterService.getAllChapters(pageable));
     }
 
     @GetMapping("/{idExternal}")
@@ -93,7 +94,7 @@ public class ChapterController {
     @GetMapping("/story/{storyId}")
     @Operation(
             summary = "Get chapters by story",
-            description = "Retrieves all active chapters for a specific active story, ordered by chapter number ascending.",
+            description = "Retrieves a paginated list of all active chapters for a specific active story, ordered by chapter number ascending.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -101,16 +102,17 @@ public class ChapterController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "404", description = "Story not found", content = @Content)
     })
-    public ResponseEntity<List<ChapterResponseDto>> getChaptersByStoryId(
+    public ResponseEntity<Page<ChapterResponseDto>> getChaptersByStoryId(
             @Parameter(
                     description = "External UUID of the story",
                     required = true,
                     example = "550e8400-e29b-41d4-a716-446655440000"
             )
-            @PathVariable UUID storyId
+            @PathVariable UUID storyId,
+            Pageable pageable
     ) {
         return ResponseEntity.ok(
-                chapterService.getChaptersByStoryId(storyId)
+                chapterService.getChaptersByStoryId(storyId, pageable)
         );
     }
 
