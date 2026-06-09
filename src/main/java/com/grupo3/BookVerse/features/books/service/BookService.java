@@ -10,4 +10,6 @@ public interface BookService {
     List<BookResponseDto> getAllBooks();
 
     BookResponseDto getBookByIdExternal(UUID idExternal);
+
+    BookResponseDto findOrCreateFromGoogleBookId(String googleBookId);
 }

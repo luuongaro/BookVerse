@@ -21,7 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(
         name = "Books",
-        description = "Endpoints for retrieving books stored locally in BookVerse"
+        description = "Endpoints for managing books stored locally in BookVerse"
 )
 public class BookController {
 
@@ -61,5 +61,28 @@ public class BookController {
             @PathVariable UUID idExternal
     ) {
         return ResponseEntity.ok(bookService.getBookByIdExternal(idExternal));
+    }
+
+    @PostMapping("/google/{googleBookId}")
+    @Operation(
+            summary = "Store a Google Book locally",
+            description = "Retrieves a book from Google Books API by its Google Book ID and stores it locally if it does not already exist.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Book stored or retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid Google Book ID", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Book not found in Google Books", content = @Content)
+    })
+    public ResponseEntity<BookResponseDto> saveGoogleBook(
+            @Parameter(
+                    description = "Google Books ID of the book to persist locally",
+                    required = true,
+                    example = "zyTCAlFPjgYC"
+            )
+            @PathVariable String googleBookId
+    ) {
+        return ResponseEntity.ok(bookService.findOrCreateFromGoogleBookId(googleBookId));
     }
 }
