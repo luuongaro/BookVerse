@@ -10,10 +10,11 @@ import com.grupo3.BookVerse.features.stories.service.StoryService;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -40,11 +41,12 @@ public class StoryServiceImpl implements StoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<StoryResponseDto> getAllStories() {
+    public Page<StoryResponseDto> getAllStories(Pageable pageable) {
 
-        List<StoryEntity> stories = storyRepository.findAllByDeletedFalseOrderByCreatedAtDesc();
+        Page<StoryEntity> stories =
+                storyRepository.findAllByDeletedFalseOrderByCreatedAtDesc(pageable);
 
-        return storyMapper.toResponseDtoList(stories);
+        return stories.map(storyMapper::toResponseDto);
     }
 
     @Override
@@ -58,14 +60,14 @@ public class StoryServiceImpl implements StoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<StoryResponseDto> getStoriesByAuthorId(UUID authorId) {
+    public Page<StoryResponseDto> getStoriesByAuthorId(UUID authorId, Pageable pageable) {
 
         UserEntity author = findUserByIdExternal(authorId);
 
-        List<StoryEntity> stories =
-                storyRepository.findByAuthorIdAndDeletedFalseOrderByCreatedAtDesc(author.getId());
+        Page<StoryEntity> stories =
+                storyRepository.findByAuthorIdAndDeletedFalseOrderByCreatedAtDesc(author.getId(), pageable);
 
-        return storyMapper.toResponseDtoList(stories);
+        return stories.map(storyMapper::toResponseDto);
     }
 
     @Override
