@@ -2,6 +2,7 @@ package com.grupo3.BookVerse.features.reviews.domain;
 
 import com.grupo3.BookVerse.features.books.domain.BookEntity;
 import com.grupo3.BookVerse.features.reviewReport.domain.ReviewReportEntity;
+import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,25 +19,29 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 public class ReviewEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "id_external", unique = true, nullable = false)
+    @Column(name = "id_external", nullable = false, unique = true, updatable = false)
     private UUID idExternal;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "reviewer_id", nullable = false)
+    private UserEntity reviewer;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_id", nullable = false)
+    @JoinColumn(name = "book_id")
     private BookEntity book;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "story_id")
+    private StoryEntity story;
+
     @OneToMany(mappedBy = "review", fetch = FetchType.LAZY)
+    @Builder.Default
     private List<ReviewReportEntity> reports = new ArrayList<>();
 
     @Column(nullable = false)
@@ -45,44 +50,43 @@ public class ReviewEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(nullable = false)
-    private Boolean isHidden = false;
-
-    @Column(nullable = false)
-    private Boolean isDeleted = false;
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted;
 
     @Column(name = "takedown_at")
     private LocalDateTime takedownAt;
 
-    @Column(name = "takedown_reason")
+    @Column(name = "takedown_reason", columnDefinition = "TEXT")
     private String takedownReason;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "takedown_status", nullable = false)
     private ReviewTakedownStatus takedownStatus;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 
     @PrePersist
-    public void prePersist() {
+    protected void onCreate() {
         if (idExternal == null) {
             idExternal = UUID.randomUUID();
         }
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+
+        deleted = false;
+
+        if (takedownStatus == null) {
+            takedownStatus = ReviewTakedownStatus.ACTIVE;
+        }
     }
 
     @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
-
 }
-
-
-

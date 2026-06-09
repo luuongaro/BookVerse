@@ -1,7 +1,8 @@
 package com.grupo3.BookVerse.features.reviews.services;
 
-import com.grupo3.BookVerse.features.reviews.dto.ReviewRequestDto;
+import com.grupo3.BookVerse.features.reviews.dto.ReviewCreateRequestDto;
 import com.grupo3.BookVerse.features.reviews.dto.ReviewResponseDto;
+import com.grupo3.BookVerse.features.reviews.dto.ReviewUpdateRequestDto;
 
 import java.util.List;
 import java.util.UUID;
@@ -12,7 +13,13 @@ public interface ReviewService {
 
     ReviewResponseDto getReviewById(UUID reviewId);
 
-    ReviewResponseDto save(ReviewRequestDto reviewRequestDto);
+    List<ReviewResponseDto> getReviewsByBookId(UUID bookId);
 
-    void delete(UUID reviewId);
+    List<ReviewResponseDto> getReviewsByStoryId(UUID storyId);
+
+    ReviewResponseDto createReview(ReviewCreateRequestDto reviewCreateRequestDto);
+
+    ReviewResponseDto updateReview(UUID reviewId, ReviewUpdateRequestDto reviewUpdateRequestDto);
+
+    void deleteReview(UUID reviewId);
 }
