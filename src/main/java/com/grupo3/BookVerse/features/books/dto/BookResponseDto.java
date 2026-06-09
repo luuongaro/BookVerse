@@ -16,16 +16,19 @@ import java.util.UUID;
 public class BookResponseDto {
 
     private UUID idExternal;
+    private String googleBookId;
     private String title;
     private String description;
     private String isbn;
-    private String genre;
-    private Boolean isDeleted;
+    private String thumbnailUrl;
+    private String publisher;
+    private String publishedDate;
+    private String language;
+    private String categories;
+    private Set<String> authors;
+    private Boolean deleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    private Set<UUID> authorIds;
-    private Set<String> authorNames;
     private Integer readingGroupsCount;
     private Integer readingStatusesCount;
 }
