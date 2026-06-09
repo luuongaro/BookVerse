@@ -29,8 +29,9 @@ public class ChapterServiceImpl implements ChapterService {
     @Transactional
     // Creates a new chapter after validating the story exists and the chapter number is unique within it.
     public ChapterResponseDto createChapter(ChapterRequestDto dto) {
-        StoryEntity story = storyRepository.findByIdExternalAndIsDeletedFalse(dto.getStoryId())
+        StoryEntity story = storyRepository.findByIdExternalAndDeletedFalse(dto.getStoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Story not found"));
+
 
         if (chapterRepository.existsByStoryIdAndChapterNumber(story.getId(), dto.getChapterNumber())) {
             throw new DuplicateResourceException("A chapter with that number already exists for this story");
@@ -67,7 +68,7 @@ public class ChapterServiceImpl implements ChapterService {
     // Retrieves all non-deleted chapters of a story ordered by chapter number ascending.
     @Transactional(readOnly = true)
     public List<ChapterResponseDto> getChaptersByStoryId(UUID storyId) {
-        StoryEntity story = storyRepository.findByIdExternalAndIsDeletedFalse(storyId)
+        StoryEntity story = storyRepository.findByIdExternalAndDeletedFalse(storyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Story not found"));
 
         return chapterRepository.findByStoryIdAndIsDeletedFalseOrderByChapterNumberAsc(story.getId()).stream()
