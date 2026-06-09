@@ -12,11 +12,12 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -33,15 +34,15 @@ public class StoryController {
     @GetMapping
     @Operation(
             summary = "Get all stories",
-            description = "Retrieves a list of all active stories registered in the system.",
+            description = "Retrieves a paginated list of all active stories registered in the system.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Stories retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public ResponseEntity<List<StoryResponseDto>> getAllStories() {
-        return ResponseEntity.ok(storyService.getAllStories());
+    public ResponseEntity<Page<StoryResponseDto>> getAllStories(Pageable pageable) {
+        return ResponseEntity.ok(storyService.getAllStories(pageable));
     }
 
     @GetMapping("/{idExternal}")
@@ -141,7 +142,7 @@ public class StoryController {
     @GetMapping("/author/{authorId}")
     @Operation(
             summary = "Get stories by author",
-            description = "Retrieves all active stories created by the specified user acting as story author.",
+            description = "Retrieves a paginated list of all active stories created by the specified user acting as story author.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -149,16 +150,17 @@ public class StoryController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "404", description = "Story author not found", content = @Content)
     })
-    public ResponseEntity<List<StoryResponseDto>> getStoriesByAuthorId(
+    public ResponseEntity<Page<StoryResponseDto>> getStoriesByAuthorId(
             @Parameter(
                     description = "External UUID of the user who authored the stories",
                     required = true,
                     example = "550e8400-e29b-41d4-a716-446655440000"
             )
-            @PathVariable UUID authorId
+            @PathVariable UUID authorId,
+            Pageable pageable
     ) {
         return ResponseEntity.ok(
-                storyService.getStoriesByAuthorId(authorId)
+                storyService.getStoriesByAuthorId(authorId, pageable)
         );
     }
 }
