@@ -1,5 +1,6 @@
 package com.grupo3.BookVerse.features.stories.controller;
 
+import com.grupo3.BookVerse.features.stories.dto.StoryDetailResponseDto;
 import com.grupo3.BookVerse.features.stories.dto.StoryRequestDto;
 import com.grupo3.BookVerse.features.stories.dto.StoryResponseDto;
 import com.grupo3.BookVerse.features.stories.service.StoryService;
@@ -48,7 +49,7 @@ public class StoryController {
     @GetMapping("/{idExternal}")
     @Operation(
             summary = "Get story by external id",
-            description = "Retrieves an active story using its external UUID identifier.",
+            description = "Retrieves an active story with its summarized chapters using its external UUID identifier.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -56,7 +57,7 @@ public class StoryController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "404", description = "Story not found", content = @Content)
     })
-    public ResponseEntity<StoryResponseDto> getStoryByIdExternal(
+    public ResponseEntity<StoryDetailResponseDto> getStoryByIdExternal(
             @Parameter(
                     description = "External UUID of the story",
                     required = true,
