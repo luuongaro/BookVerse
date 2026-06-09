@@ -5,7 +5,6 @@ import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +15,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @AllArgsConstructor
-@Builder
 @NoArgsConstructor
+@Builder
 public class StoryEntity {
 
     @Id
@@ -33,17 +32,15 @@ public class StoryEntity {
     @Column(nullable = false, length = 1000)
     private String description;
 
-    @Column(name = "is_private", nullable = false)
-    private boolean isPrivate;
-
-    @Column(nullable = false)
-    private BigDecimal price;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "access_type", nullable = false)
+    private StoryAccessType accessType;
 
     @Column(name = "is_hidden", nullable = false)
-    private boolean isHidden;
+    private boolean hidden;
 
     @Column(name = "is_deleted", nullable = false)
-    private boolean isDeleted;
+    private boolean deleted;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -56,6 +53,7 @@ public class StoryEntity {
     private UserEntity author;
 
     @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<ChapterEntity> chapters = new ArrayList<>();
 
     @PrePersist
@@ -65,8 +63,13 @@ public class StoryEntity {
         }
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
-        isHidden = false;
-        isDeleted = false;
+
+        hidden = false;
+        deleted = false;
+
+        if (accessType == null) {
+            accessType = StoryAccessType.FREE;
+        }
     }
 
     @PreUpdate

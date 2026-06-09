@@ -24,7 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(
         name = "Stories",
-        description = "Endpoints for managing stories in BookVerse"
+        description = "Endpoints for managing user-created stories in BookVerse"
 )
 public class StoryController {
 
@@ -33,7 +33,7 @@ public class StoryController {
     @GetMapping
     @Operation(
             summary = "Get all stories",
-            description = "Retrieves a list of all stories registered in the system.",
+            description = "Retrieves a list of all active stories registered in the system.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -47,7 +47,7 @@ public class StoryController {
     @GetMapping("/{idExternal}")
     @Operation(
             summary = "Get story by external id",
-            description = "Retrieves a story using its external UUID identifier.",
+            description = "Retrieves an active story using its external UUID identifier.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -71,14 +71,14 @@ public class StoryController {
     @PostMapping
     @Operation(
             summary = "Create a new story",
-            description = "Creates a new story and returns the created resource.",
+            description = "Creates a new story written by a user and returns the created resource.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Story created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Referenced author or related resource not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Referenced story author not found", content = @Content)
     })
     public ResponseEntity<StoryResponseDto> createStory(
             @Valid @RequestBody StoryRequestDto storyRequestDto
@@ -99,7 +99,7 @@ public class StoryController {
             @ApiResponse(responseCode = "200", description = "Story updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Story not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Story or referenced story author not found", content = @Content)
     })
     public ResponseEntity<StoryResponseDto> updateStory(
             @Parameter(
@@ -118,7 +118,7 @@ public class StoryController {
     @DeleteMapping("/{idExternal}")
     @Operation(
             summary = "Delete a story",
-            description = "Deletes a story identified by its external UUID.",
+            description = "Soft deletes an active story identified by its external UUID.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -141,17 +141,17 @@ public class StoryController {
     @GetMapping("/author/{authorId}")
     @Operation(
             summary = "Get stories by author",
-            description = "Retrieves all stories associated with a specific author.",
+            description = "Retrieves all active stories created by the specified user acting as story author.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Stories retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Author not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Story author not found", content = @Content)
     })
     public ResponseEntity<List<StoryResponseDto>> getStoriesByAuthorId(
             @Parameter(
-                    description = "External UUID of the author",
+                    description = "External UUID of the user who authored the stories",
                     required = true,
                     example = "550e8400-e29b-41d4-a716-446655440000"
             )
@@ -162,5 +162,3 @@ public class StoryController {
         );
     }
 }
-
-
