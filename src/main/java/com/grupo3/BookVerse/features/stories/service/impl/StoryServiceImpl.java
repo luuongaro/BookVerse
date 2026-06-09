@@ -1,7 +1,9 @@
 package com.grupo3.BookVerse.features.stories.service.impl;
 
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
+import com.grupo3.BookVerse.features.chapters.mappers.ChapterMapper;
 import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
+import com.grupo3.BookVerse.features.stories.dto.StoryDetailResponseDto;
 import com.grupo3.BookVerse.features.stories.dto.StoryRequestDto;
 import com.grupo3.BookVerse.features.stories.dto.StoryResponseDto;
 import com.grupo3.BookVerse.features.stories.mappers.StoryMapper;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.UUID;
 
 @Service
@@ -23,6 +26,7 @@ public class StoryServiceImpl implements StoryService {
 
     private final StoryRepository storyRepository;
     private final StoryMapper storyMapper;
+    private final ChapterMapper chapterMapper;
     private final UserRepository userRepository;
 
     @Override
@@ -51,11 +55,32 @@ public class StoryServiceImpl implements StoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public StoryResponseDto getStoryByIdExternal(UUID idExternal) {
+    public StoryDetailResponseDto getStoryByIdExternal(UUID idExternal) {
 
         StoryEntity story = findActiveStoryByIdExternal(idExternal);
 
-        return storyMapper.toResponseDto(story);
+        return StoryDetailResponseDto.builder()
+                .idExternal(story.getIdExternal())
+                .authorId(story.getAuthor().getIdExternal())
+                .title(story.getTitle())
+                .description(story.getDescription())
+                .accessType(story.getAccessType())
+                .hidden(story.isHidden())
+                .deleted(story.isDeleted())
+                .createdAt(story.getCreatedAt())
+                .updatedAt(story.getUpdatedAt())
+                .chaptersCount(story.getChapters() != null ? story.getChapters().size() : 0)
+                .chapters(
+                        story.getChapters() == null
+                                ? java.util.List.of()
+                                : chapterMapper.toSummaryDtoList(
+                                story.getChapters().stream()
+                                        .filter(chapter -> !chapter.isDeleted())
+                                        .sorted(Comparator.comparingInt(chapter -> chapter.getChapterNumber()))
+                                        .toList()
+                        )
+                )
+                .build();
     }
 
     @Override
