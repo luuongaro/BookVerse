@@ -27,7 +27,7 @@ spring:
           auth: true
           starttls:
             enable: true
-            
+
 google:
   books:
     api:
@@ -43,3 +43,6 @@ app:
     username: ${ADMIN_USERNAME}
     email: ${ADMIN_EMAIL}
     password: ${ADMIN_PASSWORD}
+
+  mail:
+    from: ${MAIL_FROM}
