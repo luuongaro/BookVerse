@@ -18,6 +18,9 @@ import com.grupo3.BookVerse.features.stories.repository.StoryRepository;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,7 +81,10 @@ public class ReviewServiceImpl implements ReviewService {
 
         validateExactlyOneTarget(dto.bookId(), dto.storyId());
 
+        UserEntity authenticatedUser = getAuthenticatedUser();
         UserEntity reviewer = findUserByIdExternal(dto.reviewerId());
+
+        validateAuthenticatedUserMatchesReviewer(authenticatedUser, reviewer);
 
         ReviewEntity review = reviewMapper.toEntity(dto);
         review.setReviewer(reviewer);
@@ -111,6 +117,9 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public ReviewResponseDto updateReview(UUID reviewId, ReviewUpdateRequestDto dto) {
         ReviewEntity existing = findActiveReviewByIdExternal(reviewId);
+        UserEntity authenticatedUser = getAuthenticatedUser();
+
+        validateCanManageReview(existing, authenticatedUser);
 
         existing.setRating(dto.rating());
         existing.setContent(dto.content());
@@ -123,6 +132,9 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public void deleteReview(UUID reviewId) {
         ReviewEntity review = findActiveReviewByIdExternal(reviewId);
+        UserEntity authenticatedUser = getAuthenticatedUser();
+
+        validateCanManageReview(review, authenticatedUser);
 
         review.setDeleted(true);
         reviewRepository.save(review);
@@ -172,6 +184,22 @@ public class ReviewServiceImpl implements ReviewService {
                 );
     }
 
+    private UserEntity getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserEntity user)) {
+            throw new AccessDeniedException("Authenticated user not found");
+        }
+
+        return user;
+    }
+
+    private void validateAuthenticatedUserMatchesReviewer(UserEntity authenticatedUser, UserEntity reviewer) {
+        if (!authenticatedUser.getId().equals(reviewer.getId())) {
+            throw new AccessDeniedException("You cannot create a review on behalf of another user");
+        }
+    }
+
     private void validateExactlyOneTarget(UUID bookId, UUID storyId) {
         if ((bookId == null && storyId == null) || (bookId != null && storyId != null)) {
             throw new BadRequestException(
@@ -195,6 +223,21 @@ public class ReviewServiceImpl implements ReviewService {
     private void validateStoryIsNotOwnedByReviewer(StoryEntity story, UserEntity reviewer) {
         if (story.getAuthor() != null && story.getAuthor().getId().equals(reviewer.getId())) {
             throw new BadRequestException("Users cannot review their own stories");
+        }
+    }
+
+    private void validateCanManageReview(ReviewEntity review, UserEntity user) {
+        boolean isOwner = review.getReviewer() != null
+                && review.getReviewer().getId().equals(user.getId());
+
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+
+        boolean isModerator = user.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_MODERATOR"));
+
+        if (!isOwner && !isAdmin && !isModerator) {
+            throw new AccessDeniedException("You do not have permission to manage this review");
         }
     }
 }

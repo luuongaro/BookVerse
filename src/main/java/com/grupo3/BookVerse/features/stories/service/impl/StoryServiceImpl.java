@@ -14,6 +14,9 @@ import com.grupo3.BookVerse.features.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +36,10 @@ public class StoryServiceImpl implements StoryService {
     @Transactional
     public StoryResponseDto createStory(StoryRequestDto storyRequestDto) {
 
+        UserEntity authenticatedUser = getAuthenticatedUser();
         UserEntity author = findUserByIdExternal(storyRequestDto.getAuthorId());
+
+        validateAuthenticatedUserMatchesAuthor(authenticatedUser, author);
 
         StoryEntity storyEntity = storyMapper.toEntity(storyRequestDto);
         storyEntity.setAuthor(author);
@@ -100,12 +106,13 @@ public class StoryServiceImpl implements StoryService {
     public StoryResponseDto updateStory(UUID idExternal, StoryRequestDto storyRequestDto) {
 
         StoryEntity existingStory = findActiveStoryByIdExternal(idExternal);
-        UserEntity author = findUserByIdExternal(storyRequestDto.getAuthorId());
+        UserEntity authenticatedUser = getAuthenticatedUser();
+
+        validateCanManageStory(existingStory, authenticatedUser);
 
         existingStory.setTitle(storyRequestDto.getTitle());
         existingStory.setDescription(storyRequestDto.getDescription());
         existingStory.setAccessType(storyRequestDto.getAccessType());
-        existingStory.setAuthor(author);
 
         StoryEntity updatedStory = storyRepository.save(existingStory);
 
@@ -117,8 +124,11 @@ public class StoryServiceImpl implements StoryService {
     public void deleteStory(UUID idExternal) {
 
         StoryEntity story = findActiveStoryByIdExternal(idExternal);
-        story.setDeleted(true);
+        UserEntity authenticatedUser = getAuthenticatedUser();
 
+        validateCanManageStory(story, authenticatedUser);
+
+        story.setDeleted(true);
         storyRepository.save(story);
     }
 
@@ -138,5 +148,36 @@ public class StoryServiceImpl implements StoryService {
                                 "User not found with idExternal: " + idExternal
                         )
                 );
+    }
+
+    private UserEntity getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserEntity user)) {
+            throw new AccessDeniedException("Authenticated user not found");
+        }
+
+        return user;
+    }
+
+    private void validateAuthenticatedUserMatchesAuthor(UserEntity authenticatedUser, UserEntity author) {
+        if (!authenticatedUser.getId().equals(author.getId())) {
+            throw new AccessDeniedException("You cannot create a story on behalf of another user");
+        }
+    }
+
+    private void validateCanManageStory(StoryEntity story, UserEntity user) {
+        boolean isOwner = story.getAuthor() != null
+                && story.getAuthor().getId().equals(user.getId());
+
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+
+        boolean isModerator = user.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_MODERATOR"));
+
+        if (!isOwner && !isAdmin && !isModerator) {
+            throw new AccessDeniedException("You do not have permission to manage this story");
+        }
     }
 }

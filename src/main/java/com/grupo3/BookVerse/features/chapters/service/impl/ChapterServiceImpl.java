@@ -10,9 +10,13 @@ import com.grupo3.BookVerse.features.chapters.repository.ChapterRepository;
 import com.grupo3.BookVerse.features.chapters.service.ChapterService;
 import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
 import com.grupo3.BookVerse.features.stories.repository.StoryRepository;
+import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,8 +34,10 @@ public class ChapterServiceImpl implements ChapterService {
     @Transactional
     public ChapterResponseDto createChapter(ChapterCreateRequestDto dto) {
 
-        StoryEntity story = storyRepository.findByIdExternalAndDeletedFalse(dto.getStoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Story not found"));
+        StoryEntity story = findActiveStoryByIdExternal(dto.getStoryId());
+        UserEntity authenticatedUser = getAuthenticatedUser();
+
+        validateCanManageStory(story, authenticatedUser);
 
         int nextChapterNumber = chapterRepository
                 .findTopByStoryIdOrderByChapterNumberDesc(story.getId())
@@ -58,8 +64,7 @@ public class ChapterServiceImpl implements ChapterService {
     @Override
     @Transactional(readOnly = true)
     public ChapterResponseDto getChapterByIdExternal(UUID idExternal) {
-        ChapterEntity chapter = chapterRepository.findByIdExternalAndDeletedFalse(idExternal)
-                .orElseThrow(() -> new ResourceNotFoundException("Chapter not found"));
+        ChapterEntity chapter = findActiveChapterByIdExternal(idExternal);
 
         validateParentStoryIsActive(chapter);
 
@@ -69,8 +74,7 @@ public class ChapterServiceImpl implements ChapterService {
     @Override
     @Transactional(readOnly = true)
     public Page<ChapterResponseDto> getChaptersByStoryId(UUID storyId, Pageable pageable) {
-        StoryEntity story = storyRepository.findByIdExternalAndDeletedFalse(storyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Story not found"));
+        StoryEntity story = findActiveStoryByIdExternal(storyId);
 
         Page<ChapterEntity> chapters =
                 chapterRepository.findByStoryIdAndDeletedFalseOrderByChapterNumberAsc(story.getId(), pageable);
@@ -81,10 +85,11 @@ public class ChapterServiceImpl implements ChapterService {
     @Override
     @Transactional
     public ChapterResponseDto updateChapter(UUID idExternal, ChapterUpdateRequestDto dto) {
-        ChapterEntity existing = chapterRepository.findByIdExternalAndDeletedFalse(idExternal)
-                .orElseThrow(() -> new ResourceNotFoundException("Chapter not found"));
-
+        ChapterEntity existing = findActiveChapterByIdExternal(idExternal);
         validateParentStoryIsActive(existing);
+
+        UserEntity authenticatedUser = getAuthenticatedUser();
+        validateCanManageStory(existing.getStory(), authenticatedUser);
 
         existing.setTitle(dto.getTitle());
         existing.setContent(dto.getContent());
@@ -97,13 +102,24 @@ public class ChapterServiceImpl implements ChapterService {
     @Override
     @Transactional
     public void deleteChapter(UUID idExternal) {
-        ChapterEntity existing = chapterRepository.findByIdExternalAndDeletedFalse(idExternal)
-                .orElseThrow(() -> new ResourceNotFoundException("Chapter not found"));
-
+        ChapterEntity existing = findActiveChapterByIdExternal(idExternal);
         validateParentStoryIsActive(existing);
+
+        UserEntity authenticatedUser = getAuthenticatedUser();
+        validateCanManageStory(existing.getStory(), authenticatedUser);
 
         existing.setDeleted(true);
         chapterRepository.save(existing);
+    }
+
+    private ChapterEntity findActiveChapterByIdExternal(UUID idExternal) {
+        return chapterRepository.findByIdExternalAndDeletedFalse(idExternal)
+                .orElseThrow(() -> new ResourceNotFoundException("Chapter not found"));
+    }
+
+    private StoryEntity findActiveStoryByIdExternal(UUID storyId) {
+        return storyRepository.findByIdExternalAndDeletedFalse(storyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Story not found"));
     }
 
     private void validateParentStoryIsActive(ChapterEntity chapter) {
@@ -111,6 +127,31 @@ public class ChapterServiceImpl implements ChapterService {
 
         if (story == null || story.isDeleted()) {
             throw new ResourceNotFoundException("Parent story not found or deleted");
+        }
+    }
+
+    private UserEntity getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserEntity user)) {
+            throw new AccessDeniedException("Authenticated user not found");
+        }
+
+        return user;
+    }
+
+    private void validateCanManageStory(StoryEntity story, UserEntity user) {
+        boolean isOwner = story.getAuthor() != null
+                && story.getAuthor().getId().equals(user.getId());
+
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+
+        boolean isModerator = user.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_MODERATOR"));
+
+        if (!isOwner && !isAdmin && !isModerator) {
+            throw new AccessDeniedException("You do not have permission to manage chapters for this story");
         }
     }
 }

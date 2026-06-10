@@ -80,6 +80,7 @@ public class StoryController {
             @ApiResponse(responseCode = "201", description = "Story created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Referenced story author not found", content = @Content)
     })
     public ResponseEntity<StoryResponseDto> createStory(
@@ -101,7 +102,8 @@ public class StoryController {
             @ApiResponse(responseCode = "200", description = "Story updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Story or referenced story author not found", content = @Content)
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Story not found", content = @Content)
     })
     public ResponseEntity<StoryResponseDto> updateStory(
             @Parameter(
@@ -126,6 +128,7 @@ public class StoryController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Story deleted successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Story not found", content = @Content)
     })
     public ResponseEntity<Void> deleteStory(

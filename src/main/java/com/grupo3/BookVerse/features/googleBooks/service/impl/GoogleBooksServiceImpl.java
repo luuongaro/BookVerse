@@ -7,11 +7,13 @@ import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBookVolumeDto;
 import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBooksApiResponseDto;
 import com.grupo3.BookVerse.features.googleBooks.service.GoogleBooksService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GoogleBooksServiceImpl implements GoogleBooksService {
 
     private final GoogleBooksClient googleBooksClient;
@@ -62,7 +64,9 @@ public class GoogleBooksServiceImpl implements GoogleBooksService {
         GoogleBookVolumeDto book = googleBooksClient.getBookByGoogleId(googleBookId);
 
         if (book == null || book.getVolumeInfo() == null) {
-            throw new ResourceNotFoundException("Book not found in Google Books with id: " + googleBookId);
+            throw new ResourceNotFoundException(
+                    "Book not found in Google Books with id: " + googleBookId
+            );
         }
 
         return book;
@@ -82,6 +86,8 @@ public class GoogleBooksServiceImpl implements GoogleBooksService {
 
     @Async
     public void logGoogleBooksSearch(String searchType, String value) {
-        System.out.println("Asynchronous Google Books search [" + searchType + "]: " + value);
+        log.info("Asynchronous Google Books search [{}]: {}", searchType, value);
     }
 }
+
+
