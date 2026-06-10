@@ -1,5 +1,6 @@
 package com.grupo3.BookVerse.config;
 
+import com.grupo3.BookVerse.auth.entrypoint.RestAccessDeniedHandler;
 import com.grupo3.BookVerse.auth.entrypoint.RestAuthenticationEntryPoint;
 import com.grupo3.BookVerse.auth.filters.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    private final RestAccessDeniedHandler restAccessDeniedHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -50,11 +52,13 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers("/api/roles/**").hasRole("ADMIN")
-                        .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "MODERATOR")
 
                         .anyRequest().authenticated()
                 )
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(restAuthenticationEntryPoint))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(restAuthenticationEntryPoint)
+                        .accessDeniedHandler(restAccessDeniedHandler)
+                )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

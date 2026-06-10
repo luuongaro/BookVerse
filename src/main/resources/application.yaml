@@ -11,9 +11,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-
     show-sql: true
-
     properties:
       hibernate:
         format_sql: true
@@ -29,9 +27,7 @@ spring:
           auth: true
           starttls:
             enable: true
-
-
-
+            
 google:
   books:
     api:
@@ -47,5 +43,3 @@ app:
     username: ${ADMIN_USERNAME}
     email: ${ADMIN_EMAIL}
     password: ${ADMIN_PASSWORD}
-
-from: ${MAIL_FROM}

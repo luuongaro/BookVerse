@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/roles")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 @Tag(
         name = "Roles",
         description = "Endpoints for consulting system roles in BookVerse"
@@ -33,9 +35,11 @@ public class RoleController {
             description = "Retrieves a list of all system roles.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
+
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Roles retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
     })
     public ResponseEntity<List<RoleResponseDto>> getAllRoles() {
         return ResponseEntity.ok(roleService.getAllRoles());
@@ -50,6 +54,7 @@ public class RoleController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Role retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Role not found", content = @Content)
     })
     public ResponseEntity<RoleResponseDto> getRoleByIdExternal(
@@ -72,6 +77,7 @@ public class RoleController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Role retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Role not found", content = @Content)
     })
     public ResponseEntity<RoleResponseDto> getRoleByName(

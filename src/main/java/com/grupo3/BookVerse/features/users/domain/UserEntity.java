@@ -17,6 +17,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serial;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 public class UserEntity implements UserDetails {
 
     //It is a version identifier for classes that are serializable.
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -121,6 +123,7 @@ public class UserEntity implements UserDetails {
     private List<ReadingStatusEntity> readingStatuses = new ArrayList<>();
 
     @Override
+    @NonNull
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (roles == null) {
             return Collections.emptySet();
@@ -136,11 +139,13 @@ public class UserEntity implements UserDetails {
     }
 
     @Override
+    @NonNull
     public String getPassword() {
         return this.passwordHash;
     }
 
     @Override
+    @NonNull
     public String getUsername() {
         return this.email;
     }
