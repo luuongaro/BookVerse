@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +33,7 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get all reviews",
             description = "Retrieves all active reviews in the system.",
@@ -46,6 +48,7 @@ public class ReviewController {
     }
 
     @GetMapping("/{reviewId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get review by external id",
             description = "Retrieves an active review using its external UUID identifier.",
@@ -68,6 +71,7 @@ public class ReviewController {
     }
 
     @GetMapping("/book/{bookId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get reviews by book",
             description = "Retrieves all active reviews associated with a specific commercial book.",
@@ -90,6 +94,7 @@ public class ReviewController {
     }
 
     @GetMapping("/story/{storyId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get reviews by story",
             description = "Retrieves all active reviews associated with a specific story.",
@@ -112,6 +117,7 @@ public class ReviewController {
     }
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Create a new review",
             description = "Creates a new review for exactly one target: either a commercial book or a story.",
@@ -121,19 +127,19 @@ public class ReviewController {
             @ApiResponse(responseCode = "201", description = "Review created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request body or invalid review target", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Reviewer, book, or story not found", content = @Content),
             @ApiResponse(responseCode = "409", description = "Duplicate review detected", content = @Content)
     })
     public ResponseEntity<ReviewResponseDto> createReview(
             @Valid @RequestBody ReviewCreateRequestDto reviewCreateRequestDto
     ) {
-        return new ResponseEntity<>(
-                reviewService.createReview(reviewCreateRequestDto),
-                HttpStatus.CREATED
-        );
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(reviewService.createReview(reviewCreateRequestDto));
     }
 
     @PutMapping("/{reviewId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Update a review",
             description = "Updates an existing review. Reviewer and target association cannot be changed.",
@@ -143,6 +149,7 @@ public class ReviewController {
             @ApiResponse(responseCode = "200", description = "Review updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Review not found", content = @Content)
     })
     public ResponseEntity<ReviewResponseDto> updateReview(
@@ -160,6 +167,7 @@ public class ReviewController {
     }
 
     @DeleteMapping("/{reviewId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Delete a review",
             description = "Performs a logical deletion of a review.",
@@ -168,6 +176,7 @@ public class ReviewController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Review deleted successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Review not found", content = @Content)
     })
     public ResponseEntity<Void> deleteReview(

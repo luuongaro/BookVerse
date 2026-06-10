@@ -1,7 +1,7 @@
 package com.grupo3.BookVerse.features.users.controller;
 
-import com.grupo3.BookVerse.features.users.dto.UserResponseDto;
 import com.grupo3.BookVerse.features.users.dto.UserUpdateRequestDto;
+import com.grupo3.BookVerse.features.users.dto.UserResponseDto;
 import com.grupo3.BookVerse.features.users.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
     @Operation(
             summary = "Get all users",
             description = "Retrieves a list of all registered users.",
@@ -37,13 +39,15 @@ public class UserController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
     })
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @GetMapping("/{idExternal}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get user by external id",
             description = "Retrieves a user using its external UUID identifier.",
@@ -52,6 +56,7 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
     public ResponseEntity<UserResponseDto> getUserByIdExternal(
@@ -66,6 +71,7 @@ public class UserController {
     }
 
     @PutMapping("/{idExternal}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Update a user",
             description = "Updates an existing user identified by its external UUID.",
@@ -75,7 +81,9 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "User updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Email or username already in use", content = @Content)
     })
     public ResponseEntity<UserResponseDto> updateUser(
             @Parameter(
@@ -90,19 +98,21 @@ public class UserController {
     }
 
     @DeleteMapping("/{idExternal}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(
-            summary = "Delete a user",
-            description = "Deletes a user identified by its external UUID.",
+            summary = "Deactivate a user",
+            description = "Performs a logical deletion of a user by setting the account status to INACTIVE.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+            @ApiResponse(responseCode = "204", description = "User deactivated successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
     public ResponseEntity<Void> deleteUser(
             @Parameter(
-                    description = "External UUID of the user to delete",
+                    description = "External UUID of the user to deactivate",
                     required = true,
                     example = "550e8400-e29b-41d4-a716-446655440000"
             )

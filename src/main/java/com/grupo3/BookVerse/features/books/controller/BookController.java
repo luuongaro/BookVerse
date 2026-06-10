@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public class BookController {
     private final BookService bookService;
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get all books",
             description = "Retrieves all books stored locally in the system.",
@@ -42,6 +44,7 @@ public class BookController {
     }
 
     @GetMapping("/{idExternal}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get book by external id",
             description = "Retrieves a locally stored book using its external UUID identifier.",
@@ -64,6 +67,7 @@ public class BookController {
     }
 
     @PostMapping("/google/{googleBookId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Store a Google Book locally",
             description = "Retrieves a book from Google Books API by its Google Book ID and stores it locally if it does not already exist.",

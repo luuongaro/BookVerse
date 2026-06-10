@@ -17,6 +17,9 @@ import com.grupo3.BookVerse.features.reviews.repository.ReviewRepository;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,8 +65,11 @@ public class ReviewReportServiceImpl implements ReviewReportService {
     @Transactional
     public ReviewReportResponseDto createReport(ReviewReportCreateRequestDto dto) {
 
-        ReviewEntity review = findActiveReviewByIdExternal(dto.reviewId());
+        UserEntity authenticatedUser = getAuthenticatedUser();
         UserEntity reporter = findUserByIdExternal(dto.reporterUserId());
+        validateAuthenticatedUserMatchesReporter(authenticatedUser, reporter);
+
+        ReviewEntity review = findActiveReviewByIdExternal(dto.reviewId());
 
         validateReviewCanBeReported(review);
         validateReporterIsNotReviewOwner(review, reporter);
@@ -148,6 +154,22 @@ public class ReviewReportServiceImpl implements ReviewReportService {
                                 "User not found with idExternal: " + userId
                         )
                 );
+    }
+
+    private UserEntity getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserEntity user)) {
+            throw new AccessDeniedException("Authenticated user not found");
+        }
+
+        return user;
+    }
+
+    private void validateAuthenticatedUserMatchesReporter(UserEntity authenticatedUser, UserEntity reporter) {
+        if (!authenticatedUser.getId().equals(reporter.getId())) {
+            throw new AccessDeniedException("You cannot create a report on behalf of another user");
+        }
     }
 
     private void validateReviewCanBeReported(ReviewEntity review) {
