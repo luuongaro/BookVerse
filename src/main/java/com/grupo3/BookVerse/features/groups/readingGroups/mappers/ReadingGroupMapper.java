@@ -21,7 +21,6 @@ public interface ReadingGroupMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "comments", ignore = true)
     @Mapping(target = "members", ignore = true)
-    @Mapping(target = "progresses", ignore = true)
     @Mapping(target = "goals", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     ReadingGroupEntity toEntity(ReadingGroupRequestDto dto);
