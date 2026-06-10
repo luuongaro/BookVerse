@@ -11,7 +11,8 @@ following IEEE-based software requirements specification guidelines.
 BookVerse provides a RESTful API that allows users to:
 
 - Register and manage accounts
-- Create and publish original stories
+- Create and publish original serialized stories
+- Read and review both commercial books and platform stories
 - Browse and review books and stories
 - Participate in reading groups
 - Track reading progress and status
@@ -26,7 +27,7 @@ The system includes the following main functional areas:
 
 - User authentication and role management
 - Story and chapter management
-- Book metadata consultation
+- Book metadata integration through Google Books API with local persistence and duplicate prevention
 - Reviews and ratings system
 - Review reporting and moderation
 - Reading status and progress tracking
@@ -42,7 +43,6 @@ The system includes the following main functional areas:
 
 The core entities of the system include:
 
-- Authors
 - Books
 - Stories
 - Chapters
@@ -114,6 +114,7 @@ BookVerse aims to centralize these features into a single backend system.
 - Use of DTO pattern to isolate persistence models from API responses
 - Implementation of MapStruct for object mapping
 - Layered architecture for scalability and maintainability
+- Pagination support implemented for stories and chapters endpoints using Spring Data Pageable
 - Use of bidirectional relationships between entities
 - Inclusion of `idExternal` as part of entity identification strategy
 - Exception handling centralized using global handlers
