@@ -77,7 +77,7 @@ public class UserEntity implements UserDetails {
     @Builder.Default
     private List<StoryEntity> stories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "reviewer", fetch = FetchType.LAZY)
     @Builder.Default
     private List<ReviewEntity> reviews = new ArrayList<>();
 
