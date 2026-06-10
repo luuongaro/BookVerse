@@ -28,36 +28,31 @@ public class GroupGoalsEntity {
     @JoinColumn(name = "group_id", nullable = false)
     private ReadingGroupEntity group;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "goal_type", nullable = false)
+    private GoalType goalType;
+
     @Column(name = "target_progress", nullable = false)
     private Integer targetProgress;
 
-    @Column(name = "target_date", nullable = false)
+    @Column(name = "target_date")
     private LocalDateTime targetDate;
-
-    @Column(name = "average_progress", nullable = false, precision = 5, scale = 2)
-    private BigDecimal averageProgress;
-
-    @Column(name = "is_achieved", nullable = false)
-    private Boolean achieved = false;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist
     public void prePersist() {
+
         if (idExternal == null) {
             idExternal = UUID.randomUUID();
         }
-        if (updatedAt == null) {
-            updatedAt = LocalDateTime.now();
-        }
-        if (achieved == null) {
-            achieved = false;
-        }
+
+        updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
     public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 }
