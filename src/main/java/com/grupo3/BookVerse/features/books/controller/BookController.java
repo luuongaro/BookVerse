@@ -10,11 +10,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -32,22 +33,22 @@ public class BookController {
     @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get all books",
-            description = "Retrieves all books stored locally in the system.",
+            description = "Retrieves a paginated list of all active books stored locally in the system.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Books retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public ResponseEntity<List<BookResponseDto>> getAllBooks() {
-        return ResponseEntity.ok(bookService.getAllBooks());
+    public ResponseEntity<Page<BookResponseDto>> getAllBooks(Pageable pageable) {
+        return ResponseEntity.ok(bookService.getAllBooks(pageable));
     }
 
     @GetMapping("/{idExternal}")
     @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get book by external id",
-            description = "Retrieves a locally stored book using its external UUID identifier.",
+            description = "Retrieves a locally stored active book using its external UUID identifier.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -90,3 +91,5 @@ public class BookController {
         return ResponseEntity.ok(bookService.findOrCreateFromGoogleBookId(googleBookId));
     }
 }
+
+

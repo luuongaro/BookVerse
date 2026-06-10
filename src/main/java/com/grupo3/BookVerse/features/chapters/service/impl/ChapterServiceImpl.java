@@ -145,10 +145,10 @@ public class ChapterServiceImpl implements ChapterService {
                 && story.getAuthor().getId().equals(user.getId());
 
         boolean isAdmin = user.getAuthorities().stream()
-                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
 
         boolean isModerator = user.getAuthorities().stream()
-                .anyMatch(authority -> authority.getAuthority().equals("ROLE_MODERATOR"));
+                .anyMatch(authority -> "ROLE_MODERATOR".equals(authority.getAuthority()));
 
         if (!isOwner && !isAdmin && !isModerator) {
             throw new AccessDeniedException("You do not have permission to manage chapters for this story");
