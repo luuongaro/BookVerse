@@ -26,14 +26,21 @@ public class GroupGoalsServiceImpl implements GroupGoalsService {
 
     @Override
     @Transactional
-    public GroupGoalsResponseDto save(GroupGoalsRequestDto groupGoalsRequestDto) {
+    public GroupGoalsResponseDto save(
+            GroupGoalsRequestDto requestDto
+    ) {
 
-        ReadingGroupEntity group = findGroupByIdExternal(groupGoalsRequestDto.groupId());
+        ReadingGroupEntity group =
+                findGroupByIdExternal(requestDto.groupId());
 
-        GroupGoalsEntity entity = groupGoalsMapper.toEntity(groupGoalsRequestDto);
+        GroupGoalsEntity entity =
+                groupGoalsMapper.toEntity(requestDto);
+
         entity.setGroup(group);
+        entity.setGoalType(requestDto.goalType());
 
-        GroupGoalsEntity saved = groupGoalsRepository.save(entity);
+        GroupGoalsEntity saved =
+                groupGoalsRepository.save(entity);
 
         return groupGoalsMapper.toResponseDto(saved);
     }
@@ -47,18 +54,31 @@ public class GroupGoalsServiceImpl implements GroupGoalsService {
 
     @Override
     @Transactional
-    public GroupGoalsResponseDto update(UUID groupGoalsId, GroupGoalsRequestDto groupGoalsRequestDto) {
+    public GroupGoalsResponseDto update(
+            UUID groupGoalsId,
+            GroupGoalsRequestDto requestDto
+    ) {
 
-        GroupGoalsEntity groupGoals = findByIdExternalEntity(groupGoalsId);
-        ReadingGroupEntity group = findGroupByIdExternal(groupGoalsRequestDto.groupId());
+        GroupGoalsEntity groupGoals =
+                findByIdExternalEntity(groupGoalsId);
+
+        ReadingGroupEntity group =
+                findGroupByIdExternal(requestDto.groupId());
 
         groupGoals.setGroup(group);
-        groupGoals.setTargetProgress(groupGoalsRequestDto.targetProgress());
-        groupGoals.setTargetDate(groupGoalsRequestDto.targetDate());
-        groupGoals.setAverageProgress(groupGoalsRequestDto.averageProgress());
-        groupGoals.setAchieved(groupGoalsRequestDto.achieved());
 
-        GroupGoalsEntity saved = groupGoalsRepository.save(groupGoals);
+        groupGoals.setGoalType(requestDto.goalType());
+
+        groupGoals.setTargetProgress(
+                requestDto.targetProgress()
+        );
+
+        groupGoals.setTargetDate(
+                requestDto.targetDate()
+        );
+
+        GroupGoalsEntity saved =
+                groupGoalsRepository.save(groupGoals);
 
         return groupGoalsMapper.toResponseDto(saved);
     }

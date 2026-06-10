@@ -22,7 +22,16 @@ public interface GroupGoalsMapper {
     GroupGoalsEntity toEntity(GroupGoalsRequestDto dto);
 
     @Mapping(target = "groupId", source = "group.idExternal")
-    GroupGoalsResponseDto toResponseDto(GroupGoalsEntity entity);
 
-    List<GroupGoalsResponseDto> toResponseDtoList(List<GroupGoalsEntity> entities);
+
+    @Mapping(target = "currentProgress", ignore = true)
+    @Mapping(target = "achieved", ignore = true)
+
+    GroupGoalsResponseDto toResponseDto(
+            GroupGoalsEntity entity
+    );
+
+    List<GroupGoalsResponseDto> toResponseDtoList(
+            List<GroupGoalsEntity> entities
+    );
 }
