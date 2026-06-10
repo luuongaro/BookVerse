@@ -11,11 +11,12 @@ import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBookItemDto;
 import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBookVolumeDto;
 import com.grupo3.BookVerse.features.googleBooks.service.GoogleBooksService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -29,8 +30,9 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookResponseDto> getAllBooks() {
-        return bookMapper.toResponseDtoList(bookRepository.findByDeletedFalse());
+    public Page<BookResponseDto> getAllBooks(Pageable pageable) {
+        Page<BookEntity> books = bookRepository.findByDeletedFalse(pageable);
+        return books.map(bookMapper::toResponseDto);
     }
 
     @Override

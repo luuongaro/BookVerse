@@ -123,7 +123,6 @@ public class UserEntity implements UserDetails {
     }
 
     @Override
-    @NonNull
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (roles == null) {
             return Collections.emptySet();
@@ -139,13 +138,12 @@ public class UserEntity implements UserDetails {
     }
 
     @Override
-    @NonNull
     public String getPassword() {
         return this.passwordHash;
     }
 
     @Override
-    @NonNull
+
     public String getUsername() {
         return this.email;
     }
