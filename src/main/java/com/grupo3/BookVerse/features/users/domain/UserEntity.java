@@ -2,6 +2,7 @@ package com.grupo3.BookVerse.features.users.domain;
 
 import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberEntity;
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
+import com.grupo3.BookVerse.features.reviewReport.domain.ReviewReportEntity;
 import com.grupo3.BookVerse.features.reviews.domain.ReviewEntity;
 import com.grupo3.BookVerse.features.roles.domain.RoleEntity;
 import com.grupo3.BookVerse.features.status.domain.ReadingStatusEntity;
@@ -80,6 +81,14 @@ public class UserEntity implements UserDetails {
     @OneToMany(mappedBy = "reviewer", fetch = FetchType.LAZY)
     @Builder.Default
     private List<ReviewEntity> reviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "reporterUser", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<ReviewReportEntity> reviewReportsSubmitted = new ArrayList<>();
+
+    @OneToMany(mappedBy = "moderatorUser", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<ReviewReportEntity> reviewReportsModerated = new ArrayList<>();
 
     @OneToMany(mappedBy = "sender", fetch = FetchType.LAZY)
     @Builder.Default
