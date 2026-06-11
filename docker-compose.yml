@@ -5,8 +5,8 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-bookverse}
-      POSTGRES_USER: ${POSTGRES_USER:-bookverse}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bookverse}
+      POSTGRES_USER: ${POSTGRES_USER:-root}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-root}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
