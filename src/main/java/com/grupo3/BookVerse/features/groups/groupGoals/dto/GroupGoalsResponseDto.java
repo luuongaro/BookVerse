@@ -18,10 +18,6 @@ public record GroupGoalsResponseDto(
 
         LocalDateTime targetDate,
 
-        BigDecimal currentProgress,
-
-        Boolean achieved,
-
         LocalDateTime updatedAt
 
 ) {
