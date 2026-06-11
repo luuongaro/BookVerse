@@ -18,5 +18,5 @@ public interface GroupGoalsService {
 
     List<GroupGoalsResponseDto> findAll();
 
-    List<GroupGoalsResponseDto> findByGroupId(UUID groupId);
+    GroupGoalsResponseDto findByGroupId(UUID groupId);
 }

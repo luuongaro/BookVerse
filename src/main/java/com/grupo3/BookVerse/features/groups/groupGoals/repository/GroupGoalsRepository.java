@@ -13,5 +13,5 @@ public interface GroupGoalsRepository extends JpaRepository<GroupGoalsEntity, Lo
 
     Optional<GroupGoalsEntity> findByIdExternal(UUID idExternal);
 
-    List<GroupGoalsEntity> findByGroupIdExternal(UUID groupId);
+    Optional<GroupGoalsEntity> findTopByGroup_IdExternalOrderByUpdatedAtDesc(UUID groupId);
 }

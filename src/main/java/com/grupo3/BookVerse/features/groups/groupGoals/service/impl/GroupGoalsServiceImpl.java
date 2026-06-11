@@ -110,15 +110,20 @@ public class GroupGoalsServiceImpl implements GroupGoalsService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<GroupGoalsResponseDto> findByGroupId(
-            UUID groupId
-    ) {
+    public GroupGoalsResponseDto findByGroupId(UUID groupId) {
 
         findGroupByIdExternal(groupId);
 
-        return groupGoalsMapper.toResponseDtoList(
-                groupGoalsRepository.findByGroupIdExternal(groupId)
-        );
+        GroupGoalsEntity groupGoal =
+                groupGoalsRepository
+                        .findTopByGroup_IdExternalOrderByUpdatedAtDesc(groupId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Group goal not found for group: " + groupId
+                                )
+                        );
+
+        return groupGoalsMapper.toResponseDto(groupGoal);
     }
 
     private GroupGoalsEntity findByIdExternalEntity(

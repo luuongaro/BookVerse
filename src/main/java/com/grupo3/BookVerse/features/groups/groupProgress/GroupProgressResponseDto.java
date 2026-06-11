@@ -1,10 +1,11 @@
 package com.grupo3.BookVerse.features.groups.groupProgress;
 
 import com.grupo3.BookVerse.features.groups.groupGoals.domain.GoalType;
+import lombok.Builder;
 
 import java.util.UUID;
 
-
+@Builder
 public record GroupProgressResponseDto(
 
         UUID groupId,
