@@ -10,7 +10,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -39,9 +38,8 @@ public class SubscriptionDataInitializer implements CommandLineRunner {
             SubscriptionEntity subscription = SubscriptionEntity.builder()
                     .type(type)
                     .maxStoriesPublished(type == SubscriptionType.FREE ? 5 : Integer.MAX_VALUE)
+                    .maxActiveStoriesReading(type == SubscriptionType.FREE ? 3 : Integer.MAX_VALUE)
                     .advancedStatsEnabled(type == SubscriptionType.PREMIUM)
-                    .startDate(LocalDateTime.now())
-                    .endDate(null)
                     .build();
 
             subscriptionRepository.save(subscription);

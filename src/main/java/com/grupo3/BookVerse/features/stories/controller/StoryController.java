@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -33,6 +34,7 @@ public class StoryController {
     private final StoryService storyService;
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get all stories",
             description = "Retrieves a paginated list of all active stories registered in the system.",
@@ -47,6 +49,7 @@ public class StoryController {
     }
 
     @GetMapping("/{idExternal}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get story by external id",
             description = "Retrieves an active story with its summarized chapters using its external UUID identifier.",
@@ -55,6 +58,7 @@ public class StoryController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Story retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Story not found", content = @Content)
     })
     public ResponseEntity<StoryDetailResponseDto> getStoryByIdExternal(
@@ -71,6 +75,7 @@ public class StoryController {
     }
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Create a new story",
             description = "Creates a new story written by a user and returns the created resource.",
@@ -93,6 +98,7 @@ public class StoryController {
     }
 
     @PutMapping("/{idExternal}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Update a story",
             description = "Updates an existing story identified by its external UUID.",
@@ -120,6 +126,7 @@ public class StoryController {
     }
 
     @DeleteMapping("/{idExternal}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Delete a story",
             description = "Soft deletes an active story identified by its external UUID.",
@@ -144,6 +151,7 @@ public class StoryController {
     }
 
     @GetMapping("/author/{authorId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get stories by author",
             description = "Retrieves a paginated list of all active stories created by the specified user acting as story author.",

@@ -1,4 +1,5 @@
 package com.grupo3.BookVerse.features.subscriptions.domain;
+
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,7 +28,7 @@ public class SubscriptionEntity {
     private UUID idExternal;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private SubscriptionType type;
 
     @Column(name = "max_stories_published", nullable = false)
@@ -35,12 +36,6 @@ public class SubscriptionEntity {
 
     @Column(name = "advanced_stats_enabled", nullable = false)
     private boolean advancedStatsEnabled;
-
-    @Column(name = "start_date", nullable = false)
-    private LocalDateTime startDate;
-
-    @Column(name = "end_date")
-    private LocalDateTime endDate;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -50,6 +45,9 @@ public class SubscriptionEntity {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "max_active_stories_reading", nullable = false)
+    private int maxActiveStoriesReading;
+
     @PrePersist
     protected void onCreate() {
         if (idExternal == null) {
@@ -58,6 +56,6 @@ public class SubscriptionEntity {
     }
 
     @OneToMany(mappedBy = "subscription", fetch = FetchType.LAZY)
+    @Builder.Default
     private List<UserEntity> users = new ArrayList<>();
 }
-
