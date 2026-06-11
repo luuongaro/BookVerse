@@ -42,7 +42,7 @@ class BookServiceImplTest {
     @InjectMocks
     private BookServiceImpl bookService;
 
-    //verificar que el service traiga todos los libros correctamente
+    // Verify that the service returns all books correctly
     @Test
     void shouldReturnAllBooks() {
         BookEntity book = BookEntity.builder()
@@ -79,7 +79,7 @@ class BookServiceImplTest {
                 .toResponseDtoList(anyList());
     }
 
-    //obtener libros por id
+    // Verify that a book is returned by external ID
     @Test
     void shouldReturnBookByIdExternal() {
         UUID id = UUID.randomUUID();
@@ -118,7 +118,7 @@ class BookServiceImplTest {
                 .toResponseDto(book);
     }
 
-    //excepción si no existe el libro
+    // Verify that an exception is thrown when the book does not exist
     @Test
     void shouldThrowExceptionWhenBookNotFound() {
         UUID id = UUID.randomUUID();
@@ -135,8 +135,7 @@ class BookServiceImplTest {
                 .findByIdExternal(id);
     }
 
-    //si ya existe, no consulta google ni guarda
-    //prueba que devuelva el libro, que no vuelva a guardarlo y que no llame a google otra vez
+    // Verify that if the book already exists, Google API is not called and the book is not saved again
     @Test
     void shouldReturnExistingBookIfAlreadyStored() {
         String googleBookId = "abc123";
@@ -179,8 +178,7 @@ class BookServiceImplTest {
                 .getBookByGoogleId(anyString());
     }
 
-    //si no existe, consulta google y lo guarda
-    //prueba que busca el libro en google, que lo guarda y que lo devuelve
+    // Verify that if the book does not exist, it is fetched from Google, saved, and returned
     @Test
     void shouldCreateBookWhenNotExists() {
 
@@ -246,8 +244,4 @@ class BookServiceImplTest {
         verify(bookMapper)
                 .toResponseDto(savedBook);
     }
-
-
-
-
 }
