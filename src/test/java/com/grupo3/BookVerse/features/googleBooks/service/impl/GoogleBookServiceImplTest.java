@@ -26,7 +26,7 @@ class GoogleBooksServiceImplTest {
     @InjectMocks
     private GoogleBooksServiceImpl googleBooksService;
 
-    //Verifies that the service correctly searches books using a valid query
+    // Verifies that the service correctly searches books using a valid query
     @Test
     void shouldSearchBooksSuccessfully() {
 
