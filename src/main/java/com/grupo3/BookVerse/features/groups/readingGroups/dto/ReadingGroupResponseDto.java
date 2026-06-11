@@ -8,9 +8,13 @@ public record ReadingGroupResponseDto(
         UUID idExternal,
 
         UUID bookId,
+
+        UUID storyId,
+
         UUID createdByUserId,
 
         String name,
+
         Boolean isActive,
 
         LocalDateTime createdAt

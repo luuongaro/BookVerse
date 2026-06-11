@@ -1,5 +1,6 @@
 package com.grupo3.BookVerse.features.groups.readingGroups.service.impl;
 
+import com.grupo3.BookVerse.common.exception.BadRequestException;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
 import com.grupo3.BookVerse.features.books.domain.BookEntity;
 import com.grupo3.BookVerse.features.books.repository.BookRepository;
@@ -9,6 +10,8 @@ import com.grupo3.BookVerse.features.groups.readingGroups.dto.ReadingGroupRespon
 import com.grupo3.BookVerse.features.groups.readingGroups.mappers.ReadingGroupMapper;
 import com.grupo3.BookVerse.features.groups.readingGroups.repository.ReadingGroupRepository;
 import com.grupo3.BookVerse.features.groups.readingGroups.service.ReadingGroupService;
+import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
+import com.grupo3.BookVerse.features.stories.repository.StoryRepository;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,107 +27,246 @@ public class ReadingGroupServiceImpl implements ReadingGroupService {
 
     private final ReadingGroupRepository repository;
     private final ReadingGroupMapper mapper;
+
     private final BookRepository bookRepository;
+    private final StoryRepository storyRepository;
     private final UserRepository userRepository;
 
     @Override
     @Transactional
-    public ReadingGroupResponseDto createGroup(ReadingGroupRequestDto dto) {
+    public ReadingGroupResponseDto createGroup(
+            ReadingGroupRequestDto dto
+    ) {
 
-        BookEntity book = findBookById(dto.bookId());
-        UserEntity user = findUserById(dto.createdByUserId());
+        validateContent(
+                dto.bookId(),
+                dto.storyId()
+        );
 
-        ReadingGroupEntity entity = mapper.toEntity(dto);
-        entity.setBook(book);
+        UserEntity user =
+                findUserByIdExternal(
+                        dto.createdByUserId()
+                );
+
+        ReadingGroupEntity entity =
+                mapper.toEntity(dto);
+
         entity.setCreatedBy(user);
 
-        ReadingGroupEntity saved = repository.save(entity);
+        if (dto.bookId() != null) {
+
+            entity.setBook(
+                    findBookByIdExternal(
+                            dto.bookId()
+                    )
+            );
+
+            entity.setStory(null);
+        }
+
+        if (dto.storyId() != null) {
+
+            entity.setStory(
+                    findStoryByIdExternal(
+                            dto.storyId()
+                    )
+            );
+
+            entity.setBook(null);
+        }
+
+        ReadingGroupEntity saved =
+                repository.save(entity);
+
         return mapper.toResponseDto(saved);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ReadingGroupResponseDto> getAllGroups() {
-        return mapper.toResponseDtoList(repository.findAll());
+
+        return mapper.toResponseDtoList(
+                repository.findAll()
+        );
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ReadingGroupResponseDto getGroupByIdExternal(UUID idExternal) {
-        ReadingGroupEntity entity = findGroupByIdExternal(idExternal);
+    public ReadingGroupResponseDto getGroupByIdExternal(
+            UUID idExternal
+    ) {
+
+        ReadingGroupEntity entity =
+                findGroupByIdExternal(idExternal);
+
         return mapper.toResponseDto(entity);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ReadingGroupResponseDto> getGroupsByBookIdExternal(UUID bookId) {
+    public List<ReadingGroupResponseDto> getGroupsByBookIdExternal(
+            UUID bookId
+    ) {
 
-        findBookById(bookId);
+        findBookByIdExternal(bookId);
 
-        List<ReadingGroupEntity> groups =
-                repository.findByBook_IdExternal(bookId);
+        return mapper.toResponseDtoList(
+                repository.findByBook_IdExternal(bookId)
+        );
+    }
 
-        return mapper.toResponseDtoList(groups);
+    @Transactional(readOnly = true)
+    @Override
+    public List<ReadingGroupResponseDto> getGroupsByStoryIdExternal(
+            UUID storyId
+    ) {
+
+        findStoryByIdExternal(storyId);
+
+        return mapper.toResponseDtoList(
+                repository.findByStory_IdExternal(storyId)
+        );
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ReadingGroupResponseDto> getGroupsByUserIdExternal(UUID userId) {
+    public List<ReadingGroupResponseDto> getGroupsByUserIdExternal(
+            UUID userId
+    ) {
 
-        findUserById(userId);
+        findUserByIdExternal(userId);
 
-        List<ReadingGroupEntity> groups =
-                repository.findByCreatedBy_IdExternal(userId);
-
-        return mapper.toResponseDtoList(groups);
+        return mapper.toResponseDtoList(
+                repository.findByCreatedBy_IdExternal(userId)
+        );
     }
 
     @Override
     @Transactional
-    public ReadingGroupResponseDto updateGroup(UUID idExternal, ReadingGroupRequestDto dto) {
+    public ReadingGroupResponseDto updateGroup(
+            UUID idExternal,
+            ReadingGroupRequestDto dto
+    ) {
 
-        ReadingGroupEntity entity = findGroupByIdExternal(idExternal);
+        validateContent(
+                dto.bookId(),
+                dto.storyId()
+        );
 
-        BookEntity book = findBookById(dto.bookId());
-        UserEntity user = findUserById(dto.createdByUserId());
+        ReadingGroupEntity entity =
+                findGroupByIdExternal(idExternal);
+
+        UserEntity user =
+                findUserByIdExternal(
+                        dto.createdByUserId()
+                );
 
         entity.setName(dto.name());
         entity.setIsActive(dto.isActive());
-        entity.setBook(book);
         entity.setCreatedBy(user);
 
-        ReadingGroupEntity updated = repository.save(entity);
+        entity.setBook(null);
+        entity.setStory(null);
+
+        if (dto.bookId() != null) {
+
+            entity.setBook(
+                    findBookByIdExternal(
+                            dto.bookId()
+                    )
+            );
+        }
+
+        if (dto.storyId() != null) {
+
+            entity.setStory(
+                    findStoryByIdExternal(
+                            dto.storyId()
+                    )
+            );
+        }
+
+        ReadingGroupEntity updated =
+                repository.save(entity);
+
         return mapper.toResponseDto(updated);
     }
 
     @Override
     @Transactional
     public void deleteGroup(UUID idExternal) {
-        ReadingGroupEntity entity = findGroupByIdExternal(idExternal);
+
+        ReadingGroupEntity entity =
+                findGroupByIdExternal(idExternal);
+
         repository.delete(entity);
     }
 
-    private ReadingGroupEntity findGroupByIdExternal(UUID idExternal) {
+    private void validateContent(
+            UUID bookId,
+            UUID storyId
+    ) {
+
+        if (bookId == null && storyId == null) {
+
+            throw new BadRequestException(
+                    "A reading group must be associated with either a book or a story"
+            );
+        }
+
+        if (bookId != null && storyId != null) {
+
+            throw new BadRequestException(
+                    "A reading group cannot be associated with both a book and a story"
+            );
+        }
+    }
+
+    private ReadingGroupEntity findGroupByIdExternal(
+            UUID idExternal
+    ) {
+
         return repository.findByIdExternal(idExternal)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Reading group not found with idExternal: " + idExternal
+                                "Reading group not found with idExternal: "
+                                        + idExternal
                         ));
     }
 
-    private BookEntity findBookById(UUID idExternal) {
+    private BookEntity findBookByIdExternal(
+            UUID idExternal
+    ) {
+
         return bookRepository.findByIdExternal(idExternal)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Book not found with idExternal: " + idExternal
+                                "Book not found with idExternal: "
+                                        + idExternal
                         ));
     }
 
-    private UserEntity findUserById(UUID idExternal) {
+    private StoryEntity findStoryByIdExternal(
+            UUID idExternal
+    ) {
+
+        return storyRepository.findByIdExternal(idExternal)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Story not found with idExternal: "
+                                        + idExternal
+                        ));
+    }
+
+    private UserEntity findUserByIdExternal(
+            UUID idExternal
+    ) {
+
         return userRepository.findByIdExternal(idExternal)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "User not found with idExternal: " + idExternal
+                                "User not found with idExternal: "
+                                        + idExternal
                         ));
     }
 }
