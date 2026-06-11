@@ -37,19 +37,11 @@ public class GroupGoalsServiceImpl implements GroupGoalsService {
                 groupGoalsMapper.toEntity(requestDto);
 
         entity.setGroup(group);
-        entity.setGoalType(requestDto.goalType());
 
         GroupGoalsEntity saved =
                 groupGoalsRepository.save(entity);
 
         return groupGoalsMapper.toResponseDto(saved);
-    }
-
-    @Override
-    @Transactional
-    public void delete(UUID groupGoalsId) {
-        GroupGoalsEntity groupGoals = findByIdExternalEntity(groupGoalsId);
-        groupGoalsRepository.delete(groupGoals);
     }
 
     @Override
@@ -67,7 +59,9 @@ public class GroupGoalsServiceImpl implements GroupGoalsService {
 
         groupGoals.setGroup(group);
 
-        groupGoals.setGoalType(requestDto.goalType());
+        groupGoals.setGoalType(
+                requestDto.goalType()
+        );
 
         groupGoals.setTargetProgress(
                 requestDto.targetProgress()
@@ -84,37 +78,74 @@ public class GroupGoalsServiceImpl implements GroupGoalsService {
     }
 
     @Override
+    @Transactional
+    public void delete(UUID groupGoalsId) {
+
+        GroupGoalsEntity groupGoals =
+                findByIdExternalEntity(groupGoalsId);
+
+        groupGoalsRepository.delete(groupGoals);
+    }
+
+    @Override
     @Transactional(readOnly = true)
-    public GroupGoalsResponseDto findById(UUID groupGoalsId) {
-        return groupGoalsMapper.toResponseDto(findByIdExternalEntity(groupGoalsId));
+    public GroupGoalsResponseDto findById(
+            UUID groupGoalsId
+    ) {
+
+        GroupGoalsEntity groupGoals =
+                findByIdExternalEntity(groupGoalsId);
+
+        return groupGoalsMapper.toResponseDto(groupGoals);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<GroupGoalsResponseDto> findAll() {
-        return groupGoalsMapper.toResponseDtoList(groupGoalsRepository.findAll());
+
+        return groupGoalsMapper.toResponseDtoList(
+                groupGoalsRepository.findAll()
+        );
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<GroupGoalsResponseDto> findByGroupId(UUID groupId) {
+    public List<GroupGoalsResponseDto> findByGroupId(
+            UUID groupId
+    ) {
+
         findGroupByIdExternal(groupId);
+
         return groupGoalsMapper.toResponseDtoList(
                 groupGoalsRepository.findByGroupIdExternal(groupId)
         );
     }
 
-    private GroupGoalsEntity findByIdExternalEntity(UUID idExternal) {
-        return groupGoalsRepository.findByIdExternal(idExternal)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Group goal not found with idExternal: " + idExternal
-                ));
+    private GroupGoalsEntity findByIdExternalEntity(
+            UUID idExternal
+    ) {
+
+        return groupGoalsRepository
+                .findByIdExternal(idExternal)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Group goal not found with idExternal: "
+                                        + idExternal
+                        )
+                );
     }
 
-    private ReadingGroupEntity findGroupByIdExternal(UUID groupId) {
-        return readingGroupRepository.findByIdExternal(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Reading group not found with idExternal: " + groupId
-                ));
+    private ReadingGroupEntity findGroupByIdExternal(
+            UUID groupId
+    ) {
+
+        return readingGroupRepository
+                .findByIdExternal(groupId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Reading group not found with idExternal: "
+                                        + groupId
+                        )
+                );
     }
 }

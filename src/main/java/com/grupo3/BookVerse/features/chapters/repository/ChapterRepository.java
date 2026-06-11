@@ -18,8 +18,8 @@ public interface ChapterRepository extends JpaRepository<ChapterEntity, Long> {
 
     Optional<ChapterEntity> findTopByStoryIdOrderByChapterNumberDesc(Long storyId);
 
-    boolean existsByStoryIdAndChapterNumberAndDeletedFalse(
-            Long storyId,
-            int chapterNumber
-    );
+    Optional<ChapterEntity>
+    findByStoryIdExternalAndChapterNumber(UUID storyId, Integer chapterNumber);
 }
+
+

@@ -42,7 +42,9 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
     ) {
 
         validateContentAssociation(requestDto);
+
         validateProgress(requestDto);
+
         validateStoryChapterProgress(requestDto);
 
         ReadingStatusEntity entity =
@@ -177,19 +179,15 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
             ReadingStatusRequestDto requestDto
     ) {
 
-        if (requestDto.bookId() == null
-                && requestDto.storyId() == null) {
+        boolean hasBook =
+                requestDto.bookId() != null;
 
+        boolean hasStory =
+                requestDto.storyId() != null;
+
+        if (hasBook == hasStory) {
             throw new BadRequestException(
                     "A reading status must be associated with either a book or a story"
-            );
-        }
-
-        if (requestDto.bookId() != null
-                && requestDto.storyId() != null) {
-
-            throw new BadRequestException(
-                    "A reading status cannot be associated with both a book and a story"
             );
         }
     }
@@ -198,24 +196,34 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
             ReadingStatusRequestDto requestDto
     ) {
 
-        boolean hasProgressType =
+        boolean hasType =
                 requestDto.progressType() != null;
 
-        boolean hasProgressValue =
+        boolean hasValue =
                 requestDto.progressValue() != null;
 
-        if (hasProgressType != hasProgressValue) {
-
+        if (hasType != hasValue) {
             throw new BadRequestException(
-                    "Progress type and progress value must be provided together"
+                    "progressType and progressValue must both be provided or both be null"
             );
         }
 
-        if (requestDto.progressValue() != null
-                && requestDto.progressValue() <= 0) {
+        if (!hasType) {
+            return;
+        }
 
+        if (requestDto.progressValue() <= 0) {
             throw new BadRequestException(
-                    "Progress value must be greater than zero"
+                    "progressValue must be greater than 0"
+            );
+        }
+
+        if (
+                requestDto.progressType() == ProgressType.PERCENTAGE
+                        && requestDto.progressValue() > 100
+        ) {
+            throw new BadRequestException(
+                    "Percentage progress cannot exceed 100"
             );
         }
     }
@@ -224,31 +232,25 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
             ReadingStatusRequestDto requestDto
     ) {
 
-        if (requestDto.storyId() == null) {
+        if (
+                requestDto.storyId() == null
+                        || requestDto.progressType() != ProgressType.CHAPTER
+        ) {
             return;
         }
 
-        if (requestDto.progressType() != ProgressType.CHAPTER) {
-            return;
-        }
-
-        StoryEntity story =
-                findStoryByIdExternal(requestDto.storyId());
-
-        boolean chapterExists =
-                chapterRepository.existsByStoryIdAndChapterNumberAndDeletedFalse(
-                        story.getId(),
+        chapterRepository
+                .findByStoryIdExternalAndChapterNumber(
+                        requestDto.storyId(),
                         requestDto.progressValue()
+                )
+                .orElseThrow(() ->
+                        new BadRequestException(
+                                "Chapter "
+                                        + requestDto.progressValue()
+                                        + " does not exist for this story"
+                        )
                 );
-
-        if (!chapterExists) {
-
-            throw new BadRequestException(
-                    "Chapter "
-                            + requestDto.progressValue()
-                            + " does not exist for this story"
-            );
-        }
     }
 
     private ReadingStatusEntity findReadingStatusByIdExternal(

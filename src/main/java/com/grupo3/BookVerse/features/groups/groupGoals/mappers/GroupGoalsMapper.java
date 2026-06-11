@@ -24,9 +24,6 @@ public interface GroupGoalsMapper {
     @Mapping(target = "groupId", source = "group.idExternal")
 
 
-    @Mapping(target = "currentProgress", ignore = true)
-    @Mapping(target = "achieved", ignore = true)
-
     GroupGoalsResponseDto toResponseDto(
             GroupGoalsEntity entity
     );
