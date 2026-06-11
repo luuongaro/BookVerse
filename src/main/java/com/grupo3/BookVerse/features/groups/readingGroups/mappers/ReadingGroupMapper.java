@@ -17,17 +17,39 @@ public interface ReadingGroupMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "idExternal", ignore = true)
+
     @Mapping(target = "book", ignore = true)
+    @Mapping(target = "story", ignore = true)
+
     @Mapping(target = "createdBy", ignore = true)
+
     @Mapping(target = "comments", ignore = true)
     @Mapping(target = "members", ignore = true)
     @Mapping(target = "goals", ignore = true)
+
     @Mapping(target = "createdAt", ignore = true)
-    ReadingGroupEntity toEntity(ReadingGroupRequestDto dto);
 
-    @Mapping(target = "bookId", source = "book.idExternal")
-    @Mapping(target = "createdByUserId", source = "createdBy.idExternal")
-    ReadingGroupResponseDto toResponseDto(ReadingGroupEntity entity);
+    ReadingGroupEntity toEntity(
+            ReadingGroupRequestDto dto
+    );
 
-    List<ReadingGroupResponseDto> toResponseDtoList(List<ReadingGroupEntity> entities);
+    @Mapping(
+            target = "bookId",
+            source = "book.idExternal"
+    )
+    @Mapping(
+            target = "storyId",
+            source = "story.idExternal"
+    )
+    @Mapping(
+            target = "createdByUserId",
+            source = "createdBy.idExternal"
+    )
+    ReadingGroupResponseDto toResponseDto(
+            ReadingGroupEntity entity
+    );
+
+    List<ReadingGroupResponseDto> toResponseDtoList(
+            List<ReadingGroupEntity> entities
+    );
 }

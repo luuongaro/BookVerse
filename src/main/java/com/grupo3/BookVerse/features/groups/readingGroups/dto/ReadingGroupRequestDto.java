@@ -7,8 +7,9 @@ import java.util.UUID;
 
 public record ReadingGroupRequestDto(
 
-        @NotNull(message = "bookId cannot be null")
         UUID bookId,
+
+        UUID storyId,
 
         @NotNull(message = "createdByUserId cannot be null")
         UUID createdByUserId,
