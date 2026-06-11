@@ -1,5 +1,18 @@
 package com.grupo3.BookVerse.features.status.service.impl;
 
+import com.grupo3.BookVerse.features.status.service.ReadingStatusService;
+import com.grupo3.BookVerse.features.stories.domain.StoryAccessType;
+import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
+import com.grupo3.BookVerse.features.stories.repository.StoryRepository;
+import com.grupo3.BookVerse.features.subscriptions.domain.SubscriptionType;
+import com.grupo3.BookVerse.features.users.domain.UserEntity;
+import com.grupo3.BookVerse.features.users.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.grupo3.BookVerse.common.exception.BadRequestException;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
 import com.grupo3.BookVerse.features.books.domain.BookEntity;
@@ -7,18 +20,11 @@ import com.grupo3.BookVerse.features.books.repository.BookRepository;
 import com.grupo3.BookVerse.features.chapters.repository.ChapterRepository;
 import com.grupo3.BookVerse.features.status.domain.ProgressType;
 import com.grupo3.BookVerse.features.status.domain.ReadingStatusEntity;
+import com.grupo3.BookVerse.features.status.domain.ReadingStatusEnum;
 import com.grupo3.BookVerse.features.status.dto.ReadingStatusRequestDto;
 import com.grupo3.BookVerse.features.status.dto.ReadingStatusResponseDto;
 import com.grupo3.BookVerse.features.status.mappers.ReadingStatusMapper;
 import com.grupo3.BookVerse.features.status.repository.ReadingStatusRepository;
-import com.grupo3.BookVerse.features.status.service.ReadingStatusService;
-import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
-import com.grupo3.BookVerse.features.stories.repository.StoryRepository;
-import com.grupo3.BookVerse.features.users.domain.UserEntity;
-import com.grupo3.BookVerse.features.users.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +32,11 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class ReadingStatusServiceImpl implements ReadingStatusService {
+
+    private static final List<ReadingStatusEnum> ACTIVE_STORY_READING_STATUSES = List.of(
+            ReadingStatusEnum.IN_PROGRESS,
+            ReadingStatusEnum.RE_READING
+    );
 
     private final ReadingStatusRepository readingStatusRepository;
     private final ReadingStatusMapper readingStatusMapper;
@@ -42,37 +53,34 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
     ) {
 
         validateContentAssociation(requestDto);
-
         validateProgress(requestDto);
-
         validateStoryChapterProgress(requestDto);
 
-        ReadingStatusEntity entity =
-                readingStatusMapper.toEntity(requestDto);
+        UserEntity authenticatedUser = getAuthenticatedUser();
 
-        UserEntity user =
-                findUserByIdExternal(requestDto.userId());
-
-        entity.setUser(user);
+        BookEntity book = null;
+        StoryEntity story = null;
 
         if (requestDto.bookId() != null) {
-
-            BookEntity book =
-                    findBookByIdExternal(requestDto.bookId());
-
-            entity.setBook(book);
+            book = findBookByIdExternal(requestDto.bookId());
         }
 
         if (requestDto.storyId() != null) {
-
-            StoryEntity story =
-                    findStoryByIdExternal(requestDto.storyId());
-
-            entity.setStory(story);
+            story = findStoryByIdExternal(requestDto.storyId());
+            validateStoryReadingRules(
+                    authenticatedUser,
+                    story,
+                    requestDto.status(),
+                    null
+            );
         }
 
-        ReadingStatusEntity saved =
-                readingStatusRepository.save(entity);
+        ReadingStatusEntity entity = readingStatusMapper.toEntity(requestDto);
+        entity.setUser(authenticatedUser);
+        entity.setBook(book);
+        entity.setStory(story);
+
+        ReadingStatusEntity saved = readingStatusRepository.save(entity);
 
         return readingStatusMapper.toResponseDto(saved);
     }
@@ -83,8 +91,10 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
             UUID idExternal
     ) {
 
-        ReadingStatusEntity entity =
-                findReadingStatusByIdExternal(idExternal);
+        ReadingStatusEntity entity = findReadingStatusByIdExternal(idExternal);
+        UserEntity authenticatedUser = getAuthenticatedUser();
+
+        validateCanAccessReadingStatus(entity, authenticatedUser);
 
         return readingStatusMapper.toResponseDto(entity);
     }
@@ -92,6 +102,10 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
     @Override
     @Transactional(readOnly = true)
     public List<ReadingStatusResponseDto> getAllReadingStatuses() {
+
+        UserEntity authenticatedUser = getAuthenticatedUser();
+
+        validateAdminOrModerator(authenticatedUser);
 
         List<ReadingStatusEntity> readingStatuses =
                 readingStatusRepository.findAll();
@@ -105,7 +119,10 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
             UUID userId
     ) {
 
-        findUserByIdExternal(userId);
+        UserEntity authenticatedUser = getAuthenticatedUser();
+        UserEntity targetUser = findUserByIdExternal(userId);
+
+        validateCanAccessUserReadingStatuses(targetUser, authenticatedUser);
 
         List<ReadingStatusEntity> readingStatuses =
                 readingStatusRepository.findByUserIdExternal(userId);
@@ -124,43 +141,39 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
         validateProgress(requestDto);
         validateStoryChapterProgress(requestDto);
 
-        ReadingStatusEntity entity =
-                findReadingStatusByIdExternal(idExternal);
+        ReadingStatusEntity entity = findReadingStatusByIdExternal(idExternal);
+        UserEntity authenticatedUser = getAuthenticatedUser();
 
-        UserEntity user =
-                findUserByIdExternal(requestDto.userId());
+        validateCanModifyReadingStatus(entity, authenticatedUser);
 
-        entity.setUser(user);
-
-        entity.setBook(null);
-        entity.setStory(null);
+        BookEntity book = null;
+        StoryEntity story = null;
 
         if (requestDto.bookId() != null) {
-
-            BookEntity book =
-                    findBookByIdExternal(requestDto.bookId());
-
-            entity.setBook(book);
+            book = findBookByIdExternal(requestDto.bookId());
         }
 
         if (requestDto.storyId() != null) {
-
-            StoryEntity story =
-                    findStoryByIdExternal(requestDto.storyId());
-
-            entity.setStory(story);
+            story = findStoryByIdExternal(requestDto.storyId());
+            validateStoryReadingRules(
+                    authenticatedUser,
+                    story,
+                    requestDto.status(),
+                    entity.getIdExternal()
+            );
         }
 
-        entity.setStatus(requestDto.status());
+        entity.setUser(authenticatedUser);
+        entity.setBook(book);
+        entity.setStory(story);
 
+        entity.setStatus(requestDto.status());
         entity.setProgressType(requestDto.progressType());
         entity.setProgressValue(requestDto.progressValue());
-
         entity.setStartedAt(requestDto.startedAt());
         entity.setFinishedAt(requestDto.finishedAt());
 
-        ReadingStatusEntity saved =
-                readingStatusRepository.save(entity);
+        ReadingStatusEntity saved = readingStatusRepository.save(entity);
 
         return readingStatusMapper.toResponseDto(saved);
     }
@@ -169,8 +182,10 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
     @Transactional
     public void deleteReadingStatus(UUID idExternal) {
 
-        ReadingStatusEntity entity =
-                findReadingStatusByIdExternal(idExternal);
+        ReadingStatusEntity entity = findReadingStatusByIdExternal(idExternal);
+        UserEntity authenticatedUser = getAuthenticatedUser();
+
+        validateCanModifyReadingStatus(entity, authenticatedUser);
 
         readingStatusRepository.delete(entity);
     }
@@ -179,11 +194,8 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
             ReadingStatusRequestDto requestDto
     ) {
 
-        boolean hasBook =
-                requestDto.bookId() != null;
-
-        boolean hasStory =
-                requestDto.storyId() != null;
+        boolean hasBook = requestDto.bookId() != null;
+        boolean hasStory = requestDto.storyId() != null;
 
         if (hasBook == hasStory) {
             throw new BadRequestException(
@@ -196,11 +208,8 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
             ReadingStatusRequestDto requestDto
     ) {
 
-        boolean hasType =
-                requestDto.progressType() != null;
-
-        boolean hasValue =
-                requestDto.progressValue() != null;
+        boolean hasType = requestDto.progressType() != null;
+        boolean hasValue = requestDto.progressValue() != null;
 
         if (hasType != hasValue) {
             throw new BadRequestException(
@@ -253,6 +262,75 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
                 );
     }
 
+    private void validateStoryReadingRules(
+            UserEntity user,
+            StoryEntity story,
+            ReadingStatusEnum status,
+            UUID currentReadingStatusId
+    ) {
+        if (user.getSubscription() == null) {
+            throw new AccessDeniedException("User subscription not found");
+        }
+
+        boolean isFreeUser =
+                user.getSubscription().getType() == SubscriptionType.FREE;
+
+        boolean isPremiumStory =
+                story.getAccessType() == StoryAccessType.PREMIUM;
+
+        if (isFreeUser && isPremiumStory) {
+            throw new AccessDeniedException(
+                    "Free users can only create or update reading statuses for free stories"
+            );
+        }
+
+        boolean isOwnStory =
+                story.getAuthor() != null
+                        && story.getAuthor().getId().equals(user.getId());
+
+        boolean isActiveStoryReading =
+                ACTIVE_STORY_READING_STATUSES.contains(status);
+
+        if (!isFreeUser || !isActiveStoryReading || isOwnStory) {
+            return;
+        }
+
+        int maxActiveStoriesReading =
+                user.getSubscription().getMaxActiveStoriesReading();
+
+        long currentActiveStories =
+                currentReadingStatusId == null
+                        ? readingStatusRepository.countDistinctActiveStoriesByUserExcludingOwnStories(
+                        user.getIdExternal(),
+                        ACTIVE_STORY_READING_STATUSES
+                )
+                        : readingStatusRepository.countDistinctActiveStoriesByUserExcludingOwnStoriesAndCurrentStatus(
+                        user.getIdExternal(),
+                        ACTIVE_STORY_READING_STATUSES,
+                        currentReadingStatusId
+                );
+
+        boolean sameStoryAlreadyActive =
+                currentReadingStatusId == null
+                        ? readingStatusRepository.existsActiveReadingByUserAndStory(
+                        user.getIdExternal(),
+                        story.getIdExternal(),
+                        ACTIVE_STORY_READING_STATUSES
+                )
+                        : readingStatusRepository.existsActiveReadingByUserAndStoryAndCurrentStatusNot(
+                        user.getIdExternal(),
+                        story.getIdExternal(),
+                        ACTIVE_STORY_READING_STATUSES,
+                        currentReadingStatusId
+                );
+
+        if (!sameStoryAlreadyActive && currentActiveStories >= maxActiveStoriesReading) {
+            throw new BadRequestException(
+                    "You have reached the maximum number of active stories allowed by your current subscription"
+            );
+        }
+    }
+
     private ReadingStatusEntity findReadingStatusByIdExternal(
             UUID idExternal
     ) {
@@ -296,7 +374,7 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
             UUID idExternal
     ) {
 
-        return storyRepository.findByIdExternal(idExternal)
+        return storyRepository.findByIdExternalAndDeletedFalse(idExternal)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Story not found with idExternal: "
@@ -304,4 +382,89 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
                         )
                 );
     }
+
+    private UserEntity getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserEntity user)) {
+            throw new AccessDeniedException("Authenticated user not found");
+        }
+
+        return user;
+    }
+
+    private void validateCanAccessReadingStatus(
+            ReadingStatusEntity entity,
+            UserEntity authenticatedUser
+    ) {
+        boolean isOwner =
+                entity.getUser() != null
+                        && entity.getUser().getId().equals(authenticatedUser.getId());
+
+        boolean isAdmin = authenticatedUser.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        boolean isModerator = authenticatedUser.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_MODERATOR".equals(authority.getAuthority()));
+
+        if (!isOwner && !isAdmin && !isModerator) {
+            throw new AccessDeniedException(
+                    "You do not have permission to access this reading status"
+            );
+        }
+    }
+
+    private void validateCanModifyReadingStatus(
+            ReadingStatusEntity entity,
+            UserEntity authenticatedUser
+    ) {
+        boolean isOwner =
+                entity.getUser() != null
+                        && entity.getUser().getId().equals(authenticatedUser.getId());
+
+        boolean isAdmin = authenticatedUser.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        if (!isOwner && !isAdmin) {
+            throw new AccessDeniedException(
+                    "You do not have permission to modify this reading status"
+            );
+        }
+    }
+
+    private void validateCanAccessUserReadingStatuses(
+            UserEntity targetUser,
+            UserEntity authenticatedUser
+    ) {
+        boolean isSelf =
+                targetUser.getId().equals(authenticatedUser.getId());
+
+        boolean isAdmin = authenticatedUser.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        boolean isModerator = authenticatedUser.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_MODERATOR".equals(authority.getAuthority()));
+
+        if (!isSelf && !isAdmin && !isModerator) {
+            throw new AccessDeniedException(
+                    "You do not have permission to access these reading statuses"
+            );
+        }
+    }
+
+    private void validateAdminOrModerator(UserEntity authenticatedUser) {
+        boolean isAdmin = authenticatedUser.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        boolean isModerator = authenticatedUser.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_MODERATOR".equals(authority.getAuthority()));
+
+        if (!isAdmin && !isModerator) {
+            throw new AccessDeniedException(
+                    "You do not have permission to access all reading statuses"
+            );
+        }
+    }
 }
+
+

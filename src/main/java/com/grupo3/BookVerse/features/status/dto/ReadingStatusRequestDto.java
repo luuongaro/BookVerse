@@ -9,13 +9,10 @@ import java.util.UUID;
 
 public record ReadingStatusRequestDto(
 
-        @NotNull(message = "userId cannot be null")
-        UUID userId,
-
         UUID bookId,
         UUID storyId,
 
-        @NotNull(message = "status cannot be null")
+        @NotNull(message = "Status cannot be null.")
         ReadingStatusEnum status,
 
         LocalDateTime startedAt,

@@ -17,9 +17,8 @@ public class SubscriptionResponseDto {
     private UUID idExternal;
     private String type;
     private int maxStoriesPublished;
+    private int maxActiveStoriesReading;
     private boolean advancedStatsEnabled;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

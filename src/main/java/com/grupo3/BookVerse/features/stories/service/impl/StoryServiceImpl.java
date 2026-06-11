@@ -1,7 +1,9 @@
 package com.grupo3.BookVerse.features.stories.service.impl;
 
+import com.grupo3.BookVerse.common.exception.BadRequestException;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
 import com.grupo3.BookVerse.features.chapters.mappers.ChapterMapper;
+import com.grupo3.BookVerse.features.stories.domain.StoryAccessType;
 import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
 import com.grupo3.BookVerse.features.stories.dto.StoryDetailResponseDto;
 import com.grupo3.BookVerse.features.stories.dto.StoryRequestDto;
@@ -9,6 +11,7 @@ import com.grupo3.BookVerse.features.stories.dto.StoryResponseDto;
 import com.grupo3.BookVerse.features.stories.mappers.StoryMapper;
 import com.grupo3.BookVerse.features.stories.repository.StoryRepository;
 import com.grupo3.BookVerse.features.stories.service.StoryService;
+import com.grupo3.BookVerse.features.subscriptions.domain.SubscriptionType;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +43,8 @@ public class StoryServiceImpl implements StoryService {
         UserEntity author = findUserByIdExternal(storyRequestDto.getAuthorId());
 
         validateAuthenticatedUserMatchesAuthor(authenticatedUser, author);
+        validateAuthorCanPublishStory(author);
+        validateAuthorCanPublishPremiumStory(author, storyRequestDto);
 
         StoryEntity storyEntity = storyMapper.toEntity(storyRequestDto);
         storyEntity.setAuthor(author);
@@ -64,6 +69,9 @@ public class StoryServiceImpl implements StoryService {
     public StoryDetailResponseDto getStoryByIdExternal(UUID idExternal) {
 
         StoryEntity story = findActiveStoryByIdExternal(idExternal);
+        UserEntity authenticatedUser = getAuthenticatedUser();
+
+        validateCanAccessStory(story, authenticatedUser);
 
         return StoryDetailResponseDto.builder()
                 .idExternal(story.getIdExternal())
@@ -166,18 +174,62 @@ public class StoryServiceImpl implements StoryService {
         }
     }
 
+    private void validateAuthorCanPublishStory(UserEntity author) {
+        if (author.getSubscription() == null) {
+            throw new AccessDeniedException("User subscription not found");
+        }
+
+        int maxStoriesPublished = author.getSubscription().getMaxStoriesPublished();
+        long currentPublishedStories = storyRepository.countByAuthorIdAndDeletedFalse(author.getId());
+
+        if (currentPublishedStories >= maxStoriesPublished) {
+            throw new BadRequestException(
+                    "You have reached the maximum number of stories allowed by your current subscription"
+            );
+        }
+    }
+
+    private void validateCanAccessStory(StoryEntity story, UserEntity user) {
+        boolean isOwner = story.getAuthor() != null
+                && story.getAuthor().getId().equals(user.getId());
+
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        boolean isModerator = user.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_MODERATOR".equals(authority.getAuthority()));
+
+        boolean isPremiumStory = story.getAccessType() == StoryAccessType.PREMIUM;
+        boolean isPremiumUser = user.getSubscription() != null
+                && user.getSubscription().getType() == SubscriptionType.PREMIUM;
+
+        if (isPremiumStory && !isOwner && !isAdmin && !isModerator && !isPremiumUser) {
+            throw new AccessDeniedException("You need a premium subscription to access this story");
+        }
+    }
+
     private void validateCanManageStory(StoryEntity story, UserEntity user) {
         boolean isOwner = story.getAuthor() != null
                 && story.getAuthor().getId().equals(user.getId());
 
         boolean isAdmin = user.getAuthorities().stream()
-                .anyMatch(authority ->  "ROLE_ADMIN".equals(authority.getAuthority()));
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
 
         boolean isModerator = user.getAuthorities().stream()
                 .anyMatch(authority -> "ROLE_MODERATOR".equals(authority.getAuthority()));
 
         if (!isOwner && !isAdmin && !isModerator) {
             throw new AccessDeniedException("You do not have permission to manage this story");
+        }
+    }
+
+    private void validateAuthorCanPublishPremiumStory(UserEntity author, StoryRequestDto storyRequestDto) {
+        boolean isPremiumStory = storyRequestDto.getAccessType() == StoryAccessType.PREMIUM;
+        boolean isPremiumUser = author.getSubscription() != null
+                && author.getSubscription().getType() == SubscriptionType.PREMIUM;
+
+        if (isPremiumStory && !isPremiumUser) {
+            throw new AccessDeniedException("Only premium users can publish premium stories");
         }
     }
 }
