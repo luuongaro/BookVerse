@@ -138,16 +138,16 @@ public class GroupGoalsController {
 
     @GetMapping("/group/{groupId}")
     @Operation(
-            summary = "Get group goals by reading group",
-            description = "Retrieves all goals associated with a specific reading group using its external UUID.",
+            summary = "Get group goal by reading group",
+            description = "Retrieves the active goal associated with a specific reading group using its external UUID.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Group goals retrieved successfully"),
+            @ApiResponse(responseCode = "200", description = "Group goal retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Reading group not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Reading group or goal not found", content = @Content)
     })
-    public ResponseEntity<List<GroupGoalsResponseDto>> findByGroupId(
+    public ResponseEntity<GroupGoalsResponseDto> findByGroupId(
             @Parameter(
                     description = "External UUID of the reading group",
                     required = true,
@@ -155,6 +155,8 @@ public class GroupGoalsController {
             )
             @PathVariable UUID groupId
     ) {
-        return ResponseEntity.ok(groupGoalsService.findByGroupId(groupId));
+        return ResponseEntity.ok(
+                groupGoalsService.findByGroupId(groupId)
+        );
     }
 }
