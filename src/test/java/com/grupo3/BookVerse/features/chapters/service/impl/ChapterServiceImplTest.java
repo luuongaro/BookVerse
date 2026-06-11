@@ -42,7 +42,7 @@ class ChapterServiceImplTest {
     private ChapterServiceImpl chapterService;
 
 
-    //verifies that the service correctly retrieves all non-deleted chapters and maps them to dtos
+    // verifies that the service correctly retrieves all non-deleted chapters and maps them to dtos
     @Test
     void shouldReturnAllChapters() {
 
