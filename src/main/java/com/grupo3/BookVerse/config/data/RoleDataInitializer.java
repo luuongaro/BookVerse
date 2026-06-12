@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.config;
+package com.grupo3.BookVerse.config.data;
 
 import com.grupo3.BookVerse.features.roles.domain.RoleEntity;
 import com.grupo3.BookVerse.features.roles.repository.RoleRepository;

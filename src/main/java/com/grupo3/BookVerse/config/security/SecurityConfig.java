@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.config;
+package com.grupo3.BookVerse.config.security;
 
 import com.grupo3.BookVerse.auth.entrypoint.RestAccessDeniedHandler;
 import com.grupo3.BookVerse.auth.entrypoint.RestAuthenticationEntryPoint;

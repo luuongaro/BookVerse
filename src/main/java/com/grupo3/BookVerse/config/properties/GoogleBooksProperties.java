@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.config;
+package com.grupo3.BookVerse.config.properties;
 
 import lombok.Getter;
 import lombok.Setter;

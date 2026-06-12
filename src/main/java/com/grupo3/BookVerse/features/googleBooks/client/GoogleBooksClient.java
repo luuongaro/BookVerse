@@ -1,6 +1,6 @@
 package com.grupo3.BookVerse.features.googleBooks.client;
 
-import com.grupo3.BookVerse.config.GoogleBooksProperties;
+import com.grupo3.BookVerse.config.properties.GoogleBooksProperties;
 import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBookVolumeDto;
 import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBooksApiResponseDto;
 import lombok.RequiredArgsConstructor;

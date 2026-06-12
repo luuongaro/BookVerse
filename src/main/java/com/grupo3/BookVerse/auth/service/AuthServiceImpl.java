@@ -4,7 +4,7 @@ import com.grupo3.BookVerse.auth.dtos.AuthResponse;
 import com.grupo3.BookVerse.auth.dtos.RegisterRequest;
 import com.grupo3.BookVerse.auth.jwt.JwtService;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
-import com.grupo3.BookVerse.features.notifications.service.EmailService;
+import com.grupo3.BookVerse.infrastructure.EmailService;
 import com.grupo3.BookVerse.features.subscriptions.domain.SubscriptionEntity;
 import com.grupo3.BookVerse.features.subscriptions.domain.SubscriptionType;
 import com.grupo3.BookVerse.features.subscriptions.repository.SubscriptionRepository;
