@@ -13,6 +13,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +49,7 @@ class BookServiceImplTest {
     // Verify that the service returns all books correctly
     @Test
     void shouldReturnAllBooks() {
+
         BookEntity book = BookEntity.builder()
                 .title("Harry Potter")
                 .deleted(false)
@@ -55,25 +60,38 @@ class BookServiceImplTest {
                         .title("Harry Potter")
                         .build();
 
-        when(bookRepository.findByDeletedFalse())
-                .thenReturn(List.of(book));
+        Pageable pageable =
+                PageRequest.of(0, 10);
+
+        Page<BookEntity> booksPage =
+                new PageImpl<>(List.of(book));
+
+        Page<BookResponseDto> dtoPage =
+                new PageImpl<>(List.of(dto));
+
+        when(bookRepository.findByDeletedFalse(any(Pageable.class)))
+                .thenReturn(booksPage);
 
         when(bookMapper.toResponseDtoList(anyList()))
                 .thenReturn(List.of(dto));
 
-        List<BookResponseDto> result =
-                bookService.getAllBooks();
+        Page<BookResponseDto> result =
+                bookService.getAllBooks(pageable);
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+
+        assertEquals(
+                1,
+                result.getContent().size()
+        );
 
         assertEquals(
                 "Harry Potter",
-                result.get(0).getTitle()
+                result.getContent().get(0).getTitle()
         );
 
         verify(bookRepository)
-                .findByDeletedFalse();
+                .findByDeletedFalse(any(Pageable.class));
 
         verify(bookMapper)
                 .toResponseDtoList(anyList());
