@@ -1,4 +1,8 @@
 package com.grupo3.BookVerse.features.groups.readingGroups.controller;
+
+import com.grupo3.BookVerse.features.groups.readingGroups.dto.ReadingGroupRequestDto;
+import com.grupo3.BookVerse.features.groups.readingGroups.dto.ReadingGroupResponseDto;
+import com.grupo3.BookVerse.features.groups.readingGroups.dto.UpdateReadingGroupRequestDto;
 import com.grupo3.BookVerse.features.groups.readingGroups.service.ReadingGroupService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -7,8 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import com.grupo3.BookVerse.features.groups.readingGroups.dto.ReadingGroupRequestDto;
-import com.grupo3.BookVerse.features.groups.readingGroups.dto.ReadingGroupResponseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,7 +41,7 @@ public class ReadingGroupController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Reading group created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request body or invalid content association", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid request body, invalid content association, or duplicate active group name for the same content", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "404", description = "Book or story not found", content = @Content)
     })
@@ -170,15 +172,15 @@ public class ReadingGroupController {
     @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Update a reading group",
-            description = "Updates an existing reading group by its external UUID. Only the creator, an admin, or a moderator can perform this action.",
+            description = "Updates the name of an existing reading group by its external UUID. Only the creator, an admin, or a moderator can perform this action.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Reading group updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request body or content change not allowed", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid request body or duplicate active group name for the same content", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Reading group, book, or story not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Reading group not found", content = @Content)
     })
     public ResponseEntity<ReadingGroupResponseDto> updateGroup(
             @Parameter(
@@ -187,7 +189,7 @@ public class ReadingGroupController {
                     example = "550e8400-e29b-41d4-a716-446655440000"
             )
             @PathVariable UUID idExternal,
-            @Valid @RequestBody ReadingGroupRequestDto dto
+            @Valid @RequestBody UpdateReadingGroupRequestDto dto
     ) {
         return ResponseEntity.ok(
                 readingGroupService.updateGroup(idExternal, dto)
@@ -219,4 +221,3 @@ public class ReadingGroupController {
         return ResponseEntity.noContent().build();
     }
 }
-
