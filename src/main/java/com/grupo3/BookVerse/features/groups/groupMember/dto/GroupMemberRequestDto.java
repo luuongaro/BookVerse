@@ -12,9 +12,6 @@ import java.util.UUID;
 @Builder
 public class GroupMemberRequestDto {
 
-    @NotNull(message = "Group ID is required")
-    private UUID groupId;
-
     @NotNull(message = "User ID is required")
     private UUID userId;
 }

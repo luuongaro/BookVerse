@@ -16,13 +16,14 @@ public interface GroupMemberMapper {
     @Mapping(target = "joinedAt", ignore = true)
     @Mapping(target = "group", ignore = true)
     @Mapping(target = "user", ignore = true)
+    @Mapping(target = "memberType", ignore = true)
+    @Mapping(target = "status", ignore = true)
     GroupMemberEntity toEntity(GroupMemberRequestDto requestDto);
 
     @Mapping(target = "groupId", source = "group.idExternal")
     @Mapping(target = "groupName", source = "group.name")
     @Mapping(target = "userId", source = "user.idExternal")
     @Mapping(target = "userName", source = "user.username")
-    @Mapping(target = "userEmail", source = "user.email")
     GroupMemberResponseDto toResponseDto(GroupMemberEntity entity);
 
     List<GroupMemberResponseDto> toResponseDtoList(List<GroupMemberEntity> entities);

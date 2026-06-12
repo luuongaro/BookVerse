@@ -3,6 +3,8 @@ package com.grupo3.BookVerse.features.groups.groupMember.service.impl;
 import com.grupo3.BookVerse.common.exception.DuplicateResourceException;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
 import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberEntity;
+import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberStatus;
+import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberType;
 import com.grupo3.BookVerse.features.groups.groupMember.dto.GroupMemberRequestDto;
 import com.grupo3.BookVerse.features.groups.groupMember.dto.GroupMemberResponseDto;
 import com.grupo3.BookVerse.features.groups.groupMember.mappers.GroupMemberMapper;
@@ -13,10 +15,16 @@ import com.grupo3.BookVerse.features.groups.readingGroups.repository.ReadingGrou
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.Method;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -30,32 +38,82 @@ public class GroupMemberServiceImpl implements GroupMemberService {
 
     @Override
     @Transactional
-    public GroupMemberResponseDto createGroupMember(GroupMemberRequestDto groupMemberRequestDto) {
+    public GroupMemberResponseDto addMemberToGroup(UUID groupId, GroupMemberRequestDto requestDto) {
+        ReadingGroupEntity group = findGroupByIdExternal(groupId);
+        UserEntity authenticatedUser = getAuthenticatedUser();
+        UserEntity targetUser = findUserByIdExternal(requestDto.getUserId());
 
-        ReadingGroupEntity group = findGroupByIdExternal(groupMemberRequestDto.getGroupId());
-        UserEntity user = findUserByIdExternal(groupMemberRequestDto.getUserId());
+        validateCanManageMembers(groupId, authenticatedUser);
 
-        if (groupMemberRepository.existsByGroupIdAndUserId(group.getId(), user.getId())) {
-            throw new DuplicateResourceException(
-                    "User with idExternal " + user.getIdExternal()
-                            + " is already a member of group with idExternal " + group.getIdExternal()
-            );
+        GroupMemberEntity existingMembership = groupMemberRepository
+                .findByGroupIdExternalAndUserIdExternal(groupId, targetUser.getIdExternal())
+                .orElse(null);
+
+        if (existingMembership != null) {
+            if (existingMembership.getStatus() == GroupMemberStatus.ACTIVE) {
+                throw new DuplicateResourceException(
+                        "User with idExternal " + targetUser.getIdExternal()
+                                + " is already an active member of group with idExternal " + groupId
+                );
+            }
+
+            if (existingMembership.getStatus() == GroupMemberStatus.REMOVED) {
+                throw new AccessDeniedException(
+                        "User with idExternal " + targetUser.getIdExternal()
+                                + " was removed from group with idExternal " + groupId
+                                + " and cannot be re-added automatically"
+                );
+            }
+
+            existingMembership.setStatus(GroupMemberStatus.ACTIVE);
+            existingMembership.setMemberType(GroupMemberType.MEMBER);
+            existingMembership.setJoinedAt(LocalDateTime.now());
+
+            GroupMemberEntity reactivatedMembership = groupMemberRepository.save(existingMembership);
+            return groupMemberMapper.toResponseDto(reactivatedMembership);
         }
 
-        GroupMemberEntity groupMemberEntity = groupMemberMapper.toEntity(groupMemberRequestDto);
+        GroupMemberEntity groupMemberEntity = groupMemberMapper.toEntity(requestDto);
         groupMemberEntity.setGroup(group);
-        groupMemberEntity.setUser(user);
+        groupMemberEntity.setUser(targetUser);
+        groupMemberEntity.setMemberType(GroupMemberType.MEMBER);
+        groupMemberEntity.setStatus(GroupMemberStatus.ACTIVE);
 
         GroupMemberEntity savedGroupMember = groupMemberRepository.save(groupMemberEntity);
-
         return groupMemberMapper.toResponseDto(savedGroupMember);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<GroupMemberResponseDto> getAllGroupMembers() {
-        List<GroupMemberEntity> groupMembers = groupMemberRepository.findAll();
-        return groupMemberMapper.toResponseDtoList(groupMembers);
+    public List<GroupMemberResponseDto> getActiveMembersByGroupId(UUID groupId) {
+        findGroupByIdExternal(groupId);
+        UserEntity authenticatedUser = getAuthenticatedUser();
+
+        validateCanViewMembers(groupId, authenticatedUser);
+
+        List<GroupMemberEntity> activeMembers =
+                groupMemberRepository.findByGroupIdExternalAndStatus(groupId, GroupMemberStatus.ACTIVE);
+
+        return groupMemberMapper.toResponseDtoList(activeMembers);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GroupMemberResponseDto> getActiveMembershipsByUserId(UUID userId) {
+        UserEntity authenticatedUser = getAuthenticatedUser();
+        findUserByIdExternal(userId);
+
+        boolean isSameUser = Objects.equals(userId, authenticatedUser.getIdExternal());
+        boolean isAdminOrModerator = isAdminOrModerator(authenticatedUser);
+
+        if (!isSameUser && !isAdminOrModerator) {
+            throw new AccessDeniedException("You do not have permission to view this user's memberships");
+        }
+
+        List<GroupMemberEntity> activeMemberships =
+                groupMemberRepository.findByUserIdExternalAndStatus(userId, GroupMemberStatus.ACTIVE);
+
+        return groupMemberMapper.toResponseDtoList(activeMemberships);
     }
 
     @Override
@@ -66,40 +124,128 @@ public class GroupMemberServiceImpl implements GroupMemberService {
                         "Group member not found with idExternal: " + idExternal
                 ));
 
+        UserEntity authenticatedUser = getAuthenticatedUser();
+
+        boolean isSameUser = Objects.equals(
+                groupMemberEntity.getUser().getIdExternal(),
+                authenticatedUser.getIdExternal()
+        );
+
+        boolean isAdminOrModerator = isAdminOrModerator(authenticatedUser);
+
+        boolean isActiveMemberOfSameGroup = groupMemberRepository
+                .existsByGroupIdExternalAndUserIdExternalAndStatus(
+                        groupMemberEntity.getGroup().getIdExternal(),
+                        authenticatedUser.getIdExternal(),
+                        GroupMemberStatus.ACTIVE
+                );
+
+        if (!isSameUser && !isAdminOrModerator && !isActiveMemberOfSameGroup) {
+            throw new AccessDeniedException("You do not have permission to view this group membership");
+        }
+
         return groupMemberMapper.toResponseDto(groupMemberEntity);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<GroupMemberResponseDto> getGroupMembersByGroupId(UUID groupId) {
-
+    @Transactional
+    public void removeMemberFromGroup(UUID groupId, UUID userId) {
         findGroupByIdExternal(groupId);
 
-        List<GroupMemberEntity> groupMembers = groupMemberRepository.findByGroupIdExternal(groupId);
+        UserEntity authenticatedUser = getAuthenticatedUser();
+        UserEntity targetUser = findUserByIdExternal(userId);
 
-        return groupMemberMapper.toResponseDtoList(groupMembers);
-    }
+        validateCanManageMembers(groupId, authenticatedUser);
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<GroupMemberResponseDto> getGroupMembersByUserId(UUID userId) {
+        GroupMemberEntity membership = groupMemberRepository
+                .findByGroupIdExternalAndUserIdExternal(groupId, targetUser.getIdExternal())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Group membership not found for user idExternal " + userId
+                                + " in group idExternal " + groupId
+                ));
 
-        findUserByIdExternal(userId);
+        if (membership.getStatus() != GroupMemberStatus.ACTIVE) {
+            throw new AccessDeniedException("Only active memberships can be removed");
+        }
 
-        List<GroupMemberEntity> groupMembers = groupMemberRepository.findByUserIdExternal(userId);
+        boolean targetIsCreator = membership.getMemberType() == GroupMemberType.CREATOR;
+        boolean actorIsAdminOrModerator = isAdminOrModerator(authenticatedUser);
 
-        return groupMemberMapper.toResponseDtoList(groupMembers);
+        if (targetIsCreator && !actorIsAdminOrModerator) {
+            throw new AccessDeniedException("The group creator cannot be removed by a regular group manager");
+        }
+
+        membership.setStatus(GroupMemberStatus.REMOVED);
+        groupMemberRepository.save(membership);
     }
 
     @Override
     @Transactional
-    public void deleteGroupMember(UUID idExternal) {
-        GroupMemberEntity groupMemberEntity = groupMemberRepository.findByIdExternal(idExternal)
+    public void leaveGroup(UUID groupId) {
+        findGroupByIdExternal(groupId);
+        UserEntity authenticatedUser = getAuthenticatedUser();
+
+        GroupMemberEntity membership = groupMemberRepository
+                .findByGroupIdExternalAndUserIdExternal(groupId, authenticatedUser.getIdExternal())
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Group member not found with idExternal: " + idExternal
+                        "Group membership not found for user idExternal "
+                                + authenticatedUser.getIdExternal() + " in group idExternal " + groupId
                 ));
 
-        groupMemberRepository.delete(groupMemberEntity);
+        if (membership.getStatus() != GroupMemberStatus.ACTIVE) {
+            throw new AccessDeniedException("Only active memberships can leave a group");
+        }
+
+        if (membership.getMemberType() == GroupMemberType.CREATOR) {
+            throw new AccessDeniedException("The group creator cannot leave the group");
+        }
+
+        membership.setStatus(GroupMemberStatus.LEFT);
+        groupMemberRepository.save(membership);
+    }
+
+    private void validateCanManageMembers(UUID groupId, UserEntity authenticatedUser) {
+        if (isAdminOrModerator(authenticatedUser)) {
+            return;
+        }
+
+        boolean isCreator = groupMemberRepository
+                .existsByGroupIdExternalAndUserIdExternalAndMemberTypeAndStatus(
+                        groupId,
+                        authenticatedUser.getIdExternal(),
+                        GroupMemberType.CREATOR,
+                        GroupMemberStatus.ACTIVE
+                );
+
+        if (!isCreator) {
+            throw new AccessDeniedException(
+                    "Only the group creator, an admin, or a moderator can manage members"
+            );
+        }
+    }
+
+    private void validateCanViewMembers(UUID groupId, UserEntity authenticatedUser) {
+        if (isAdminOrModerator(authenticatedUser)) {
+            return;
+        }
+
+        boolean isActiveMember = groupMemberRepository
+                .existsByGroupIdExternalAndUserIdExternalAndStatus(
+                        groupId,
+                        authenticatedUser.getIdExternal(),
+                        GroupMemberStatus.ACTIVE
+                );
+
+        if (!isActiveMember) {
+            throw new AccessDeniedException("Only active group members can view group members");
+        }
+    }
+
+    private boolean isAdminOrModerator(UserEntity user) {
+        return user.getAuthorities().stream()
+                .anyMatch(authority ->
+                        authority.getAuthority().equals("ROLE_ADMIN")
+                                || authority.getAuthority().equals("ROLE_MODERATOR"));
     }
 
     private ReadingGroupEntity findGroupByIdExternal(UUID groupId) {
@@ -115,4 +261,21 @@ public class GroupMemberServiceImpl implements GroupMemberService {
                         "User not found with idExternal: " + userId
                 ));
     }
+
+    private UserEntity getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new AccessDeniedException("Authenticated user not found");
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (!(principal instanceof UserEntity authenticatedUser)) {
+            throw new AccessDeniedException("Authenticated principal is not a valid user");
+        }
+
+        return authenticatedUser;
+    }
+
 }
