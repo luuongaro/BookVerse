@@ -1,7 +1,4 @@
 package com.grupo3.BookVerse.features.groups.readingGroups.controller;
-
-import com.grupo3.BookVerse.features.groups.readingGroups.dto.ReadingGroupRequestDto;
-import com.grupo3.BookVerse.features.groups.readingGroups.dto.ReadingGroupResponseDto;
 import com.grupo3.BookVerse.features.groups.readingGroups.service.ReadingGroupService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -10,6 +7,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.grupo3.BookVerse.features.groups.readingGroups.dto.ReadingGroupRequestDto;
+import com.grupo3.BookVerse.features.groups.readingGroups.dto.ReadingGroupResponseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -35,14 +34,14 @@ public class ReadingGroupController {
     @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Create a new reading group",
-            description = "Creates a new reading group associated with a book and a user who created it.",
+            description = "Creates a new reading group associated with exactly one book or one story. The creator is the authenticated user.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Reading group created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid request body or invalid content association", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Book or user not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Book or story not found", content = @Content)
     })
     public ResponseEntity<ReadingGroupResponseDto> createGroup(
             @Valid @RequestBody ReadingGroupRequestDto dto
@@ -55,8 +54,8 @@ public class ReadingGroupController {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     @Operation(
-            summary = "Get all reading groups",
-            description = "Retrieves all reading groups registered in the system.",
+            summary = "Get all active reading groups",
+            description = "Retrieves all active reading groups registered in the system.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -71,7 +70,7 @@ public class ReadingGroupController {
     @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get reading group by external id",
-            description = "Retrieves a specific reading group by its external UUID.",
+            description = "Retrieves an active reading group by its external UUID.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -96,7 +95,7 @@ public class ReadingGroupController {
     @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get reading groups by book",
-            description = "Retrieves all reading groups associated with a specific book using the book's external UUID.",
+            description = "Retrieves all active reading groups associated with a specific book using the book's external UUID.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -117,11 +116,36 @@ public class ReadingGroupController {
         );
     }
 
+    @GetMapping("/story/{storyId}")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(
+            summary = "Get reading groups by story",
+            description = "Retrieves all active reading groups associated with a specific story using the story's external UUID.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Reading groups retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Story not found", content = @Content)
+    })
+    public ResponseEntity<List<ReadingGroupResponseDto>> getGroupsByStory(
+            @Parameter(
+                    description = "External UUID of the story",
+                    required = true,
+                    example = "550e8400-e29b-41d4-a716-446655440000"
+            )
+            @PathVariable UUID storyId
+    ) {
+        return ResponseEntity.ok(
+                readingGroupService.getGroupsByStoryIdExternal(storyId)
+        );
+    }
+
     @GetMapping("/user/{userId}")
     @PreAuthorize("isAuthenticated()")
     @Operation(
-            summary = "Get reading groups by user",
-            description = "Retrieves all reading groups created by a specific user using the user's external UUID.",
+            summary = "Get reading groups by creator",
+            description = "Retrieves all active reading groups created by a specific user using the user's external UUID.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -146,14 +170,15 @@ public class ReadingGroupController {
     @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Update a reading group",
-            description = "Updates an existing reading group by its external UUID.",
+            description = "Updates an existing reading group by its external UUID. Only the creator, an admin, or a moderator can perform this action.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Reading group updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid request body or content change not allowed", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Reading group, book, or user not found", content = @Content)
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Reading group, book, or story not found", content = @Content)
     })
     public ResponseEntity<ReadingGroupResponseDto> updateGroup(
             @Parameter(
@@ -172,18 +197,19 @@ public class ReadingGroupController {
     @DeleteMapping("/{idExternal}")
     @PreAuthorize("isAuthenticated()")
     @Operation(
-            summary = "Delete a reading group",
-            description = "Deletes a reading group by its external UUID.",
+            summary = "Deactivate a reading group",
+            description = "Performs a logical deletion of a reading group by setting it as inactive. Only the creator, an admin, or a moderator can perform this action.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Reading group deleted successfully"),
+            @ApiResponse(responseCode = "204", description = "Reading group deactivated successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Reading group not found", content = @Content)
     })
     public ResponseEntity<Void> deleteGroup(
             @Parameter(
-                    description = "External UUID of the reading group to delete",
+                    description = "External UUID of the reading group to deactivate",
                     required = true,
                     example = "550e8400-e29b-41d4-a716-446655440000"
             )
@@ -193,3 +219,4 @@ public class ReadingGroupController {
         return ResponseEntity.noContent().build();
     }
 }
+

@@ -11,9 +11,6 @@ public record ReadingGroupRequestDto(
 
         UUID storyId,
 
-        @NotNull(message = "createdByUserId cannot be null")
-        UUID createdByUserId,
-
         @NotBlank(message = "name cannot be blank")
         String name,
 
