@@ -55,7 +55,7 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
         validateProgress(requestDto);
         validateStoryChapterProgress(requestDto);
 
-        UserEntity authenticatedUser = getAuthenticatedUser();
+        UserEntity authenticatedUser = getAuthenticatedUserWithSubscription();
 
         BookEntity book = null;
         StoryEntity story = null;
@@ -148,7 +148,7 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
         validateStoryChapterProgress(requestDto);
 
         ReadingStatusEntity entity = findReadingStatusByIdExternal(idExternal);
-        UserEntity authenticatedUser = getAuthenticatedUser();
+        UserEntity authenticatedUser = getAuthenticatedUserWithSubscription();
 
         validateCanModifyReadingStatus(entity, authenticatedUser);
 
@@ -524,6 +524,15 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
                     "A reading status already exists for this content"
             );
         }
+    }
+
+    private UserEntity getAuthenticatedUserWithSubscription() {
+        UserEntity principalUser = getAuthenticatedUser();
+
+        return userRepository.findByIdWithSubscription(principalUser.getId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Authenticated user not found")
+                );
     }
 
 }
