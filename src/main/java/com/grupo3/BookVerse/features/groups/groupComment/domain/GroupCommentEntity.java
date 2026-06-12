@@ -33,15 +33,15 @@ public class GroupCommentEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private GroupCommentStatus status;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "progress_milestone")
-    private Integer progressMilestone;
-
-    @Builder.Default
-    @Column(name = "is_hidden", nullable = false)
-    private boolean hidden = false;
+    @Column(name = "progress_percent")
+    private Integer progressPercent;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -51,6 +51,9 @@ public class GroupCommentEntity {
     protected void onCreate() {
         if (idExternal == null) {
             idExternal = UUID.randomUUID();
+        }
+        if (status == null) {
+            status = GroupCommentStatus.ACTIVE;
         }
     }
 }

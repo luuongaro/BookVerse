@@ -8,20 +8,13 @@ import java.util.UUID;
 
 public interface GroupCommentService {
 
-    GroupCommentResponseDto save(GroupCommentRequestDto groupCommentRequestDto);
+    GroupCommentResponseDto createComment(UUID groupId, GroupCommentRequestDto requestDto);
 
-    List<GroupCommentResponseDto> findAll();
+    List<GroupCommentResponseDto> getVisibleCommentsByGroupId(UUID groupId);
 
-    GroupCommentResponseDto findById(UUID commentId);
+    List<GroupCommentResponseDto> getActiveCommentsByUserId(UUID userId);
 
-    GroupCommentResponseDto update(
-            UUID commentId,
-            GroupCommentRequestDto groupCommentRequestDto
-    );
+    GroupCommentResponseDto getCommentByIdExternal(UUID commentId);
 
-    void delete(UUID commentId);
-
-    List<GroupCommentResponseDto> findByGroupId(UUID groupId);
-
-    List<GroupCommentResponseDto> findByUserId(UUID userId);
+    void deleteComment(UUID commentId);
 }

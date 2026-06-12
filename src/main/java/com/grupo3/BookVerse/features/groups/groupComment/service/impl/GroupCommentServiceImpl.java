@@ -1,22 +1,32 @@
 package com.grupo3.BookVerse.features.groups.groupComment.service.impl;
 
+import com.grupo3.BookVerse.common.exception.BadRequestException;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
-
 import com.grupo3.BookVerse.features.groups.groupComment.domain.GroupCommentEntity;
+import com.grupo3.BookVerse.features.groups.groupComment.domain.GroupCommentStatus;
 import com.grupo3.BookVerse.features.groups.groupComment.dto.GroupCommentRequestDto;
 import com.grupo3.BookVerse.features.groups.groupComment.dto.GroupCommentResponseDto;
 import com.grupo3.BookVerse.features.groups.groupComment.mappers.GroupCommentMapper;
 import com.grupo3.BookVerse.features.groups.groupComment.repository.GroupCommentRepository;
 import com.grupo3.BookVerse.features.groups.groupComment.service.GroupCommentService;
+import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberStatus;
+import com.grupo3.BookVerse.features.groups.groupMember.repository.GroupMemberRepository;
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import com.grupo3.BookVerse.features.groups.readingGroups.repository.ReadingGroupRepository;
+import com.grupo3.BookVerse.features.status.domain.ProgressType;
+import com.grupo3.BookVerse.features.status.domain.ReadingStatusEntity;
+import com.grupo3.BookVerse.features.status.repository.ReadingStatusRepository;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -27,146 +37,220 @@ public class GroupCommentServiceImpl implements GroupCommentService {
     private final GroupCommentMapper groupCommentMapper;
     private final ReadingGroupRepository readingGroupRepository;
     private final UserRepository userRepository;
+    private final GroupMemberRepository groupMemberRepository;
+    private final ReadingStatusRepository readingStatusRepository;
 
     @Override
     @Transactional
-    public GroupCommentResponseDto save(
-            GroupCommentRequestDto groupCommentRequestDto
-    ) {
+    public GroupCommentResponseDto createComment(UUID groupId, GroupCommentRequestDto requestDto) {
+        ReadingGroupEntity group = findGroupByIdExternal(groupId);
+        validateBookOnlyGroup(group);
 
-        ReadingGroupEntity group =
-                findGroupByIdExternal(groupCommentRequestDto.getGroupId());
+        UserEntity authenticatedUser = getAuthenticatedUser();
+        validateActiveMembership(groupId, authenticatedUser);
 
-        UserEntity user =
-                findUserByIdExternal(groupCommentRequestDto.getUserId());
+        Integer currentProgress = getCurrentBookProgressPercent(group, authenticatedUser);
 
-        GroupCommentEntity comment =
-                groupCommentMapper.toEntity(groupCommentRequestDto);
+        if (requestDto.getProgressPercent() > currentProgress) {
+            throw new BadRequestException("You cannot comment beyond your current reading progress");
+        }
 
+        GroupCommentEntity comment = groupCommentMapper.toEntity(requestDto);
         comment.setGroup(group);
-        comment.setUser(user);
+        comment.setUser(authenticatedUser);
+        comment.setStatus(GroupCommentStatus.ACTIVE);
 
-        GroupCommentEntity savedComment =
-                groupCommentRepository.save(comment);
-
+        GroupCommentEntity savedComment = groupCommentRepository.save(comment);
         return groupCommentMapper.toResponseDto(savedComment);
     }
 
     @Override
-    @Transactional (readOnly = true)
-    public List<GroupCommentResponseDto> findAll() {
+    @Transactional(readOnly = true)
+    public List<GroupCommentResponseDto> getVisibleCommentsByGroupId(UUID groupId) {
+        ReadingGroupEntity group = findGroupByIdExternal(groupId);
+        validateBookOnlyGroup(group);
+
+        UserEntity authenticatedUser = getAuthenticatedUser();
+        validateActiveMembership(groupId, authenticatedUser);
+
+        Integer currentProgress = getCurrentBookProgressPercent(group, authenticatedUser);
+
+        List<GroupCommentEntity> visibleComments =
+                groupCommentRepository.findByGroupIdExternalAndStatusAndProgressPercentLessThanEqualOrderByCreatedAtAsc(
+                        groupId,
+                        GroupCommentStatus.ACTIVE,
+                        currentProgress
+                );
+
+        return groupCommentMapper.toResponseDtoList(visibleComments);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GroupCommentResponseDto> getActiveCommentsByUserId(UUID userId) {
+        UserEntity authenticatedUser = getAuthenticatedUser();
+        findUserByIdExternal(userId);
+
+        boolean isSameUser = Objects.equals(userId, authenticatedUser.getIdExternal());
+        boolean isAdminOrModerator = isAdminOrModerator(authenticatedUser);
+
+        if (!isSameUser && !isAdminOrModerator) {
+            throw new AccessDeniedException("You do not have permission to view this user's comments");
+        }
 
         List<GroupCommentEntity> comments =
-                groupCommentRepository.findByHiddenFalseOrderByCreatedAtDesc();
+                groupCommentRepository.findByUserIdExternalAndStatusOrderByCreatedAtDesc(
+                        userId,
+                        GroupCommentStatus.ACTIVE
+                );
 
         return groupCommentMapper.toResponseDtoList(comments);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public GroupCommentResponseDto findById(UUID commentId) {
+    public GroupCommentResponseDto getCommentByIdExternal(UUID commentId) {
+        GroupCommentEntity comment = findCommentByIdExternal(commentId);
+        UserEntity authenticatedUser = getAuthenticatedUser();
 
-        GroupCommentEntity comment =
-                findActiveCommentByIdExternal(commentId);
+        boolean isAuthor = Objects.equals(
+                comment.getUser().getIdExternal(),
+                authenticatedUser.getIdExternal()
+        );
+
+        boolean isAdminOrModerator = isAdminOrModerator(authenticatedUser);
+
+        boolean isActiveMember = groupMemberRepository
+                .existsByGroupIdExternalAndUserIdExternalAndStatus(
+                        comment.getGroup().getIdExternal(),
+                        authenticatedUser.getIdExternal(),
+                        GroupMemberStatus.ACTIVE
+                );
+
+        if (!isAuthor && !isAdminOrModerator && !isActiveMember) {
+            throw new AccessDeniedException("You do not have permission to view this comment");
+        }
+
+        if (comment.getStatus() != GroupCommentStatus.ACTIVE && !isAuthor && !isAdminOrModerator) {
+            throw new AccessDeniedException("You do not have permission to view this comment");
+        }
+
+        if (!isAuthor && !isAdminOrModerator) {
+            validateBookOnlyGroup(comment.getGroup());
+            Integer currentProgress = getCurrentBookProgressPercent(comment.getGroup(), authenticatedUser);
+
+            if (comment.getProgressPercent() > currentProgress) {
+                throw new AccessDeniedException("You do not have permission to view this comment");
+            }
+        }
 
         return groupCommentMapper.toResponseDto(comment);
     }
 
     @Override
     @Transactional
-    public GroupCommentResponseDto update(
-            UUID commentId,
-            GroupCommentRequestDto groupCommentRequestDto
-    ) {
+    public void deleteComment(UUID commentId) {
+        GroupCommentEntity comment = findCommentByIdExternal(commentId);
+        UserEntity authenticatedUser = getAuthenticatedUser();
 
-        GroupCommentEntity comment =
-                findActiveCommentByIdExternal(commentId);
-
-        ReadingGroupEntity group =
-                findGroupByIdExternal(groupCommentRequestDto.getGroupId());
-
-        UserEntity user =
-                findUserByIdExternal(groupCommentRequestDto.getUserId());
-
-        comment.setContent(groupCommentRequestDto.getContent());
-        comment.setProgressMilestone(
-                groupCommentRequestDto.getProgressMilestone()
+        boolean isAuthor = Objects.equals(
+                comment.getUser().getIdExternal(),
+                authenticatedUser.getIdExternal()
         );
-        comment.setGroup(group);
-        comment.setUser(user);
 
-        GroupCommentEntity updatedComment =
-                groupCommentRepository.save(comment);
+        boolean isAdminOrModerator = isAdminOrModerator(authenticatedUser);
 
-        return groupCommentMapper.toResponseDto(updatedComment);
-    }
+        if (!isAuthor && !isAdminOrModerator) {
+            throw new AccessDeniedException("You do not have permission to delete this comment");
+        }
 
-    @Override
-    @Transactional
-    public void delete(UUID commentId) {
+        if (comment.getStatus() != GroupCommentStatus.ACTIVE) {
+            throw new AccessDeniedException("Only active comments can be deleted");
+        }
 
-        GroupCommentEntity comment =
-                findActiveCommentByIdExternal(commentId);
-
-        comment.setHidden(true);
+        if (isAdminOrModerator && !isAuthor) {
+            comment.setStatus(GroupCommentStatus.MODERATED);
+        } else {
+            comment.setStatus(GroupCommentStatus.DELETED);
+        }
 
         groupCommentRepository.save(comment);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<GroupCommentResponseDto> findByGroupId(UUID groupId) {
+    private void validateActiveMembership(UUID groupId, UserEntity authenticatedUser) {
+        boolean isActiveMember = groupMemberRepository
+                .existsByGroupIdExternalAndUserIdExternalAndStatus(
+                        groupId,
+                        authenticatedUser.getIdExternal(),
+                        GroupMemberStatus.ACTIVE
+                );
 
-        findGroupByIdExternal(groupId);
-
-        List<GroupCommentEntity> comments =
-                groupCommentRepository
-                        .findByGroupIdExternalAndHiddenFalseOrderByCreatedAtAsc(groupId);
-
-        return groupCommentMapper.toResponseDtoList(comments);
+        if (!isActiveMember && !isAdminOrModerator(authenticatedUser)) {
+            throw new AccessDeniedException("Only active group members can perform this action");
+        }
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<GroupCommentResponseDto> findByUserId(UUID userId) {
-
-        findUserByIdExternal(userId);
-
-        List<GroupCommentEntity> comments =
-                groupCommentRepository
-                        .findByUserIdExternalAndHiddenFalseOrderByCreatedAtDesc(userId);
-
-        return groupCommentMapper.toResponseDtoList(comments);
+    private void validateBookOnlyGroup(ReadingGroupEntity group) {
+        if (group.getBook() == null || group.getStory() != null) {
+            throw new BadRequestException("Group comments are currently supported only for book-based reading groups");
+        }
     }
 
-    private GroupCommentEntity findActiveCommentByIdExternal(UUID idExternal) {
+    private Integer getCurrentBookProgressPercent(ReadingGroupEntity group, UserEntity user) {
+        ReadingStatusEntity readingStatus = readingStatusRepository
+                .findByUserIdExternalAndBookIdExternal(
+                        user.getIdExternal(),
+                        group.getBook().getIdExternal()
+                )
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Reading status not found for the authenticated user and the group's book"
+                ));
 
-        return groupCommentRepository
-                .findByIdExternalAndHiddenFalse(idExternal)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Group comment not found with idExternal: " + idExternal
-                        ));
+        if (readingStatus.getProgressType() != ProgressType.PERCENTAGE || readingStatus.getProgressValue() == null) {
+            throw new BadRequestException(
+                    "A percentage-based reading status is required to interact with book group comments"
+            );
+        }
+
+        return readingStatus.getProgressValue();
+    }
+
+    private boolean isAdminOrModerator(UserEntity user) {
+        return user.getAuthorities().stream()
+                .anyMatch(authority ->
+                        authority.getAuthority().equals("ROLE_ADMIN")
+                                || authority.getAuthority().equals("ROLE_MODERATOR"));
+    }
+
+    private GroupCommentEntity findCommentByIdExternal(UUID commentId) {
+        return groupCommentRepository.findByIdExternal(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Group comment not found with idExternal: " + commentId
+                ));
     }
 
     private ReadingGroupEntity findGroupByIdExternal(UUID groupId) {
-
-        return readingGroupRepository
-                .findByIdExternal(groupId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Reading group not found with idExternal: " + groupId
-                        ));
+        return readingGroupRepository.findByIdExternal(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Reading group not found with idExternal: " + groupId
+                ));
     }
-
 
     private UserEntity findUserByIdExternal(UUID userId) {
+        return userRepository.findByIdExternal(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found with idExternal: " + userId
+                ));
+    }
 
-        return userRepository
-                .findByIdExternal(userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "User not found with idExternal: " + userId
-                        ));
+    private UserEntity getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserEntity user)) {
+            throw new AccessDeniedException("Authenticated user not found");
+        }
+
+        return user;
     }
 }
+

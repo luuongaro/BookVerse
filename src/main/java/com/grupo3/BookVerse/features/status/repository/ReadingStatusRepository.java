@@ -95,6 +95,11 @@ public interface ReadingStatusRepository extends JpaRepository<ReadingStatusEnti
             UUID storyId
     );
 
+    Optional<ReadingStatusEntity> findByUserIdExternalAndBookIdExternal(
+            UUID userId,
+            UUID bookId
+    );
+
     boolean existsByUser_IdExternalAndBook_IdExternalAndIdExternalNot(
             UUID userId,
             UUID bookId,

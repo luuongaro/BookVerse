@@ -2,6 +2,7 @@ package com.grupo3.BookVerse.features.groups.groupComment.repository;
 
 
 import com.grupo3.BookVerse.features.groups.groupComment.domain.GroupCommentEntity;
+import com.grupo3.BookVerse.features.groups.groupComment.domain.GroupCommentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,11 +13,10 @@ import java.util.UUID;
 @Repository
 public interface GroupCommentRepository extends JpaRepository<GroupCommentEntity, Long> {
 
-    Optional<GroupCommentEntity> findByIdExternalAndHiddenFalse(UUID idExternal);
+    Optional<GroupCommentEntity> findByIdExternal(UUID idExternal);
 
-    List<GroupCommentEntity> findByHiddenFalseOrderByCreatedAtDesc();
+    List<GroupCommentEntity> findByUserIdExternalAndStatusOrderByCreatedAtDesc(UUID userId, GroupCommentStatus status);
 
-    List<GroupCommentEntity> findByGroupIdExternalAndHiddenFalseOrderByCreatedAtAsc(UUID groupId);
+    List<GroupCommentEntity> findByGroupIdExternalAndStatusAndProgressPercentLessThanEqualOrderByCreatedAtAsc(UUID groupId, GroupCommentStatus status, Integer progressPercent);
 
-    List<GroupCommentEntity> findByUserIdExternalAndHiddenFalseOrderByCreatedAtDesc(UUID userId);
 }
