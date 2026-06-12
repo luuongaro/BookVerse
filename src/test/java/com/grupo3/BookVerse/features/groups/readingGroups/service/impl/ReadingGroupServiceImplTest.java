@@ -12,20 +12,24 @@ import com.grupo3.BookVerse.features.groups.readingGroups.repository.ReadingGrou
 import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
 import com.grupo3.BookVerse.features.stories.repository.StoryRepository;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
+import com.grupo3.BookVerse.features.groups.groupMember.repository.GroupMemberRepository;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,20 +50,40 @@ class ReadingGroupServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private GroupMemberRepository groupMemberRepository;
+
     @InjectMocks
     private ReadingGroupServiceImpl service;
 
     private UUID groupId;
     private UUID bookId;
     private UUID storyId;
-    private UUID userId;
+    private UserEntity authenticatedUser;
 
     @BeforeEach
     void setUp() {
         groupId = UUID.randomUUID();
         bookId = UUID.randomUUID();
         storyId = UUID.randomUUID();
-        userId = UUID.randomUUID();
+
+        // Mock authenticated user in SecurityContext
+        authenticatedUser = new UserEntity();
+        authenticatedUser.setIdExternal(UUID.randomUUID());
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        authenticatedUser,
+                        null,
+                        Collections.emptyList()
+                );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     // Verify that a reading group is created successfully with a book
@@ -70,12 +94,10 @@ class ReadingGroupServiceImplTest {
                 new ReadingGroupRequestDto(
                         bookId,
                         null,
-                        userId,
                         "Fantasy Readers",
                         true
                 );
 
-        UserEntity user = new UserEntity();
         BookEntity book = new BookEntity();
         ReadingGroupEntity entity = new ReadingGroupEntity();
         ReadingGroupEntity saved = new ReadingGroupEntity();
@@ -85,14 +107,11 @@ class ReadingGroupServiceImplTest {
                         groupId,
                         bookId,
                         null,
-                        userId,
+                        null,
                         "Fantasy Readers",
                         true,
                         null
                 );
-
-        when(userRepository.findByIdExternal(userId))
-                .thenReturn(Optional.of(user));
 
         when(bookRepository.findByIdExternal(bookId))
                 .thenReturn(Optional.of(book));
@@ -123,21 +142,16 @@ class ReadingGroupServiceImplTest {
                 new ReadingGroupRequestDto(
                         null,
                         storyId,
-                        userId,
                         "Manga Readers",
                         true
                 );
 
-        UserEntity user = new UserEntity();
         StoryEntity story = new StoryEntity();
         ReadingGroupEntity entity = new ReadingGroupEntity();
         ReadingGroupEntity saved = new ReadingGroupEntity();
 
         ReadingGroupResponseDto response =
                 mock(ReadingGroupResponseDto.class);
-
-        when(userRepository.findByIdExternal(userId))
-                .thenReturn(Optional.of(user));
 
         when(storyRepository.findByIdExternal(storyId))
                 .thenReturn(Optional.of(story));
@@ -165,7 +179,6 @@ class ReadingGroupServiceImplTest {
                 new ReadingGroupRequestDto(
                         null,
                         null,
-                        userId,
                         "Group",
                         true
                 );
@@ -184,7 +197,6 @@ class ReadingGroupServiceImplTest {
                 new ReadingGroupRequestDto(
                         bookId,
                         storyId,
-                        userId,
                         "Group",
                         true
                 );
@@ -199,8 +211,10 @@ class ReadingGroupServiceImplTest {
     @Test
     void getAllGroups_shouldReturnList() {
 
-        List<ReadingGroupEntity> entities =
-                List.of(new ReadingGroupEntity());
+        ReadingGroupEntity activeEntity = new ReadingGroupEntity();
+        activeEntity.setIsActive(true);
+
+        List<ReadingGroupEntity> entities = List.of(activeEntity);
 
         List<ReadingGroupResponseDto> responses =
                 List.of(mock(ReadingGroupResponseDto.class));
@@ -208,7 +222,7 @@ class ReadingGroupServiceImplTest {
         when(repository.findAll())
                 .thenReturn(entities);
 
-        when(mapper.toResponseDtoList(entities))
+        when(mapper.toResponseDtoList(List.of(activeEntity)))
                 .thenReturn(responses);
 
         List<ReadingGroupResponseDto> result =
@@ -223,8 +237,8 @@ class ReadingGroupServiceImplTest {
     @Test
     void getGroupByIdExternal_shouldReturnDto() {
 
-        ReadingGroupEntity entity =
-                new ReadingGroupEntity();
+        ReadingGroupEntity entity = new ReadingGroupEntity();
+        entity.setIsActive(true);
 
         ReadingGroupResponseDto response =
                 mock(ReadingGroupResponseDto.class);
@@ -260,8 +274,10 @@ class ReadingGroupServiceImplTest {
 
         BookEntity book = new BookEntity();
 
-        List<ReadingGroupEntity> entities =
-                List.of(new ReadingGroupEntity());
+        ReadingGroupEntity activeEntity = new ReadingGroupEntity();
+        activeEntity.setIsActive(true);
+
+        List<ReadingGroupEntity> entities = List.of(activeEntity);
 
         List<ReadingGroupResponseDto> responses =
                 List.of(mock(ReadingGroupResponseDto.class));
@@ -272,7 +288,7 @@ class ReadingGroupServiceImplTest {
         when(repository.findByBook_IdExternal(bookId))
                 .thenReturn(entities);
 
-        when(mapper.toResponseDtoList(entities))
+        when(mapper.toResponseDtoList(List.of(activeEntity)))
                 .thenReturn(responses);
 
         List<ReadingGroupResponseDto> result =
@@ -285,10 +301,13 @@ class ReadingGroupServiceImplTest {
     @Test
     void getGroupsByUserIdExternal_shouldReturnList() {
 
+        UUID userId = UUID.randomUUID();
         UserEntity user = new UserEntity();
 
-        List<ReadingGroupEntity> entities =
-                List.of(new ReadingGroupEntity());
+        ReadingGroupEntity activeEntity = new ReadingGroupEntity();
+        activeEntity.setIsActive(true);
+
+        List<ReadingGroupEntity> entities = List.of(activeEntity);
 
         List<ReadingGroupResponseDto> responses =
                 List.of(mock(ReadingGroupResponseDto.class));
@@ -299,7 +318,7 @@ class ReadingGroupServiceImplTest {
         when(repository.findByCreatedBy_IdExternal(userId))
                 .thenReturn(entities);
 
-        when(mapper.toResponseDtoList(entities))
+        when(mapper.toResponseDtoList(List.of(activeEntity)))
                 .thenReturn(responses);
 
         List<ReadingGroupResponseDto> result =
@@ -316,31 +335,23 @@ class ReadingGroupServiceImplTest {
                 new ReadingGroupRequestDto(
                         bookId,
                         null,
-                        userId,
                         "Updated Group",
                         false
                 );
 
-        ReadingGroupEntity entity =
-                new ReadingGroupEntity();
+        BookEntity book = new BookEntity();
+        book.setIdExternal(bookId);
 
-        UserEntity user =
-                new UserEntity();
-
-        BookEntity book =
-                new BookEntity();
+        ReadingGroupEntity entity = new ReadingGroupEntity();
+        entity.setIsActive(true);
+        entity.setBook(book);
+        entity.setCreatedBy(authenticatedUser); // owner = authenticated user
 
         ReadingGroupResponseDto response =
                 mock(ReadingGroupResponseDto.class);
 
         when(repository.findByIdExternal(groupId))
                 .thenReturn(Optional.of(entity));
-
-        when(userRepository.findByIdExternal(userId))
-                .thenReturn(Optional.of(user));
-
-        when(bookRepository.findByIdExternal(bookId))
-                .thenReturn(Optional.of(book));
 
         when(repository.save(entity))
                 .thenReturn(entity);
@@ -356,18 +367,20 @@ class ReadingGroupServiceImplTest {
         verify(repository).save(entity);
     }
 
-    // Verify that a reading group is deleted successfully
+    // Verify that a reading group is deactivated successfully (soft delete)
     @Test
-    void deleteGroup_shouldCallRepository() {
+    void deleteGroup_shouldDeactivateGroup() {
 
-        ReadingGroupEntity entity =
-                new ReadingGroupEntity();
+        ReadingGroupEntity entity = new ReadingGroupEntity();
+        entity.setIsActive(true);
+        entity.setCreatedBy(authenticatedUser); // owner = authenticated user
 
         when(repository.findByIdExternal(groupId))
                 .thenReturn(Optional.of(entity));
 
         service.deleteGroup(groupId);
 
-        verify(repository).delete(entity);
+        assertFalse(entity.getIsActive());
+        verify(repository).save(entity);
     }
 }
