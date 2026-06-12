@@ -66,14 +66,11 @@ class BookServiceImplTest {
         Page<BookEntity> booksPage =
                 new PageImpl<>(List.of(book));
 
-        Page<BookResponseDto> dtoPage =
-                new PageImpl<>(List.of(dto));
-
         when(bookRepository.findByDeletedFalse(any(Pageable.class)))
                 .thenReturn(booksPage);
 
-        when(bookMapper.toResponseDtoList(anyList()))
-                .thenReturn(List.of(dto));
+        when(bookMapper.toResponseDto(book))
+                .thenReturn(dto);
 
         Page<BookResponseDto> result =
                 bookService.getAllBooks(pageable);
@@ -94,7 +91,7 @@ class BookServiceImplTest {
                 .findByDeletedFalse(any(Pageable.class));
 
         verify(bookMapper)
-                .toResponseDtoList(anyList());
+                .toResponseDto(book);
     }
 
     // Verify that a book is returned by external ID
