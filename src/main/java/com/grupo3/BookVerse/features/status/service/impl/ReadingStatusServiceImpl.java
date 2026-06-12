@@ -1,5 +1,4 @@
 package com.grupo3.BookVerse.features.status.service.impl;
-
 import com.grupo3.BookVerse.features.status.service.ReadingStatusService;
 import com.grupo3.BookVerse.features.stories.domain.StoryAccessType;
 import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
@@ -74,6 +73,13 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
                     null
             );
         }
+
+        validateUniqueReadingStatus(
+                authenticatedUser,
+                book,
+                story,
+                null
+        );
 
         ReadingStatusEntity entity = readingStatusMapper.toEntity(requestDto);
         entity.setUser(authenticatedUser);
@@ -162,6 +168,13 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
                     entity.getIdExternal()
             );
         }
+
+        validateUniqueReadingStatus(
+                authenticatedUser,
+                book,
+                story,
+                entity.getIdExternal()
+        );
 
         entity.setUser(authenticatedUser);
         entity.setBook(book);
@@ -465,6 +478,52 @@ public class ReadingStatusServiceImpl implements ReadingStatusService {
             );
         }
     }
+
+    private void validateUniqueReadingStatus(
+            UserEntity user,
+            BookEntity book,
+            StoryEntity story,
+            UUID currentReadingStatusId
+    ) {
+
+        boolean exists;
+
+        if (book != null) {
+
+            exists = currentReadingStatusId == null
+                    ? readingStatusRepository
+                    .existsByUser_IdExternalAndBook_IdExternal(
+                            user.getIdExternal(),
+                            book.getIdExternal()
+                    )
+                    : readingStatusRepository
+                    .existsByUser_IdExternalAndBook_IdExternalAndIdExternalNot(
+                            user.getIdExternal(),
+                            book.getIdExternal(),
+                            currentReadingStatusId
+                    );
+
+        } else {
+
+            exists = currentReadingStatusId == null
+                    ? readingStatusRepository
+                    .existsByUser_IdExternalAndStory_IdExternal(
+                            user.getIdExternal(),
+                            story.getIdExternal()
+                    )
+                    : readingStatusRepository
+                    .existsByUser_IdExternalAndStory_IdExternalAndIdExternalNot(
+                            user.getIdExternal(),
+                            story.getIdExternal(),
+                            currentReadingStatusId
+                    );
+        }
+
+        if (exists) {
+            throw new BadRequestException(
+                    "A reading status already exists for this content"
+            );
+        }
+    }
+
 }
-
-
