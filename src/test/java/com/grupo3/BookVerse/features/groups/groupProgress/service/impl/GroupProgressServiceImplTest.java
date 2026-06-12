@@ -4,11 +4,13 @@ import com.grupo3.BookVerse.features.chapters.domain.ChapterEntity;
 import com.grupo3.BookVerse.features.groups.groupGoals.domain.GoalType;
 import com.grupo3.BookVerse.features.groups.groupGoals.domain.GroupGoalsEntity;
 import com.grupo3.BookVerse.features.groups.groupGoals.repository.GroupGoalsRepository;
+import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberEntity;
 import com.grupo3.BookVerse.features.groups.groupProgress.dto.GroupProgressResponseDto;
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import com.grupo3.BookVerse.features.groups.readingGroups.repository.ReadingGroupRepository;
 import com.grupo3.BookVerse.features.status.domain.ProgressType;
 import com.grupo3.BookVerse.features.status.domain.ReadingStatusEntity;
+import com.grupo3.BookVerse.features.status.domain.ReadingStatusEnum;
 import com.grupo3.BookVerse.features.status.repository.ReadingStatusRepository;
 import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
@@ -59,6 +61,8 @@ class GroupProgressServiceImplTest {
         ChapterEntity chapter4 = new ChapterEntity();
 
         StoryEntity story = new StoryEntity();
+        UUID storyId = UUID.randomUUID();
+        story.setIdExternal(storyId);
         story.setChapters(
                 List.of(chapter1, chapter2, chapter3, chapter4)
         );
@@ -76,11 +80,18 @@ class GroupProgressServiceImplTest {
 
         UserEntity user =
                 new UserEntity();
+        UUID userId = UUID.randomUUID();
+        user.setIdExternal(userId);
+
+        GroupMemberEntity member = new GroupMemberEntity();
+        member.setUser(user);
+        group.setMembers(List.of(member));
 
         ReadingStatusEntity status =
                 new ReadingStatusEntity();
 
         status.setUser(user);
+        status.setStatus(ReadingStatusEnum.IN_PROGRESS);
         status.setProgressType(ProgressType.CHAPTER);
         status.setProgressValue(2);
 
@@ -91,8 +102,10 @@ class GroupProgressServiceImplTest {
                 .findTopByGroup_IdExternalOrderByUpdatedAtDesc(groupId))
                 .thenReturn(Optional.of(goal));
 
-        when(readingStatusRepository.findAll())
-                .thenReturn(List.of(status));
+        when(readingStatusRepository.findByUserIdExternalInAndStoryIdExternal(
+                List.of(userId),
+                storyId
+        )).thenReturn(List.of(status));
 
         GroupProgressResponseDto result =
                 groupProgressService.calculateProgress(groupId);
@@ -172,9 +185,6 @@ class GroupProgressServiceImplTest {
         when(groupGoalsRepository
                 .findTopByGroup_IdExternalOrderByUpdatedAtDesc(groupId))
                 .thenReturn(Optional.of(goal));
-
-        when(readingStatusRepository.findAll())
-                .thenReturn(List.of());
 
         GroupProgressResponseDto result =
                 groupProgressService.calculateProgress(groupId);
