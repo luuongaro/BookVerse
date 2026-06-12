@@ -32,6 +32,11 @@ public class GroupGoalsEntity {
     @Column(name = "goal_type", nullable = false)
     private GoalType goalType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private GoalStatus status;
+
+
     @Column(name = "target_progress", nullable = false)
     private Integer targetProgress;
 
@@ -46,6 +51,10 @@ public class GroupGoalsEntity {
 
         if (idExternal == null) {
             idExternal = UUID.randomUUID();
+        }
+
+        if (status == null) {
+            status = GoalStatus.ACTIVE;
         }
 
         updatedAt = LocalDateTime.now();
