@@ -20,7 +20,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 @Entity
 @Table(name = "reading_groups")
 public class ReadingGroupEntity {
@@ -50,26 +49,38 @@ public class ReadingGroupEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false,updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        if (idExternal == null) {
-            idExternal = UUID.randomUUID();
-        }
-    }
-
 
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
     private List<GroupMemberEntity> members = new ArrayList<>();
 
-
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
     private List<GroupGoalsEntity> goals = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.idExternal == null) {
+            this.idExternal = UUID.randomUUID();
+        }
+        validateContentAssociation();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        validateContentAssociation();
+    }
+
+    private void validateContentAssociation() {
+        boolean hasBook = this.book != null;
+        boolean hasStory = this.story != null;
+
+        if (hasBook == hasStory) {
+            throw new IllegalStateException("A reading group must be associated with exactly one book or one story");
+        }
+    }
 }
