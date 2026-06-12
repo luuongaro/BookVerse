@@ -1,5 +1,6 @@
 package com.grupo3.BookVerse.features.groups.groupGoals.dto;
 
+import com.grupo3.BookVerse.features.groups.groupGoals.domain.GoalStatus;
 import com.grupo3.BookVerse.features.groups.groupGoals.domain.GoalType;
 
 
@@ -13,6 +14,8 @@ public record GroupGoalsResponseDto(
         UUID groupId,
 
         GoalType goalType,
+
+        GoalStatus status,
 
         Integer targetProgress,
 
