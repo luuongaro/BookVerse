@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +32,7 @@ public class ReadingGroupController {
     private final ReadingGroupService readingGroupService;
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Create a new reading group",
             description = "Creates a new reading group associated with a book and a user who created it.",
@@ -51,6 +53,7 @@ public class ReadingGroupController {
     }
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get all reading groups",
             description = "Retrieves all reading groups registered in the system.",
@@ -65,6 +68,7 @@ public class ReadingGroupController {
     }
 
     @GetMapping("/{idExternal}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get reading group by external id",
             description = "Retrieves a specific reading group by its external UUID.",
@@ -89,6 +93,7 @@ public class ReadingGroupController {
     }
 
     @GetMapping("/book/{bookId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get reading groups by book",
             description = "Retrieves all reading groups associated with a specific book using the book's external UUID.",
@@ -113,6 +118,7 @@ public class ReadingGroupController {
     }
 
     @GetMapping("/user/{userId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get reading groups by user",
             description = "Retrieves all reading groups created by a specific user using the user's external UUID.",
@@ -137,6 +143,7 @@ public class ReadingGroupController {
     }
 
     @PutMapping("/{idExternal}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Update a reading group",
             description = "Updates an existing reading group by its external UUID.",
@@ -163,6 +170,7 @@ public class ReadingGroupController {
     }
 
     @DeleteMapping("/{idExternal}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Delete a reading group",
             description = "Deletes a reading group by its external UUID.",

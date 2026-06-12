@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +33,7 @@ public class GroupGoalsController {
     private final GroupGoalsService groupGoalsService;
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get all group goals",
             description = "Retrieves all group goals registered in the system.",
@@ -56,6 +58,7 @@ public class GroupGoalsController {
     }
 
     @GetMapping("/{groupGoalsId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get group goal by external id",
             description = "Retrieves a specific group goal by its external UUID.",
@@ -93,6 +96,7 @@ public class GroupGoalsController {
     }
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Create a new group goal",
             description = """
@@ -135,11 +139,11 @@ public class GroupGoalsController {
     }
 
     @PatchMapping("/{groupGoalsId}/status")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Change group goal status",
             description = """
                     Changes the status of an ACTIVE group goal.
-                    
                     Allowed transitions:
                     ACTIVE → COMPLETED
                     ACTIVE → CANCELLED
@@ -189,6 +193,7 @@ public class GroupGoalsController {
     }
 
     @DeleteMapping("/{groupGoalsId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Cancel an active group goal",
             description = """
@@ -235,6 +240,7 @@ public class GroupGoalsController {
     }
 
     @GetMapping("/group/{groupId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get active goal by reading group",
             description = """
