@@ -35,7 +35,7 @@ class GroupGoalsServiceImplTest {
     private ReadingGroupRepository readingGroupRepository;
 
     @InjectMocks
-    private com.grupo3.BookVerse.features.groups.groupGoals.service.impl.GroupGoalsServiceImpl groupGoalsService;
+    private GroupGoalsServiceImpl groupGoalsService;
 
     private UUID groupId;
     private UUID goalId;
