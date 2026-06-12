@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.groups.groupProgress;
+package com.grupo3.BookVerse.features.groups.groupProgress.dto;
 
 import com.grupo3.BookVerse.features.groups.groupGoals.domain.GoalType;
 import lombok.Builder;
