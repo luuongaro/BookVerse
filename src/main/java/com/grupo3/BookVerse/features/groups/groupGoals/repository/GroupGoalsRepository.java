@@ -12,19 +12,14 @@ import java.util.UUID;
 @Repository
 public interface GroupGoalsRepository extends JpaRepository<GroupGoalsEntity, Long> {
 
+
     Optional<GroupGoalsEntity> findByIdExternal(UUID idExternal);
 
+    List<GroupGoalsEntity> findByGroup_IdExternalOrderByUpdatedAtDesc(UUID groupId);
+
+    Optional<GroupGoalsEntity> findByGroup_IdExternalAndStatus(UUID groupId, GoalStatus status);
+
+    boolean existsByGroup_IdExternalAndStatus(UUID groupId, GoalStatus status);
+
     Optional<GroupGoalsEntity> findTopByGroup_IdExternalOrderByUpdatedAtDesc(UUID groupId);
-
-    boolean existsByGroup_IdExternalAndStatus(
-            UUID groupId,
-            GoalStatus status
-    );
-
-    Optional<GroupGoalsEntity> findByGroup_IdExternalAndStatus(
-            UUID groupId,
-            GoalStatus status
-    );
-
-
 }

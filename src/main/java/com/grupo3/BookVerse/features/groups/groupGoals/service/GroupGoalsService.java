@@ -9,18 +9,17 @@ import java.util.UUID;
 
 public interface GroupGoalsService {
 
-    GroupGoalsResponseDto save(GroupGoalsRequestDto groupGoalsRequestDto);
 
-    void delete(UUID groupGoalsId);
+    GroupGoalsResponseDto createGoal(UUID groupId, GroupGoalsRequestDto requestDto);
 
-    GroupGoalsResponseDto changeStatus(
-            UUID groupGoalId,
-            GroupGoalStatusRequestDto requestDto
-    );
+    GroupGoalsResponseDto getGoalByIdExternal(UUID goalId);
 
-    GroupGoalsResponseDto findById(UUID groupGoalsId);
+    List<GroupGoalsResponseDto> getGoalsByGroupId(UUID groupId);
 
-    List<GroupGoalsResponseDto> findAll();
+    GroupGoalsResponseDto getActiveGoalByGroupId(UUID groupId);
 
-    GroupGoalsResponseDto findByGroupId(UUID groupId);
+    GroupGoalsResponseDto changeStatus(UUID goalId, GroupGoalStatusRequestDto requestDto);
+
+    void cancelGoal(UUID goalId);
+
 }
