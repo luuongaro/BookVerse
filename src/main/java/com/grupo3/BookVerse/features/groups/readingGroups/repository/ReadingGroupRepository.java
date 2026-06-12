@@ -16,5 +16,4 @@ public interface ReadingGroupRepository extends JpaRepository<ReadingGroupEntity
 
     List<ReadingGroupEntity> findByCreatedBy_IdExternal(UUID userId);
 
-
 }
