@@ -1,6 +1,5 @@
 package com.grupo3.BookVerse.features.books.controller;
 
-import com.grupo3.BookVerse.features.books.dto.BookRequestDto;
 import com.grupo3.BookVerse.features.books.dto.BookResponseDto;
 import com.grupo3.BookVerse.features.books.service.BookService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,13 +9,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -24,30 +23,32 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(
         name = "Books",
-        description = "Endpoints for managing books in BookVerse"
+        description = "Endpoints for managing books stored locally in BookVerse"
 )
 public class BookController {
 
     private final BookService bookService;
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get all books",
-            description = "Retrieves a list of all books registered in the system.",
+            description = "Retrieves a paginated list of all active books stored locally in the system.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Books retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public ResponseEntity<List<BookResponseDto>> getAllBooks() {
-        return ResponseEntity.ok(bookService.getAllBooks());
+    public ResponseEntity<Page<BookResponseDto>> getAllBooks(Pageable pageable) {
+        return ResponseEntity.ok(bookService.getAllBooks(pageable));
     }
 
     @GetMapping("/{idExternal}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get book by external id",
-            description = "Retrieves a book using its external UUID identifier.",
+            description = "Retrieves a locally stored active book using its external UUID identifier.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -66,74 +67,28 @@ public class BookController {
         return ResponseEntity.ok(bookService.getBookByIdExternal(idExternal));
     }
 
-    @PostMapping
+    @PostMapping("/google/{googleBookId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
-            summary = "Create a new book",
-            description = "Creates a new book and returns the created resource.",
+            summary = "Store a Google Book locally",
+            description = "Retrieves a book from Google Books API by its Google Book ID and stores it locally if it does not already exist.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Book created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
+            @ApiResponse(responseCode = "200", description = "Book stored or retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid Google Book ID", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Referenced author or related resource not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Book not found in Google Books", content = @Content)
     })
-    public ResponseEntity<BookResponseDto> createBook(
-            @Valid @RequestBody BookRequestDto dto
-    ) {
-        return new ResponseEntity<>(
-                bookService.createBook(dto),
-                HttpStatus.CREATED
-        );
-    }
-
-    @PutMapping("/{idExternal}")
-    @Operation(
-            summary = "Update a book",
-            description = "Updates an existing book identified by its external UUID.",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Book updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Book not found", content = @Content)
-    })
-    public ResponseEntity<BookResponseDto> updateBook(
+    public ResponseEntity<BookResponseDto> saveGoogleBook(
             @Parameter(
-                    description = "External UUID of the book to update",
+                    description = "Google Books ID of the book to persist locally",
                     required = true,
-                    example = "550e8400-e29b-41d4-a716-446655440000"
+                    example = "zyTCAlFPjgYC"
             )
-            @PathVariable UUID idExternal,
-            @Valid @RequestBody BookRequestDto dto
+            @PathVariable String googleBookId
     ) {
-        return ResponseEntity.ok(
-                bookService.updateBook(idExternal, dto)
-        );
-    }
-
-    @DeleteMapping("/{idExternal}")
-    @Operation(
-            summary = "Delete a book",
-            description = "Deletes a book identified by its external UUID.",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Book deleted successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Book not found", content = @Content)
-    })
-    public ResponseEntity<Void> deleteBook(
-            @Parameter(
-                    description = "External UUID of the book to delete",
-                    required = true,
-                    example = "550e8400-e29b-41d4-a716-446655440000"
-            )
-            @PathVariable UUID idExternal
-    ) {
-        bookService.deleteBook(idExternal);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(bookService.findOrCreateFromGoogleBookId(googleBookId));
     }
 }
 

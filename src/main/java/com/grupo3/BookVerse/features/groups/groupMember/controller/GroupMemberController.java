@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,50 +25,43 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(
         name = "Group Members",
-        description = "Endpoints for managing membership in reading groups"
+        description = "Endpoints for managing reading group memberships"
 )
 public class GroupMemberController {
 
     private final GroupMemberService groupMemberService;
 
-    @PostMapping
+    @PostMapping("/group/{groupId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Add a user to a reading group",
-            description = "Creates a new group membership by associating a user with a reading group using their external UUIDs.",
+            description = "Adds a user to a reading group using the group's external UUID and the target user's external UUID.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Group member created successfully"),
+            @ApiResponse(responseCode = "201", description = "Group member added successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Reading group or user not found", content = @Content),
-            @ApiResponse(responseCode = "409", description = "User is already a member of the group", content = @Content)
+            @ApiResponse(responseCode = "409", description = "User is already an active member of the group", content = @Content)
     })
-    public ResponseEntity<GroupMemberResponseDto> createGroupMember(
-            @Valid @RequestBody GroupMemberRequestDto groupMemberRequestDto
+    public ResponseEntity<GroupMemberResponseDto> addMemberToGroup(
+            @Parameter(
+                    description = "External UUID of the reading group",
+                    required = true,
+                    example = "550e8400-e29b-41d4-a716-446655440000"
+            )
+            @PathVariable UUID groupId,
+            @Valid @RequestBody GroupMemberRequestDto requestDto
     ) {
-        GroupMemberResponseDto createdGroupMember =
-                groupMemberService.createGroupMember(groupMemberRequestDto);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdGroupMember);
-    }
-
-    @GetMapping
-    @Operation(
-            summary = "Get all group memberships",
-            description = "Retrieves all group membership records in the system.",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Group members retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
-    })
-    public ResponseEntity<List<GroupMemberResponseDto>> getAllGroupMembers() {
-        List<GroupMemberResponseDto> groupMembers = groupMemberService.getAllGroupMembers();
-        return ResponseEntity.ok(groupMembers);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(groupMemberService.addMemberToGroup(groupId, requestDto));
     }
 
     @GetMapping("/{idExternal}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get group member by external id",
             description = "Retrieves a specific group membership by its external UUID.",
@@ -76,6 +70,7 @@ public class GroupMemberController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Group member retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Group member not found", content = @Content)
     })
     public ResponseEntity<GroupMemberResponseDto> getGroupMemberByIdExternal(
@@ -86,24 +81,25 @@ public class GroupMemberController {
             )
             @PathVariable UUID idExternal
     ) {
-        GroupMemberResponseDto groupMember =
-                groupMemberService.getGroupMemberByIdExternal(idExternal);
-
-        return ResponseEntity.ok(groupMember);
+        return ResponseEntity.ok(
+                groupMemberService.getGroupMemberByIdExternal(idExternal)
+        );
     }
 
     @GetMapping("/group/{groupId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
-            summary = "Get group members by reading group",
-            description = "Retrieves all members of a specific reading group using the group's external UUID.",
+            summary = "Get active members by reading group",
+            description = "Retrieves all active members of a specific reading group using the group's external UUID.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Group members retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Reading group not found", content = @Content)
     })
-    public ResponseEntity<List<GroupMemberResponseDto>> getGroupMembersByGroupId(
+    public ResponseEntity<List<GroupMemberResponseDto>> getActiveMembersByGroupId(
             @Parameter(
                     description = "External UUID of the reading group",
                     required = true,
@@ -111,24 +107,25 @@ public class GroupMemberController {
             )
             @PathVariable UUID groupId
     ) {
-        List<GroupMemberResponseDto> groupMembers =
-                groupMemberService.getGroupMembersByGroupId(groupId);
-
-        return ResponseEntity.ok(groupMembers);
+        return ResponseEntity.ok(
+                groupMemberService.getActiveMembersByGroupId(groupId)
+        );
     }
 
     @GetMapping("/user/{userId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
-            summary = "Get group memberships by user",
-            description = "Retrieves all group memberships associated with a specific user using the user's external UUID.",
+            summary = "Get active group memberships by user",
+            description = "Retrieves all active group memberships associated with a specific user using the user's external UUID.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User group memberships retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
-    public ResponseEntity<List<GroupMemberResponseDto>> getGroupMembersByUserId(
+    public ResponseEntity<List<GroupMemberResponseDto>> getActiveMembershipsByUserId(
             @Parameter(
                     description = "External UUID of the user",
                     required = true,
@@ -136,32 +133,64 @@ public class GroupMemberController {
             )
             @PathVariable UUID userId
     ) {
-        List<GroupMemberResponseDto> groupMembers =
-                groupMemberService.getGroupMembersByUserId(userId);
-
-        return ResponseEntity.ok(groupMembers);
+        return ResponseEntity.ok(
+                groupMemberService.getActiveMembershipsByUserId(userId)
+        );
     }
 
-    @DeleteMapping("/{idExternal}")
+    @DeleteMapping("/group/{groupId}/user/{userId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
-            summary = "Delete a group membership",
-            description = "Deletes a group membership by its external UUID.",
+            summary = "Remove a member from a reading group",
+            description = "Removes a user from a reading group using the group's external UUID and the user's external UUID.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Group member deleted successfully"),
+            @ApiResponse(responseCode = "204", description = "Group member removed successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Group member not found", content = @Content)
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Reading group, user, or membership not found", content = @Content)
     })
-    public ResponseEntity<Void> deleteGroupMember(
+    public ResponseEntity<Void> removeMemberFromGroup(
             @Parameter(
-                    description = "External UUID of the group membership to delete",
+                    description = "External UUID of the reading group",
                     required = true,
                     example = "550e8400-e29b-41d4-a716-446655440000"
             )
-            @PathVariable UUID idExternal
+            @PathVariable UUID groupId,
+            @Parameter(
+                    description = "External UUID of the user to remove from the group",
+                    required = true,
+                    example = "550e8400-e29b-41d4-a716-446655440000"
+            )
+            @PathVariable UUID userId
     ) {
-        groupMemberService.deleteGroupMember(idExternal);
+        groupMemberService.removeMemberFromGroup(groupId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/group/{groupId}/leave")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(
+            summary = "Leave a reading group",
+            description = "Allows the authenticated user to leave a reading group.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Successfully left the group"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Reading group or membership not found", content = @Content)
+    })
+    public ResponseEntity<Void> leaveGroup(
+            @Parameter(
+                    description = "External UUID of the reading group",
+                    required = true,
+                    example = "550e8400-e29b-41d4-a716-446655440000"
+            )
+            @PathVariable UUID groupId
+    ) {
+        groupMemberService.leaveGroup(groupId);
         return ResponseEntity.noContent().build();
     }
 }

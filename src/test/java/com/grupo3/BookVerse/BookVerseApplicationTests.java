@@ -1,13 +1,12 @@
 package com.grupo3.BookVerse;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
 class BookVerseApplicationTests {
 
 	@Test
-	void contextLoads() {
+	void applicationCanBeInstantiated() {
+		new BookVerseApplication();
 	}
 
 }

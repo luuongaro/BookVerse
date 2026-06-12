@@ -1,6 +1,5 @@
 package com.grupo3.BookVerse.features.chapters.domain;
 
-
 import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,25 +9,22 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-
 @Entity
 @Table(name = "chapters")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
+@Builder
 public class ChapterEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
-    @Column(name = "id_external", unique = true, nullable = false)
+    @Column(name = "id_external", unique = true, nullable = false, updatable = false)
     private UUID idExternal;
 
-
-    //Association with StoryEntity (Yan)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "story_id", nullable = false)
     private StoryEntity story;
@@ -36,23 +32,17 @@ public class ChapterEntity {
     @Column(name = "chapter_number", nullable = false)
     private int chapterNumber;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 150)
     private String title;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "page_count", nullable = false)
-    private int pageCount;
-
     @Column(name = "is_published", nullable = false)
-    private boolean isPublished;
-
-    @Column(name = "is_hidden", nullable = false)
-    private boolean isHidden;
+    private boolean published;
 
     @Column(name = "is_deleted", nullable = false)
-    private boolean isDeleted;
+    private boolean deleted;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -61,4 +51,13 @@ public class ChapterEntity {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (idExternal == null) {
+            idExternal = UUID.randomUUID();
+        }
+
+        deleted = false;
+    }
 }

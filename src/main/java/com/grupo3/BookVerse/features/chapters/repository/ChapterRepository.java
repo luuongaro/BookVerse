@@ -1,22 +1,25 @@
 package com.grupo3.BookVerse.features.chapters.repository;
 
 import com.grupo3.BookVerse.features.chapters.domain.ChapterEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface ChapterRepository extends JpaRepository<ChapterEntity, Long> {
 
-    Optional<ChapterEntity> findByIdExternalAndIsDeletedFalse(UUID idExternal);
+    Optional<ChapterEntity> findByIdExternalAndDeletedFalse(UUID idExternal);
 
-    List<ChapterEntity> findByIsDeletedFalseOrderByCreatedAtDesc();
+    Page<ChapterEntity> findAllByDeletedFalseOrderByCreatedAtDesc(Pageable pageable);
 
-    List<ChapterEntity> findByStoryIdAndIsDeletedFalseOrderByChapterNumberAsc(Long storyId);
+    Page<ChapterEntity> findByStoryIdAndDeletedFalseOrderByChapterNumberAsc(Long storyId, Pageable pageable);
 
-    Optional<ChapterEntity> findByStoryIdAndChapterNumber(Long storyId, int chapterNumber);
+    Optional<ChapterEntity> findTopByStoryIdOrderByChapterNumberDesc(Long storyId);
 
-    boolean existsByStoryIdAndChapterNumber(Long storyId, int chapterNumber);
-
+    Optional<ChapterEntity>
+    findByStoryIdExternalAndChapterNumber(UUID storyId, Integer chapterNumber);
 }
+
+

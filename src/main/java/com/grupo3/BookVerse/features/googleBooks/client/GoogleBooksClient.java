@@ -1,6 +1,7 @@
 package com.grupo3.BookVerse.features.googleBooks.client;
 
-import com.grupo3.BookVerse.config.GoogleBooksProperties;
+import com.grupo3.BookVerse.config.properties.GoogleBooksProperties;
+import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBookVolumeDto;
 import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBooksApiResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,14 +15,20 @@ public class GoogleBooksClient {
     private final GoogleBooksProperties googleBooksProperties;
     private final RestTemplate restTemplate;
 
-
     public GoogleBooksApiResponseDto searchBooks(String query) {
-
         String url = UriComponentsBuilder.fromUriString(googleBooksProperties.getUrl())
-                .queryParam("q",query)
+                .queryParam("q", query)
                 .queryParam("key", googleBooksProperties.getKey())
                 .toUriString();
 
         return restTemplate.getForObject(url, GoogleBooksApiResponseDto.class);
+    }
+
+    public GoogleBookVolumeDto getBookByGoogleId(String googleBookId) {
+        String url = UriComponentsBuilder.fromUriString(googleBooksProperties.getUrl() + "/" + googleBookId)
+                .queryParam("key", googleBooksProperties.getKey())
+                .toUriString();
+
+        return restTemplate.getForObject(url, GoogleBookVolumeDto.class);
     }
 }

@@ -1,5 +1,6 @@
 package com.grupo3.BookVerse.features.groups.groupGoals.service;
 
+import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalStatusRequestDto;
 import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsRequestDto;
 import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsResponseDto;
 
@@ -8,15 +9,17 @@ import java.util.UUID;
 
 public interface GroupGoalsService {
 
-    GroupGoalsResponseDto save(GroupGoalsRequestDto groupGoalsRequestDto);
 
-    void delete(UUID groupGoalsId);
+    GroupGoalsResponseDto createGoal(UUID groupId, GroupGoalsRequestDto requestDto);
 
-    GroupGoalsResponseDto update(UUID groupGoalsId, GroupGoalsRequestDto groupGoalsRequestDto);
+    GroupGoalsResponseDto getGoalByIdExternal(UUID goalId);
 
-    GroupGoalsResponseDto findById(UUID groupGoalsId);
+    List<GroupGoalsResponseDto> getGoalsByGroupId(UUID groupId);
 
-    List<GroupGoalsResponseDto> findAll();
+    GroupGoalsResponseDto getActiveGoalByGroupId(UUID groupId);
 
-    List<GroupGoalsResponseDto> findByGroupId(UUID groupId);
+    GroupGoalsResponseDto changeStatus(UUID goalId, GroupGoalStatusRequestDto requestDto);
+
+    void cancelGoal(UUID goalId);
+
 }

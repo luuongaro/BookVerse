@@ -4,6 +4,7 @@ import com.grupo3.BookVerse.auth.dtos.AuthResponse;
 import com.grupo3.BookVerse.auth.dtos.RegisterRequest;
 import com.grupo3.BookVerse.auth.jwt.JwtService;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
+import com.grupo3.BookVerse.infrastructure.EmailService;
 import com.grupo3.BookVerse.features.subscriptions.domain.SubscriptionEntity;
 import com.grupo3.BookVerse.features.subscriptions.domain.SubscriptionType;
 import com.grupo3.BookVerse.features.subscriptions.repository.SubscriptionRepository;
@@ -28,6 +29,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final SubscriptionRepository subscriptionRepository;
+    private final EmailService emailService;
 
     @Override
     @Transactional(readOnly = true)
@@ -74,6 +76,13 @@ public class AuthServiceImpl implements AuthService {
                 freeSubscription.getIdExternal()
         );
 
-        return userService.createUser(userRequestDto);
+        UserResponseDto registeredUser = userService.createUser(userRequestDto);
+
+        emailService.sendWelcomeEmail(
+                registeredUser.email(),
+                registeredUser.username()
+        );
+
+        return registeredUser;
     }
 }

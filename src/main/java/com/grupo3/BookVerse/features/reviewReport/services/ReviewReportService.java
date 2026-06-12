@@ -1,6 +1,7 @@
 package com.grupo3.BookVerse.features.reviewReport.services;
 
-import com.grupo3.BookVerse.features.reviewReport.dtos.ReviewReportRequestDto;
+import com.grupo3.BookVerse.features.reviewReport.dtos.ReviewReportCreateRequestDto;
+import com.grupo3.BookVerse.features.reviewReport.dtos.ReviewReportModerationRequestDto;
 import com.grupo3.BookVerse.features.reviewReport.dtos.ReviewReportResponseDto;
 
 import java.util.List;
@@ -10,9 +11,13 @@ public interface ReviewReportService {
 
     List<ReviewReportResponseDto> getAllReports();
 
+    List<ReviewReportResponseDto> getPendingReports();
+
     ReviewReportResponseDto getReportById(UUID reportId);
 
-    ReviewReportResponseDto save(ReviewReportRequestDto reviewReportRequestDto);
+    ReviewReportResponseDto createReport(ReviewReportCreateRequestDto dto);
 
-    void delete(UUID reportId);
+    ReviewReportResponseDto approveReport(UUID reportId, ReviewReportModerationRequestDto dto);
+
+    ReviewReportResponseDto rejectReport(UUID reportId, ReviewReportModerationRequestDto dto);
 }

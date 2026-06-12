@@ -7,6 +7,7 @@ import com.grupo3.BookVerse.features.roles.repository.RoleRepository;
 import com.grupo3.BookVerse.features.subscriptions.domain.SubscriptionEntity;
 import com.grupo3.BookVerse.features.subscriptions.repository.SubscriptionRepository;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
+import com.grupo3.BookVerse.features.users.domain.UserStatus;
 import com.grupo3.BookVerse.features.users.dto.UserRequestDto;
 import com.grupo3.BookVerse.features.users.dto.UserResponseDto;
 import com.grupo3.BookVerse.features.users.dto.UserUpdateRequestDto;
@@ -14,6 +15,9 @@ import com.grupo3.BookVerse.features.users.mappers.UserMapper;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
 import com.grupo3.BookVerse.features.users.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,8 +49,7 @@ public class UserServiceImpl implements UserService {
             throw new DuplicateResourceException("Username is already in use");
         }
 
-        SubscriptionEntity subscription =
-                findSubscriptionByIdExternal(dto.subscriptionId());
+        SubscriptionEntity subscription = findSubscriptionByIdExternal(dto.subscriptionId());
 
         RoleEntity defaultRole = roleRepository.findByNameIgnoreCase(DEFAULT_ROLE)
                 .orElseThrow(() ->
@@ -73,15 +76,21 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserResponseDto getUserByIdExternal(UUID idExternal) {
-        UserEntity user = findUserByIdExternal(idExternal);
-        return userMapper.toResponseDto(user);
+        UserEntity targetUser = findUserByIdExternal(idExternal);
+        UserEntity authenticatedUser = getAuthenticatedUser();
+
+        validateCanViewUser(targetUser, authenticatedUser);
+
+        return userMapper.toResponseDto(targetUser);
     }
 
     @Override
     @Transactional
     public UserResponseDto updateUser(UUID idExternal, UserUpdateRequestDto dto) {
-
         UserEntity existing = findUserByIdExternal(idExternal);
+        UserEntity authenticatedUser = getAuthenticatedUser();
+
+        validateCanUpdateUser(existing, authenticatedUser);
 
         if (!existing.getEmail().equalsIgnoreCase(dto.email())
                 && userRepository.existsByEmail(dto.email())) {
@@ -103,8 +112,13 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(UUID idExternal) {
-        UserEntity user = findUserByIdExternal(idExternal);
-        userRepository.delete(user);
+        UserEntity targetUser = findUserByIdExternal(idExternal);
+        UserEntity authenticatedUser = getAuthenticatedUser();
+
+        validateCanDeleteUser(authenticatedUser);
+
+        targetUser.setStatus(UserStatus.INACTIVE);
+        userRepository.save(targetUser);
     }
 
     private UserEntity findUserByIdExternal(UUID idExternal) {
@@ -123,5 +137,47 @@ public class UserServiceImpl implements UserService {
                                 "Subscription not found with idExternal: " + idExternal
                         )
                 );
+    }
+
+    private UserEntity getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserEntity user)) {
+            throw new AccessDeniedException("Authenticated user not found");
+        }
+
+        return user;
+    }
+
+    private void validateCanViewUser(UserEntity targetUser, UserEntity authenticatedUser) {
+        boolean isSelf = targetUser.getId().equals(authenticatedUser.getId());
+        boolean isAdmin = hasRole(authenticatedUser, "ROLE_ADMIN");
+        boolean isModerator = hasRole(authenticatedUser, "ROLE_MODERATOR");
+
+        if (!isSelf && !isAdmin && !isModerator) {
+            throw new AccessDeniedException("You do not have permission to view this user");
+        }
+    }
+
+    private void validateCanUpdateUser(UserEntity targetUser, UserEntity authenticatedUser) {
+        boolean isSelf = targetUser.getId().equals(authenticatedUser.getId());
+        boolean isAdmin = hasRole(authenticatedUser, "ROLE_ADMIN");
+
+        if (!isSelf && !isAdmin) {
+            throw new AccessDeniedException("You do not have permission to update this user");
+        }
+    }
+
+    private void validateCanDeleteUser(UserEntity authenticatedUser) {
+        boolean isAdmin = hasRole(authenticatedUser, "ROLE_ADMIN");
+
+        if (!isAdmin) {
+            throw new AccessDeniedException("You do not have permission to deactivate this user");
+        }
+    }
+
+    private boolean hasRole(UserEntity user, String roleName) {
+        return user.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals(roleName));
     }
 }

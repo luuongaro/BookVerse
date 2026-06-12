@@ -42,6 +42,15 @@ public class ReadingStatusEntity {
     @Column(name = "status", nullable = false)
     private ReadingStatusEnum status;
 
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "progress_type")
+    private ProgressType progressType;
+
+
+    @Column(name = "progress_value")
+    private Integer progressValue;
+
     @Column(name = "started_at")
     private LocalDateTime startedAt;
 
@@ -56,8 +65,6 @@ public class ReadingStatusEntity {
         if (this.idExternal == null) {
             this.idExternal = UUID.randomUUID();
         }
-
-
         this.updatedAt = LocalDateTime.now();
     }
 

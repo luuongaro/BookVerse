@@ -1,11 +1,10 @@
 package com.grupo3.BookVerse.features.groups.readingGroups.domain;
 
-
 import com.grupo3.BookVerse.features.books.domain.BookEntity;
 import com.grupo3.BookVerse.features.groups.groupGoals.domain.GroupGoalsEntity;
 import com.grupo3.BookVerse.features.groups.groupComment.domain.GroupCommentEntity;
 import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberEntity;
-import com.grupo3.BookVerse.features.groups.groupProgress.domain.GroupProgressEntity;
+import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,7 +20,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 @Entity
 @Table(name = "reading_groups")
 public class ReadingGroupEntity {
@@ -33,11 +31,14 @@ public class ReadingGroupEntity {
     @Column(name = "id_external", unique = true, nullable = false)
     private UUID idExternal;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "book_id", nullable = false)
-    private BookEntity book; //FK
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id")
+    private BookEntity book;
 
-    //Association added by Yan :)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "story_id")
+    private StoryEntity story;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private UserEntity createdBy;
@@ -48,28 +49,38 @@ public class ReadingGroupEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false,updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        if (idExternal == null) {
-            idExternal = UUID.randomUUID();
-        }
-    }
-
 
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
     private List<GroupMemberEntity> members = new ArrayList<>();
 
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
-    private List<GroupProgressEntity> progresses = new ArrayList<>();
-
-    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
     private List<GroupGoalsEntity> goals = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.idExternal == null) {
+            this.idExternal = UUID.randomUUID();
+        }
+        validateContentAssociation();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        validateContentAssociation();
+    }
+
+    private void validateContentAssociation() {
+        boolean hasBook = this.book != null;
+        boolean hasStory = this.story != null;
+
+        if (hasBook == hasStory) {
+            throw new IllegalStateException("A reading group must be associated with exactly one book or one story");
+        }
+    }
 }

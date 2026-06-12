@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,16 +32,18 @@ public class ReadingStatusController {
     private final ReadingStatusService readingStatusService;
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Create a new reading status",
-            description = "Creates a new reading status associated with a user and at least one target resource: a book, a story, or both.",
+            description = "Creates a new reading status for the authenticated user associated with either a book or a story.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Reading status created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request body or missing book/story association", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid request body, invalid progress data, missing book/story association, or subscription reading limit reached", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "User, book, or story not found", content = @Content)
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Book or story not found", content = @Content)
     })
     public ResponseEntity<ReadingStatusResponseDto> createReadingStatus(
             @Valid @RequestBody ReadingStatusRequestDto requestDto
@@ -51,28 +54,32 @@ public class ReadingStatusController {
     }
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get all reading statuses",
-            description = "Retrieves all reading statuses registered in the system.",
+            description = "Retrieves all reading statuses registered in the system. Accessible only to administrators and moderators.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Reading statuses retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
     })
     public ResponseEntity<List<ReadingStatusResponseDto>> getAllReadingStatuses() {
         return ResponseEntity.ok(readingStatusService.getAllReadingStatuses());
     }
 
     @GetMapping("/{idExternal}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get reading status by external id",
-            description = "Retrieves a specific reading status by its external UUID.",
+            description = "Retrieves a specific reading status by its external UUID. Accessible by the owner, an administrator, or a moderator.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Reading status retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Reading status not found", content = @Content)
     })
     public ResponseEntity<ReadingStatusResponseDto> getReadingStatusByIdExternal(
@@ -89,14 +96,16 @@ public class ReadingStatusController {
     }
 
     @GetMapping("/user/{userId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Get reading statuses by user",
-            description = "Retrieves all reading statuses associated with a specific user using the user's external UUID.",
+            description = "Retrieves all reading statuses associated with a specific user using the user's external UUID. Accessible by the same user, an administrator, or a moderator.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Reading statuses retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
     public ResponseEntity<List<ReadingStatusResponseDto>> getReadingStatusesByUser(
@@ -113,16 +122,18 @@ public class ReadingStatusController {
     }
 
     @PutMapping("/{idExternal}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Update a reading status",
-            description = "Updates an existing reading status by its external UUID.",
+            description = "Updates an existing reading status by its external UUID. Accessible by the owner or an administrator.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Reading status updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request body or missing book/story association", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid request body, invalid progress data, missing book/story association, or subscription reading limit reached", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Reading status, user, book, or story not found", content = @Content)
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Reading status, book, or story not found", content = @Content)
     })
     public ResponseEntity<ReadingStatusResponseDto> updateReadingStatus(
             @Parameter(
@@ -139,14 +150,16 @@ public class ReadingStatusController {
     }
 
     @DeleteMapping("/{idExternal}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Delete a reading status",
-            description = "Deletes a reading status by its external UUID.",
+            description = "Deletes a reading status by its external UUID. Accessible by the owner or an administrator.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Reading status deleted successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Reading status not found", content = @Content)
     })
     public ResponseEntity<Void> deleteReadingStatus(

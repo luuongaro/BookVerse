@@ -7,9 +7,14 @@ import java.util.List;
 
 @Getter
 @Setter
-// DTO that represents the content inside "volumeInfo".
 public class GoogleBookItemDto {
     private String title;
     private List<String> authors;
     private String description;
+    private List<String> categories;
+    private String publisher;
+    private String publishedDate;
+    private String language;
+    private GoogleBookImageLinksDto imageLinks;
+    private List<GoogleBookIndustryIdentifierDto> industryIdentifiers;
 }

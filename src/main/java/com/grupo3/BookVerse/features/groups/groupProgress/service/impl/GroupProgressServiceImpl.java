@@ -1,120 +1,255 @@
 package com.grupo3.BookVerse.features.groups.groupProgress.service.impl;
-
-import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
-import com.grupo3.BookVerse.features.groups.groupProgress.domain.GroupProgressEntity;
-import com.grupo3.BookVerse.features.groups.groupProgress.dto.GroupProgressRequestDto;
+import com.grupo3.BookVerse.features.groups.groupGoals.domain.GoalType;
+import com.grupo3.BookVerse.features.groups.groupGoals.domain.GroupGoalsEntity;
+import com.grupo3.BookVerse.features.groups.groupGoals.repository.GroupGoalsRepository;
+import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberEntity;
+import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberStatus;
 import com.grupo3.BookVerse.features.groups.groupProgress.dto.GroupProgressResponseDto;
-import com.grupo3.BookVerse.features.groups.groupProgress.mapper.GroupProgressMapper;
-import com.grupo3.BookVerse.features.groups.groupProgress.repository.GroupProgressRepository;
 import com.grupo3.BookVerse.features.groups.groupProgress.service.GroupProgressService;
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import com.grupo3.BookVerse.features.groups.readingGroups.repository.ReadingGroupRepository;
+import com.grupo3.BookVerse.features.status.domain.ProgressType;
+import com.grupo3.BookVerse.features.status.domain.ReadingStatusEntity;
+import com.grupo3.BookVerse.features.status.domain.ReadingStatusEnum;
+import com.grupo3.BookVerse.features.status.repository.ReadingStatusRepository;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
-import com.grupo3.BookVerse.features.users.repository.UserRepository;
+import com.grupo3.BookVerse.common.exception.BadRequestException;
+import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
+import com.grupo3.BookVerse.features.groups.groupGoals.domain.GoalStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class GroupProgressServiceImpl implements GroupProgressService {
 
-    private final GroupProgressRepository groupProgressRepository;
-    private final GroupProgressMapper groupProgressMapper;
+    private static final Set<ReadingStatusEnum> VALID_PROGRESS_STATUSES = Set.of(
+            ReadingStatusEnum.IN_PROGRESS,
+            ReadingStatusEnum.FINISHED,
+            ReadingStatusEnum.RE_READING
+    );
+
     private final ReadingGroupRepository readingGroupRepository;
-    private final UserRepository userRepository;
-
-    @Override
-    @Transactional
-    public GroupProgressResponseDto createOrUpdateProgress(GroupProgressRequestDto requestDto) {
-
-        ReadingGroupEntity group = findGroupByExternalId(requestDto.getGroupId());
-        UserEntity user = findUserByExternalId(requestDto.getUserId());
-
-        GroupProgressEntity progress = groupProgressRepository
-                .findByGroupIdAndUserId(group.getId(), user.getId())
-                .orElseGet(() -> {
-                    GroupProgressEntity newProgress = groupProgressMapper.toEntity(requestDto);
-                    newProgress.setGroup(group);
-                    newProgress.setUser(user);
-                    return newProgress;
-                });
-
-        progress.setCurrentProgress(requestDto.getCurrentProgress());
-
-        GroupProgressEntity saved = groupProgressRepository.save(progress);
-        return groupProgressMapper.toResponseDto(saved);
-    }
+    private final GroupGoalsRepository groupGoalsRepository;
+    private final ReadingStatusRepository readingStatusRepository;
 
     @Override
     @Transactional(readOnly = true)
-    public List<GroupProgressResponseDto> getAllProgress() {
-        List<GroupProgressEntity> list =
-                groupProgressRepository.findAllByOrderByUpdatedAtDesc();
+    public GroupProgressResponseDto calculateProgress(UUID groupId) {
+        ReadingGroupEntity group = findGroupByIdExternal(groupId);
+        validateGroupIsActive(group);
 
-        return list.stream()
-                .map(groupProgressMapper::toResponseDto)
-                .toList();
-    }
+        UserEntity authenticatedUser = getAuthenticatedUser();
+        validateCanViewGroupProgress(group, authenticatedUser);
 
-    @Override
-    @Transactional(readOnly = true)
-    public GroupProgressResponseDto getProgressByIdExternal(UUID idExternal) {
-        GroupProgressEntity progress = findProgressByExternalId(idExternal);
-        return groupProgressMapper.toResponseDto(progress);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<GroupProgressResponseDto> getProgressByGroupId(UUID groupId) {
-        ReadingGroupEntity group = findGroupByExternalId(groupId);
-
-        List<GroupProgressEntity> list =
-                groupProgressRepository.findByGroupIdOrderByUpdatedAtDesc(group.getId());
-
-        return list.stream()
-                .map(groupProgressMapper::toResponseDto)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<GroupProgressResponseDto> getProgressByUserId(UUID userId) {
-        UserEntity user = findUserByExternalId(userId);
-
-        List<GroupProgressEntity> list =
-                groupProgressRepository.findByUserIdOrderByUpdatedAtDesc(user.getId());
-
-        return list.stream()
-                .map(groupProgressMapper::toResponseDto)
-                .toList();
-    }
-
-    @Override
-    @Transactional
-    public void deleteProgress(UUID idExternal) {
-        GroupProgressEntity progress = findProgressByExternalId(idExternal);
-        groupProgressRepository.delete(progress);
-    }
-
-    private GroupProgressEntity findProgressByExternalId(UUID idExternal) {
-        return groupProgressRepository.findByIdExternal(idExternal)
+        GroupGoalsEntity goal = groupGoalsRepository
+                .findByGroup_IdExternalAndStatus(groupId, GoalStatus.ACTIVE)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Group progress not found with idExternal: " + idExternal));
+                        "Active goal not found for group: " + groupId
+                ));
+
+        List<UUID> activeMemberIds = group.getMembers().stream()
+                .filter(member -> member.getStatus() == GroupMemberStatus.ACTIVE)
+                .map(GroupMemberEntity::getUser)
+                .filter(Objects::nonNull)
+                .map(UserEntity::getIdExternal)
+                .toList();
+
+        if (activeMemberIds.isEmpty()) {
+            return buildResponse(groupId, goal, 0.0);
+        }
+
+        List<ReadingStatusEntity> statuses = getGroupReadingStatuses(group, activeMemberIds).stream()
+                .filter(status -> VALID_PROGRESS_STATUSES.contains(status.getStatus()))
+                .toList();
+
+        double totalProgress = 0.0;
+
+        for (ReadingStatusEntity status : statuses) {
+            totalProgress += normalize(status, group, goal);
+        }
+
+        double averageProgress = totalProgress / activeMemberIds.size();
+
+        return buildResponse(groupId, goal, averageProgress);
     }
 
-    private ReadingGroupEntity findGroupByExternalId(UUID groupExternalId) {
-        return readingGroupRepository.findByIdExternal(groupExternalId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Group not found with idExternal: " + groupExternalId));
+    private List<ReadingStatusEntity> getGroupReadingStatuses(
+            ReadingGroupEntity group,
+            List<UUID> memberIds
+    ) {
+        if (group.getBook() != null) {
+            return readingStatusRepository.findByUserIdExternalInAndBookIdExternal(
+                    memberIds,
+                    group.getBook().getIdExternal()
+            );
+        }
+
+        if (group.getStory() != null) {
+            return readingStatusRepository.findByUserIdExternalInAndStoryIdExternal(
+                    memberIds,
+                    group.getStory().getIdExternal()
+            );
+        }
+
+        throw new BadRequestException(
+                "Group must be associated with either a book or a story"
+        );
     }
 
-    private UserEntity findUserByExternalId(UUID userExternalId) {
-        return userRepository.findByIdExternal(userExternalId)
+    private double normalize(
+            ReadingStatusEntity status,
+            ReadingGroupEntity group,
+            GroupGoalsEntity goal
+    ) {
+        if (status.getProgressType() == null || status.getProgressValue() == null) {
+            return 0.0;
+        }
+
+        ProgressType userProgressType = status.getProgressType();
+        GoalType goalType = goal.getGoalType();
+
+        if (group.getBook() != null) {
+            if (goalType == GoalType.CHAPTER) {
+                throw new BadRequestException(
+                        "Book groups only support PERCENTAGE goals"
+                );
+            }
+
+            if (userProgressType != ProgressType.PERCENTAGE) {
+                throw new BadRequestException(
+                        "Cannot normalize book progress when reading status is not percentage-based"
+                );
+            }
+
+            return status.getProgressValue().doubleValue();
+        }
+
+        if (group.getStory() != null) {
+            if (goalType == GoalType.PERCENTAGE) {
+                if (userProgressType == ProgressType.PERCENTAGE) {
+                    return status.getProgressValue().doubleValue();
+                }
+
+                if (userProgressType == ProgressType.CHAPTER) {
+                    int totalChapters = getTotalChapters(group);
+                    return totalChapters == 0
+                            ? 0.0
+                            : (status.getProgressValue() * 100.0) / totalChapters;
+                }
+            }
+
+            if (goalType == GoalType.CHAPTER) {
+                if (userProgressType == ProgressType.CHAPTER) {
+                    return status.getProgressValue().doubleValue();
+                }
+
+                if (userProgressType == ProgressType.PERCENTAGE) {
+                    int totalChapters = getTotalChapters(group);
+                    return totalChapters == 0
+                            ? 0.0
+                            : (totalChapters * status.getProgressValue()) / 100.0;
+                }
+            }
+        }
+
+        return 0.0;
+    }
+
+    private int getTotalChapters(ReadingGroupEntity group) {
+        if (group.getStory() == null) {
+            throw new BadRequestException(
+                    "Cannot normalize chapter progress for book groups"
+            );
+        }
+
+        if (group.getStory().getChapters() == null || group.getStory().getChapters().isEmpty()) {
+            return 0;
+        }
+
+        return group.getStory().getChapters().size();
+    }
+
+    private GroupProgressResponseDto buildResponse(
+            UUID groupId,
+            GroupGoalsEntity goal,
+            double averageProgress
+    ) {
+        boolean achieved = averageProgress >= goal.getTargetProgress();
+
+        return GroupProgressResponseDto.builder()
+                .groupId(groupId)
+                .goalType(goal.getGoalType())
+                .currentProgress(averageProgress)
+                .targetProgress(goal.getTargetProgress())
+                .achieved(achieved)
+                .build();
+    }
+
+    private void validateGroupIsActive(ReadingGroupEntity group) {
+        if (!Boolean.TRUE.equals(group.getIsActive())) {
+            throw new BadRequestException(
+                    "Inactive reading groups cannot calculate progress"
+            );
+        }
+    }
+
+    private void validateCanViewGroupProgress(
+            ReadingGroupEntity group,
+            UserEntity authenticatedUser
+    ) {
+        if (isAdminOrModerator(authenticatedUser)) {
+            return;
+        }
+
+        boolean isOwner = group.getCreatedBy() != null
+                && Objects.equals(group.getCreatedBy().getId(), authenticatedUser.getId());
+
+        boolean isActiveMember = group.getMembers().stream()
+                .anyMatch(member ->
+                        member.getStatus() == GroupMemberStatus.ACTIVE
+                                && member.getUser() != null
+                                && Objects.equals(member.getUser().getId(), authenticatedUser.getId())
+                );
+
+        if (!isOwner && !isActiveMember) {
+            throw new AccessDeniedException(
+                    "You do not have permission to view this group's progress"
+            );
+        }
+    }
+
+    private boolean isAdminOrModerator(UserEntity user) {
+        return user.getAuthorities().stream()
+                .anyMatch(authority ->
+                        authority.getAuthority().equals("ROLE_ADMIN")
+                                || authority.getAuthority().equals("ROLE_MODERATOR"));
+    }
+
+    private ReadingGroupEntity findGroupByIdExternal(UUID groupId) {
+        return readingGroupRepository.findByIdExternal(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "User not found with idExternal: " + userExternalId));
+                        "Reading group not found with idExternal: " + groupId
+                ));
+    }
+
+    private UserEntity getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserEntity user)) {
+            throw new AccessDeniedException("Authenticated user not found");
+        }
+
+        return user;
     }
 }
+

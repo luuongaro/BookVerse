@@ -1,11 +1,11 @@
 package com.grupo3.BookVerse.features.stories.repository;
 
 import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
-import com.grupo3.BookVerse.features.users.domain.UserEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,13 +14,11 @@ public interface StoryRepository extends JpaRepository<StoryEntity, Long> {
 
     Optional<StoryEntity> findByIdExternal(UUID idExternal);
 
-    Optional<StoryEntity> findByIdExternalAndIsDeletedFalse(UUID idExternal);
+    Optional<StoryEntity> findByIdExternalAndDeletedFalse(UUID idExternal);
 
-    List<StoryEntity> findByIsDeletedFalseOrderByCreatedAtDesc();
+    Page<StoryEntity> findAllByDeletedFalseOrderByCreatedAtDesc(Pageable pageable);
 
-    List<StoryEntity> findByAuthorIdAndIsDeletedFalseOrderByCreatedAtDesc(Long authorId);
+    Page<StoryEntity> findByAuthorIdAndDeletedFalseOrderByCreatedAtDesc(Long authorId, Pageable pageable);
 
-
+    long countByAuthorIdAndDeletedFalse(Long authorId);
 }
-
-

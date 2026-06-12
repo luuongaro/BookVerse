@@ -1,9 +1,13 @@
 package com.grupo3.BookVerse.features.status.dto;
 
+import com.grupo3.BookVerse.features.status.domain.ProgressType;
 import com.grupo3.BookVerse.features.status.domain.ReadingStatusEnum;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-        import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -21,6 +25,9 @@ public class ReadingStatusResponseDto {
     private UUID storyId;
 
     private ReadingStatusEnum status;
+
+    private ProgressType progressType;
+    private Integer progressValue;
 
     private LocalDateTime startedAt;
 

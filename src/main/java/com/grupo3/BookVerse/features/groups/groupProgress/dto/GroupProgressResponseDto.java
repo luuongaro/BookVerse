@@ -1,29 +1,22 @@
 package com.grupo3.BookVerse.features.groups.groupProgress.dto;
 
-import lombok.AllArgsConstructor;
+import com.grupo3.BookVerse.features.groups.groupGoals.domain.GoalType;
+import lombok.Builder;
 
-import lombok.*;
-
-        import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-public class GroupProgressResponseDto {
+public record GroupProgressResponseDto(
 
-    private UUID idExternal;
+        UUID groupId,
 
-    private UUID groupId;
-    private String groupName;
+        GoalType goalType,
 
-    private UUID userId;
-    private String userName;
-    private String userEmail;
+        Double currentProgress,
 
-    private Integer currentProgress;
+        Integer targetProgress,
 
-    private LocalDateTime updatedAt;
+        Boolean achieved
+
+) {
 }

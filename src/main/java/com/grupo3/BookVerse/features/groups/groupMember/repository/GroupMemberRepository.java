@@ -1,6 +1,8 @@
 package com.grupo3.BookVerse.features.groups.groupMember.repository;
 
 import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberEntity;
+import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberStatus;
+import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -11,9 +13,22 @@ public interface GroupMemberRepository extends JpaRepository<GroupMemberEntity, 
 
     Optional<GroupMemberEntity> findByIdExternal(UUID idExternal);
 
-    List<GroupMemberEntity> findByGroupIdExternal(UUID groupId);
+    Optional<GroupMemberEntity> findByGroupIdExternalAndUserIdExternal(UUID groupId, UUID userId);
 
-    List<GroupMemberEntity> findByUserIdExternal(UUID userId);
+    List<GroupMemberEntity> findByGroupIdExternalAndStatus(UUID groupId, GroupMemberStatus status);
 
-    boolean existsByGroupIdAndUserId(Long groupId, Long userId);
+    List<GroupMemberEntity> findByUserIdExternalAndStatus(UUID userId, GroupMemberStatus status);
+
+    boolean existsByGroupIdExternalAndUserIdExternalAndStatus(
+            UUID groupId,
+            UUID userId,
+            GroupMemberStatus status
+    );
+
+    boolean existsByGroupIdExternalAndUserIdExternalAndMemberTypeAndStatus(
+            UUID groupId,
+            UUID userId,
+            GroupMemberType memberType,
+            GroupMemberStatus status
+    );
 }

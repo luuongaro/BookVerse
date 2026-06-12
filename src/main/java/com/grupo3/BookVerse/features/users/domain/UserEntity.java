@@ -2,6 +2,7 @@ package com.grupo3.BookVerse.features.users.domain;
 
 import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberEntity;
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
+import com.grupo3.BookVerse.features.reviewReport.domain.ReviewReportEntity;
 import com.grupo3.BookVerse.features.reviews.domain.ReviewEntity;
 import com.grupo3.BookVerse.features.roles.domain.RoleEntity;
 import com.grupo3.BookVerse.features.status.domain.ReadingStatusEntity;
@@ -16,6 +17,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serial;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 public class UserEntity implements UserDetails {
 
     //It is a version identifier for classes that are serializable.
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -56,16 +59,6 @@ public class UserEntity implements UserDetails {
     @Column(name = "status", nullable = false)
     private UserStatus status;
 
-    @PrePersist
-    protected void onCreate() {
-        if (idExternal == null) {
-            idExternal = UUID.randomUUID();
-        }
-        if (status == null) {
-            status = UserStatus.ACTIVE;
-        }
-    }
-
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -87,9 +80,17 @@ public class UserEntity implements UserDetails {
     @Builder.Default
     private List<StoryEntity> stories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "reviewer", fetch = FetchType.LAZY)
     @Builder.Default
     private List<ReviewEntity> reviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "reporterUser", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<ReviewReportEntity> reviewReportsSubmitted = new ArrayList<>();
+
+    @OneToMany(mappedBy = "moderatorUser", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<ReviewReportEntity> reviewReportsModerated = new ArrayList<>();
 
     @OneToMany(mappedBy = "sender", fetch = FetchType.LAZY)
     @Builder.Default
@@ -110,6 +111,16 @@ public class UserEntity implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ReadingStatusEntity> readingStatuses = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        if (idExternal == null) {
+            idExternal = UUID.randomUUID();
+        }
+        if (status == null) {
+            status = UserStatus.ACTIVE;
+        }
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -132,6 +143,7 @@ public class UserEntity implements UserDetails {
     }
 
     @Override
+
     public String getUsername() {
         return this.email;
     }

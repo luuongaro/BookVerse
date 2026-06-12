@@ -2,6 +2,7 @@ package com.grupo3.BookVerse.features.groups.readingGroups.service;
 
 import com.grupo3.BookVerse.features.groups.readingGroups.dto.ReadingGroupRequestDto;
 import com.grupo3.BookVerse.features.groups.readingGroups.dto.ReadingGroupResponseDto;
+import com.grupo3.BookVerse.features.groups.readingGroups.dto.UpdateReadingGroupRequestDto;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,12 +17,11 @@ public interface ReadingGroupService {
 
     List<ReadingGroupResponseDto> getGroupsByBookIdExternal(UUID bookId);
 
+    List<ReadingGroupResponseDto> getGroupsByStoryIdExternal(UUID storyId);
+
     List<ReadingGroupResponseDto> getGroupsByUserIdExternal(UUID userId);
 
-    ReadingGroupResponseDto updateGroup(UUID idExternal, ReadingGroupRequestDto dto);
+    ReadingGroupResponseDto updateGroup(UUID idExternal, UpdateReadingGroupRequestDto dto);
 
     void deleteGroup(UUID idExternal);
 }
-
-
-

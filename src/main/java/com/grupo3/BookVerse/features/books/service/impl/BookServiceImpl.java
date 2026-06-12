@@ -1,20 +1,23 @@
 package com.grupo3.BookVerse.features.books.service.impl;
 
-import com.grupo3.BookVerse.common.exception.DuplicateResourceException;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
 import com.grupo3.BookVerse.features.books.domain.BookEntity;
-import com.grupo3.BookVerse.features.books.dto.BookRequestDto;
 import com.grupo3.BookVerse.features.books.dto.BookResponseDto;
 import com.grupo3.BookVerse.features.books.mapper.BookMapper;
 import com.grupo3.BookVerse.features.books.repository.BookRepository;
 import com.grupo3.BookVerse.features.books.service.BookService;
+import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBookIndustryIdentifierDto;
+import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBookItemDto;
+import com.grupo3.BookVerse.features.googleBooks.dto.GoogleBookVolumeDto;
+import com.grupo3.BookVerse.features.googleBooks.service.GoogleBooksService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -23,34 +26,13 @@ public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
-
-    @Override
-    @Transactional
-    public BookResponseDto createBook(BookRequestDto dto) {
-
-        if (bookRepository.existsByIsbn(dto.getIsbn())) {
-            throw new DuplicateResourceException("ISBN is already in use");
-        }
-
-        BookEntity book = bookMapper.toEntity(dto);
-
-        book.setIdExternal(UUID.randomUUID());
-        book.setCreatedAt(LocalDateTime.now());
-        book.setUpdatedAt(LocalDateTime.now());
-        book.setDeleted(false);
-
-        try {
-            BookEntity saved = bookRepository.save(book);
-            return bookMapper.toResponseDto(saved);
-        } catch (DataIntegrityViolationException e) {
-            throw new DuplicateResourceException("ISBN is already in use");
-        }
-    }
+    private final GoogleBooksService googleBooksService;
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookResponseDto> getAllBooks() {
-        return bookMapper.toResponseDtoList(bookRepository.findByDeletedFalse());
+    public Page<BookResponseDto> getAllBooks(Pageable pageable) {
+        Page<BookEntity> books = bookRepository.findByDeletedFalse(pageable);
+        return books.map(bookMapper::toResponseDto);
     }
 
     @Override
@@ -62,32 +44,20 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
-    public BookResponseDto updateBook(UUID idExternal, BookRequestDto dto) {
+    public BookResponseDto findOrCreateFromGoogleBookId(String googleBookId) {
+        BookEntity existingBook = bookRepository.findByGoogleBookId(googleBookId)
+                .filter(book -> Boolean.FALSE.equals(book.getDeleted()))
+                .orElse(null);
 
-        BookEntity existing = findBookByIdExternal(idExternal);
-
-        if (!existing.getIsbn().equals(dto.getIsbn()) && bookRepository.existsByIsbn(dto.getIsbn())) {
-            throw new DuplicateResourceException("ISBN is already in use");
+        if (existingBook != null) {
+            return bookMapper.toResponseDto(existingBook);
         }
 
-        bookMapper.updateEntityFromDto(dto, existing);
-        existing.setUpdatedAt(LocalDateTime.now());
+        GoogleBookVolumeDto googleBook = googleBooksService.getBookByGoogleId(googleBookId);
+        BookEntity newBook = mapGoogleBookToEntity(googleBook);
 
-        BookEntity saved = bookRepository.save(existing);
-
-        return bookMapper.toResponseDto(saved);
-    }
-
-    @Override
-    @Transactional
-    public void deleteBook(UUID idExternal) {
-
-        BookEntity existing = findBookByIdExternal(idExternal);
-
-        existing.setDeleted(true);
-        existing.setUpdatedAt(LocalDateTime.now());
-
-        bookRepository.save(existing);
+        BookEntity savedBook = bookRepository.save(newBook);
+        return bookMapper.toResponseDto(savedBook);
     }
 
     private BookEntity findBookByIdExternal(UUID idExternal) {
@@ -97,6 +67,61 @@ public class BookServiceImpl implements BookService {
                         new ResourceNotFoundException(
                                 "Book not found with idExternal: " + idExternal
                         )
+                );
+    }
+
+    private BookEntity mapGoogleBookToEntity(GoogleBookVolumeDto googleBook) {
+        GoogleBookItemDto volumeInfo = googleBook.getVolumeInfo();
+
+        return BookEntity.builder()
+                .googleBookId(googleBook.getId())
+                .title(volumeInfo.getTitle())
+                .description(volumeInfo.getDescription())
+                .authors(extractAuthors(volumeInfo))
+                .categories(extractCategories(volumeInfo))
+                .publisher(volumeInfo.getPublisher())
+                .publishedDate(volumeInfo.getPublishedDate())
+                .language(volumeInfo.getLanguage())
+                .thumbnailUrl(extractThumbnail(volumeInfo))
+                .isbn(extractIsbn(volumeInfo))
+                .build();
+    }
+
+    private Set<String> extractAuthors(GoogleBookItemDto volumeInfo) {
+        if (volumeInfo.getAuthors() == null || volumeInfo.getAuthors().isEmpty()) {
+            return new HashSet<>();
+        }
+        return new HashSet<>(volumeInfo.getAuthors());
+    }
+
+    private String extractCategories(GoogleBookItemDto volumeInfo) {
+        if (volumeInfo.getCategories() == null || volumeInfo.getCategories().isEmpty()) {
+            return null;
+        }
+        return String.join(", ", volumeInfo.getCategories());
+    }
+
+    private String extractThumbnail(GoogleBookItemDto volumeInfo) {
+        if (volumeInfo.getImageLinks() == null) {
+            return null;
+        }
+        return volumeInfo.getImageLinks().getThumbnail();
+    }
+
+    private String extractIsbn(GoogleBookItemDto volumeInfo) {
+        if (volumeInfo.getIndustryIdentifiers() == null || volumeInfo.getIndustryIdentifiers().isEmpty()) {
+            return null;
+        }
+
+        return volumeInfo.getIndustryIdentifiers().stream()
+                .filter(identifier -> "ISBN_13".equalsIgnoreCase(identifier.getType()))
+                .map(GoogleBookIndustryIdentifierDto::getIdentifier)
+                .findFirst()
+                .orElse(
+                        volumeInfo.getIndustryIdentifiers().stream()
+                                .map(GoogleBookIndustryIdentifierDto::getIdentifier)
+                                .findFirst()
+                                .orElse(null)
                 );
     }
 }
