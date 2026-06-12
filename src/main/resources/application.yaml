@@ -3,7 +3,7 @@ spring:
     name: BookVerse
 
   config:
-    import: optional:file:.env[.properties]
+    import: optional:file:.env
 
   datasource:
     url: ${BOOKS_VERSE_URL}
