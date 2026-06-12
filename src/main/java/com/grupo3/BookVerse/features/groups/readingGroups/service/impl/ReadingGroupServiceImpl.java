@@ -1,5 +1,4 @@
 package com.grupo3.BookVerse.features.groups.readingGroups.service.impl;
-
 import com.grupo3.BookVerse.common.exception.BadRequestException;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
 import com.grupo3.BookVerse.features.books.domain.BookEntity;
