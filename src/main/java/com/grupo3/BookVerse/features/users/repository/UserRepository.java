@@ -23,4 +23,12 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             WHERE UPPER(u.email) = UPPER(:email)
             """)
     Optional<UserEntity> findByEmailWithRoles(@Param("email") String email);
+
+    @Query("""
+        SELECT u
+        FROM UserEntity u
+        LEFT JOIN FETCH u.subscription
+        WHERE u.id = :id
+        """)
+    Optional<UserEntity> findByIdWithSubscription(@Param("id") Long id);
 }
