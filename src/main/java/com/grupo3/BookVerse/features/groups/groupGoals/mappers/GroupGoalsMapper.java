@@ -22,6 +22,7 @@ public interface GroupGoalsMapper {
     GroupGoalsEntity toEntity(GroupGoalsRequestDto dto);
 
     @Mapping(target = "groupId", source = "group.idExternal")
+    @Mapping(target = "status", source = "status")
 
 
     GroupGoalsResponseDto toResponseDto(
