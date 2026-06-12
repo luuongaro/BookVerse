@@ -1,6 +1,8 @@
 package com.grupo3.BookVerse.features.groups.groupGoals.service.impl;
 
+import com.grupo3.BookVerse.common.exception.BadRequestException;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
+import com.grupo3.BookVerse.features.groups.groupGoals.domain.GoalStatus;
 import com.grupo3.BookVerse.features.groups.groupGoals.domain.GroupGoalsEntity;
 import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsRequestDto;
 import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsResponseDto;
@@ -14,7 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -103,18 +104,36 @@ class GroupGoalsServiceImplTest {
                 () -> groupGoalsService.findById(goalId));
     }
 
-    // Verifies that a group goal is deleted correctly when a valid external ID is provided
+    // Verifies that an active group goal is cancelled when a valid external ID is provided
     @Test
     void delete_shouldCallRepository() {
 
         GroupGoalsEntity entity = new GroupGoalsEntity();
+        entity.setStatus(GoalStatus.ACTIVE);
 
         when(groupGoalsRepository.findByIdExternal(goalId))
                 .thenReturn(Optional.of(entity));
 
         groupGoalsService.delete(goalId);
 
-        verify(groupGoalsRepository).delete(entity);
+        assertEquals(GoalStatus.CANCELLED, entity.getStatus());
+        verify(groupGoalsRepository).save(entity);
+        verify(groupGoalsRepository, never()).delete(entity);
+    }
+
+    @Test
+    void delete_shouldThrow_whenGoalIsNotActive() {
+
+        GroupGoalsEntity entity = new GroupGoalsEntity();
+        entity.setStatus(GoalStatus.COMPLETED);
+
+        when(groupGoalsRepository.findByIdExternal(goalId))
+                .thenReturn(Optional.of(entity));
+
+        assertThrows(BadRequestException.class,
+                () -> groupGoalsService.delete(goalId));
+
+        verify(groupGoalsRepository, never()).save(any());
     }
 
     // Verifies that all group goals are returned correctly and mapped to response DTOs
@@ -142,9 +161,10 @@ class GroupGoalsServiceImplTest {
         when(readingGroupRepository.findByIdExternal(groupId))
                 .thenReturn(Optional.of(new ReadingGroupEntity()));
 
-        when(groupGoalsRepository
-                .findTopByGroup_IdExternalOrderByUpdatedAtDesc(groupId))
-                .thenReturn(Optional.of(entity));
+        when(groupGoalsRepository.findByGroup_IdExternalAndStatus(
+                groupId,
+                GoalStatus.ACTIVE
+        )).thenReturn(Optional.of(entity));
 
         when(groupGoalsMapper.toResponseDto(entity))
                 .thenReturn(response);
@@ -161,9 +181,10 @@ class GroupGoalsServiceImplTest {
         when(readingGroupRepository.findByIdExternal(groupId))
                 .thenReturn(Optional.of(new ReadingGroupEntity()));
 
-        when(groupGoalsRepository
-                .findTopByGroup_IdExternalOrderByUpdatedAtDesc(groupId))
-                .thenReturn(Optional.empty());
+        when(groupGoalsRepository.findByGroup_IdExternalAndStatus(
+                groupId,
+                GoalStatus.ACTIVE
+        )).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
                 () -> groupGoalsService.findByGroupId(groupId));
