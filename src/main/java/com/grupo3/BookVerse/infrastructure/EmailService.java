@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.features.notifications.service;
+package com.grupo3.BookVerse.infrastructure;
 
 public interface EmailService {
 

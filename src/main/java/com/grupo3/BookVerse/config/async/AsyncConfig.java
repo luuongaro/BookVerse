@@ -1,4 +1,4 @@
-package com.grupo3.BookVerse.config;
+package com.grupo3.BookVerse.config.async;
 
 import java.util.concurrent.Executor;
 

@@ -1,12 +1,11 @@
-package com.grupo3.BookVerse.features.notifications.service.impl;
+package com.grupo3.BookVerse.infrastructure.notifications;
 
+import com.grupo3.BookVerse.infrastructure.EmailService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
-import com.grupo3.BookVerse.features.notifications.service.EmailService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
