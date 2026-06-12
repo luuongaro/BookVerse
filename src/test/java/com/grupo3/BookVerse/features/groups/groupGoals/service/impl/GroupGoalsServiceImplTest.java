@@ -3,6 +3,7 @@ package com.grupo3.BookVerse.features.groups.groupGoals.service.impl;
 import com.grupo3.BookVerse.common.exception.BadRequestException;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
 import com.grupo3.BookVerse.features.groups.groupGoals.domain.GoalStatus;
+import com.grupo3.BookVerse.features.groups.groupGoals.domain.GoalType;
 import com.grupo3.BookVerse.features.groups.groupGoals.domain.GroupGoalsEntity;
 import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsRequestDto;
 import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsResponseDto;
@@ -34,7 +35,7 @@ class GroupGoalsServiceImplTest {
     private ReadingGroupRepository readingGroupRepository;
 
     @InjectMocks
-    private com.grupo3.BookVerse.features.groups.groupGoals.service.impl.GroupGoalsServiceImpl groupGoalsService;
+    private GroupGoalsServiceImpl groupGoalsService;
 
     private UUID groupId;
     private UUID goalId;
@@ -56,6 +57,8 @@ class GroupGoalsServiceImplTest {
         GroupGoalsResponseDto response = mock(GroupGoalsResponseDto.class);
 
         when(request.groupId()).thenReturn(groupId);
+        when(request.goalType()).thenReturn(GoalType.PERCENTAGE);
+        when(request.targetProgress()).thenReturn(50);
 
         when(readingGroupRepository.findByIdExternal(groupId))
                 .thenReturn(Optional.of(group));
