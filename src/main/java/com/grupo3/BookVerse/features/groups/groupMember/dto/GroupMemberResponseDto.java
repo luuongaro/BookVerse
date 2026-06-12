@@ -1,5 +1,7 @@
 package com.grupo3.BookVerse.features.groups.groupMember.dto;
 
+import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberStatus;
+import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberType;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -19,7 +21,9 @@ public class GroupMemberResponseDto {
 
     private UUID userId;
     private String userName;
-    private String userEmail;
+
+    private GroupMemberType memberType;
+    private GroupMemberStatus status;
 
     private LocalDateTime joinedAt;
 }

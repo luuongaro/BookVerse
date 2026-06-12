@@ -11,9 +11,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "group_members", uniqueConstraints =
         {@UniqueConstraint(columnNames = {"group_id", "user_id"})})
-// Ensures that each user can be associated with
-// a group only once (prevents duplicate memberships)
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -36,6 +33,14 @@ public class GroupMemberEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user; //FK
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "member_type", nullable = false)
+    private GroupMemberType memberType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private GroupMemberStatus status;
+
     @Column(name = "joined_at", nullable = false)
     private LocalDateTime joinedAt;
 
@@ -46,6 +51,9 @@ public class GroupMemberEntity {
         }
         if (joinedAt == null) {
             joinedAt = LocalDateTime.now();
+        }
+        if (status == null) {
+            status = GroupMemberStatus.ACTIVE;
         }
     }
 
