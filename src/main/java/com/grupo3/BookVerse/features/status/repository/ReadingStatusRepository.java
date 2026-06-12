@@ -85,4 +85,29 @@ public interface ReadingStatusRepository extends JpaRepository<ReadingStatusEnti
             @Param("activeStatuses") List<ReadingStatusEnum> activeStatuses,
             @Param("readingStatusId") UUID readingStatusId
     );
+    boolean existsByUser_IdExternalAndBook_IdExternal(
+            UUID userId,
+            UUID bookId
+    );
+
+    boolean existsByUser_IdExternalAndStory_IdExternal(
+            UUID userId,
+            UUID storyId
+    );
+
+    boolean existsByUser_IdExternalAndBook_IdExternalAndIdExternalNot(
+            UUID userId,
+            UUID bookId,
+            UUID readingStatusId
+    );
+
+    boolean existsByUser_IdExternalAndStory_IdExternalAndIdExternalNot(
+            UUID userId,
+            UUID storyId,
+            UUID readingStatusId
+    );
+
+
+
+
 }
