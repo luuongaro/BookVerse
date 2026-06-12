@@ -1,8 +1,10 @@
-package com.grupo3.BookVerse.features.groups.groupProgress;
+package com.grupo3.BookVerse.features.groups.groupProgress.service.impl;
 
 import com.grupo3.BookVerse.features.chapters.domain.ChapterEntity;
 import com.grupo3.BookVerse.features.groups.groupGoals.domain.GroupGoalsEntity;
 import com.grupo3.BookVerse.features.groups.groupGoals.repository.GroupGoalsRepository;
+import com.grupo3.BookVerse.features.groups.groupProgress.dto.GroupProgressResponseDto;
+import com.grupo3.BookVerse.features.groups.groupProgress.service.GroupProgressService;
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import com.grupo3.BookVerse.features.groups.readingGroups.repository.ReadingGroupRepository;
 import com.grupo3.BookVerse.features.status.domain.ProgressType;
