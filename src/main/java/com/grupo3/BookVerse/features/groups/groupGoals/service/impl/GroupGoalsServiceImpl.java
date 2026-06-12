@@ -1,7 +1,10 @@
 package com.grupo3.BookVerse.features.groups.groupGoals.service.impl;
 
+import com.grupo3.BookVerse.common.exception.BadRequestException;
 import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
+import com.grupo3.BookVerse.features.groups.groupGoals.domain.GoalStatus;
 import com.grupo3.BookVerse.features.groups.groupGoals.domain.GroupGoalsEntity;
+import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalStatusRequestDto;
 import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsRequestDto;
 import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsResponseDto;
 import com.grupo3.BookVerse.features.groups.groupGoals.mappers.GroupGoalsMapper;
@@ -33,6 +36,10 @@ public class GroupGoalsServiceImpl implements GroupGoalsService {
         ReadingGroupEntity group =
                 findGroupByIdExternal(requestDto.groupId());
 
+        validateNoActiveGoal(
+                requestDto.groupId()
+        );
+
         GroupGoalsEntity entity =
                 groupGoalsMapper.toEntity(requestDto);
 
@@ -46,57 +53,59 @@ public class GroupGoalsServiceImpl implements GroupGoalsService {
 
     @Override
     @Transactional
-    public GroupGoalsResponseDto update(
-            UUID groupGoalsId,
-            GroupGoalsRequestDto requestDto
+    public GroupGoalsResponseDto changeStatus(
+            UUID groupGoalId,
+            GroupGoalStatusRequestDto requestDto
     ) {
 
-        GroupGoalsEntity groupGoals =
-                findByIdExternalEntity(groupGoalsId);
+        GroupGoalsEntity groupGoal =
+                findByIdExternalEntity(groupGoalId);
 
-        ReadingGroupEntity group =
-                findGroupByIdExternal(requestDto.groupId());
-
-        groupGoals.setGroup(group);
-
-        groupGoals.setGoalType(
-                requestDto.goalType()
+        validateStatusTransition(
+                groupGoal,
+                requestDto.status()
         );
 
-        groupGoals.setTargetProgress(
-                requestDto.targetProgress()
-        );
-
-        groupGoals.setTargetDate(
-                requestDto.targetDate()
+        groupGoal.setStatus(
+                requestDto.status()
         );
 
         GroupGoalsEntity saved =
-                groupGoalsRepository.save(groupGoals);
+                groupGoalsRepository.save(groupGoal);
 
         return groupGoalsMapper.toResponseDto(saved);
     }
 
     @Override
     @Transactional
-    public void delete(UUID groupGoalsId) {
+    public void delete(UUID groupGoalId) {
 
-        GroupGoalsEntity groupGoals =
-                findByIdExternalEntity(groupGoalsId);
+        GroupGoalsEntity groupGoal =
+                findByIdExternalEntity(groupGoalId);
 
-        groupGoalsRepository.delete(groupGoals);
+        if (groupGoal.getStatus() != GoalStatus.ACTIVE) {
+            throw new BadRequestException(
+                    "Only active goals can be cancelled"
+            );
+        }
+
+        groupGoal.setStatus(
+                GoalStatus.CANCELLED
+        );
+
+        groupGoalsRepository.save(groupGoal);
     }
 
     @Override
     @Transactional(readOnly = true)
     public GroupGoalsResponseDto findById(
-            UUID groupGoalsId
+            UUID groupGoalId
     ) {
 
-        GroupGoalsEntity groupGoals =
-                findByIdExternalEntity(groupGoalsId);
+        GroupGoalsEntity groupGoal =
+                findByIdExternalEntity(groupGoalId);
 
-        return groupGoalsMapper.toResponseDto(groupGoals);
+        return groupGoalsMapper.toResponseDto(groupGoal);
     }
 
     @Override
@@ -110,20 +119,65 @@ public class GroupGoalsServiceImpl implements GroupGoalsService {
 
     @Override
     @Transactional(readOnly = true)
-    public GroupGoalsResponseDto findByGroupId(UUID groupId) {
+    public GroupGoalsResponseDto findByGroupId(
+            UUID groupId
+    ) {
 
         findGroupByIdExternal(groupId);
 
         GroupGoalsEntity groupGoal =
                 groupGoalsRepository
-                        .findTopByGroup_IdExternalOrderByUpdatedAtDesc(groupId)
+                        .findByGroup_IdExternalAndStatus(
+                                groupId,
+                                GoalStatus.ACTIVE
+                        )
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
-                                        "Group goal not found for group: " + groupId
+                                        "Active goal not found for group: "
+                                                + groupId
                                 )
                         );
 
         return groupGoalsMapper.toResponseDto(groupGoal);
+    }
+
+    private void validateNoActiveGoal(
+            UUID groupId
+    ) {
+
+        boolean hasActiveGoal =
+                groupGoalsRepository
+                        .existsByGroup_IdExternalAndStatus(
+                                groupId,
+                                GoalStatus.ACTIVE
+                        );
+
+        if (hasActiveGoal) {
+            throw new BadRequestException(
+                    "This reading group already has an active goal"
+            );
+        }
+    }
+
+    private void validateStatusTransition(
+            GroupGoalsEntity goal,
+            GoalStatus newStatus
+    ) {
+
+        if (goal.getStatus() != GoalStatus.ACTIVE) {
+            throw new BadRequestException(
+                    "Only active goals can change status"
+            );
+        }
+
+        if (
+                newStatus != GoalStatus.COMPLETED
+                        && newStatus != GoalStatus.CANCELLED
+        ) {
+            throw new BadRequestException(
+                    "Active goals can only become COMPLETED or CANCELLED"
+            );
+        }
     }
 
     private GroupGoalsEntity findByIdExternalEntity(

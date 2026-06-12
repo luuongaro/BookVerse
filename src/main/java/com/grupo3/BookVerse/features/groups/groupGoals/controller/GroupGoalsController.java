@@ -1,5 +1,6 @@
 package com.grupo3.BookVerse.features.groups.groupGoals.controller;
 
+import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalStatusRequestDto;
 import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsRequestDto;
 import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsResponseDto;
 import com.grupo3.BookVerse.features.groups.groupGoals.service.GroupGoalsService;
@@ -37,11 +38,21 @@ public class GroupGoalsController {
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Group goals retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Group goals retrieved successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            )
     })
     public ResponseEntity<List<GroupGoalsResponseDto>> findAll() {
-        return ResponseEntity.ok(groupGoalsService.findAll());
+
+        return ResponseEntity.ok(
+                groupGoalsService.findAll()
+        );
     }
 
     @GetMapping("/{groupGoalsId}")
@@ -51,11 +62,23 @@ public class GroupGoalsController {
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Group goal retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Group goal not found", content = @Content)
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Group goal retrieved successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Group goal not found",
+                    content = @Content
+            )
     })
     public ResponseEntity<GroupGoalsResponseDto> findById(
+
             @Parameter(
                     description = "External UUID of the group goal",
                     required = true,
@@ -63,91 +86,182 @@ public class GroupGoalsController {
             )
             @PathVariable UUID groupGoalsId
     ) {
-        return ResponseEntity.ok(groupGoalsService.findById(groupGoalsId));
+
+        return ResponseEntity.ok(
+                groupGoalsService.findById(groupGoalsId)
+        );
     }
 
     @PostMapping
     @Operation(
             summary = "Create a new group goal",
-            description = "Creates a new reading goal associated with a reading group.",
+            description = """
+                    Creates a new reading goal associated with a reading group.
+                    A reading group can only have one ACTIVE goal at a time.
+                    """,
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Group goal created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Reading group not found", content = @Content)
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Group goal created successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request or an active goal already exists",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Reading group not found",
+                    content = @Content
+            )
     })
     public ResponseEntity<GroupGoalsResponseDto> create(
-            @Valid @RequestBody GroupGoalsRequestDto groupGoalsRequestDto
+
+            @Valid
+            @RequestBody GroupGoalsRequestDto groupGoalsRequestDto
     ) {
+
         return new ResponseEntity<>(
                 groupGoalsService.save(groupGoalsRequestDto),
                 HttpStatus.CREATED
         );
     }
 
-    @PutMapping("/{groupGoalsId}")
+    @PatchMapping("/{groupGoalsId}/status")
     @Operation(
-            summary = "Update a group goal",
-            description = "Updates an existing group goal by its external UUID.",
+            summary = "Change group goal status",
+            description = """
+                    Changes the status of an ACTIVE group goal.
+                    
+                    Allowed transitions:
+                    ACTIVE → COMPLETED
+                    ACTIVE → CANCELLED
+                    """,
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Group goal updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Group goal or reading group not found", content = @Content)
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Group goal status updated successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid status transition",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Group goal not found",
+                    content = @Content
+            )
     })
-    public ResponseEntity<GroupGoalsResponseDto> update(
+    public ResponseEntity<GroupGoalsResponseDto> changeStatus(
+
             @Parameter(
-                    description = "External UUID of the group goal to update",
+                    description = "External UUID of the group goal",
                     required = true,
                     example = "550e8400-e29b-41d4-a716-446655440000"
             )
             @PathVariable UUID groupGoalsId,
-            @Valid @RequestBody GroupGoalsRequestDto groupGoalsRequestDto
+
+            @Valid
+            @RequestBody GroupGoalStatusRequestDto requestDto
     ) {
+
         return ResponseEntity.ok(
-                groupGoalsService.update(groupGoalsId, groupGoalsRequestDto)
+                groupGoalsService.changeStatus(
+                        groupGoalsId,
+                        requestDto
+                )
         );
     }
 
     @DeleteMapping("/{groupGoalsId}")
     @Operation(
-            summary = "Delete a group goal",
-            description = "Deletes a group goal by its external UUID.",
+            summary = "Cancel an active group goal",
+            description = """
+                    Cancels an ACTIVE group goal.
+                    The goal is not physically deleted from the system.
+                    Its status is changed to CANCELLED to preserve history.
+                    """,
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Group goal deleted successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Group goal not found", content = @Content)
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Group goal cancelled successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Only ACTIVE goals can be cancelled",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Group goal not found",
+                    content = @Content
+            )
     })
     public ResponseEntity<Void> delete(
+
             @Parameter(
-                    description = "External UUID of the group goal to delete",
+                    description = "External UUID of the group goal",
                     required = true,
                     example = "550e8400-e29b-41d4-a716-446655440000"
             )
             @PathVariable UUID groupGoalsId
     ) {
+
         groupGoalsService.delete(groupGoalsId);
+
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/group/{groupId}")
     @Operation(
-            summary = "Get group goal by reading group",
-            description = "Retrieves the active goal associated with a specific reading group using its external UUID.",
+            summary = "Get active goal by reading group",
+            description = """
+                    Retrieves the ACTIVE goal associated with a reading group.
+                    Since a group can only have one active goal,
+                    this endpoint always returns the current active goal.
+                    """,
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Group goal retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Reading group or goal not found", content = @Content)
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Active group goal retrieved successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Reading group or active goal not found",
+                    content = @Content
+            )
     })
     public ResponseEntity<GroupGoalsResponseDto> findByGroupId(
+
             @Parameter(
                     description = "External UUID of the reading group",
                     required = true,
@@ -155,6 +269,7 @@ public class GroupGoalsController {
             )
             @PathVariable UUID groupId
     ) {
+
         return ResponseEntity.ok(
                 groupGoalsService.findByGroupId(groupId)
         );

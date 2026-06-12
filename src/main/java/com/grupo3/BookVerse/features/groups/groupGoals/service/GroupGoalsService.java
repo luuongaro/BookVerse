@@ -1,5 +1,6 @@
 package com.grupo3.BookVerse.features.groups.groupGoals.service;
 
+import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalStatusRequestDto;
 import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsRequestDto;
 import com.grupo3.BookVerse.features.groups.groupGoals.dto.GroupGoalsResponseDto;
 
@@ -12,7 +13,10 @@ public interface GroupGoalsService {
 
     void delete(UUID groupGoalsId);
 
-    GroupGoalsResponseDto update(UUID groupGoalsId, GroupGoalsRequestDto groupGoalsRequestDto);
+    GroupGoalsResponseDto changeStatus(
+            UUID groupGoalId,
+            GroupGoalStatusRequestDto requestDto
+    );
 
     GroupGoalsResponseDto findById(UUID groupGoalsId);
 
