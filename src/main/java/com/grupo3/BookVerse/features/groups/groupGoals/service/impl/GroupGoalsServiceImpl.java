@@ -40,6 +40,11 @@ public class GroupGoalsServiceImpl implements GroupGoalsService {
                 requestDto.groupId()
         );
 
+        validateGoalParams(
+                requestDto,
+                group
+        );
+
         GroupGoalsEntity entity =
                 groupGoalsMapper.toEntity(requestDto);
 
@@ -139,6 +144,36 @@ public class GroupGoalsServiceImpl implements GroupGoalsService {
                         );
 
         return groupGoalsMapper.toResponseDto(groupGoal);
+    }
+
+    private void validateGoalParams(
+            GroupGoalsRequestDto requestDto,
+            ReadingGroupEntity group
+    ) {
+
+        if (requestDto.targetProgress() == null || requestDto.targetProgress() <= 0) {
+            throw new BadRequestException(
+                    "Target progress must be greater than 0"
+            );
+        }
+
+        if (
+                requestDto.goalType().name().equals("PERCENTAGE")
+                        && requestDto.targetProgress() > 100
+        ) {
+            throw new BadRequestException(
+                    "Percentage target progress cannot exceed 100"
+            );
+        }
+
+        if (
+                group.getBook() != null
+                        && requestDto.goalType().name().equals("CHAPTER")
+        ) {
+            throw new BadRequestException(
+                    "Groups reading a book cannot set CHAPTER goals"
+            );
+        }
     }
 
     private void validateNoActiveGoal(
