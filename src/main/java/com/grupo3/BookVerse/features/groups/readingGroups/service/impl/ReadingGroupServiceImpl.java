@@ -1,5 +1,8 @@
 package com.grupo3.BookVerse.features.groups.readingGroups.service.impl;
 
+import com.grupo3.BookVerse.common.exception.BadRequestException;
+import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
+import com.grupo3.BookVerse.features.books.domain.BookEntity;
 import com.grupo3.BookVerse.features.books.repository.BookRepository;
 import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberEntity;
 import com.grupo3.BookVerse.features.groups.groupMember.domain.GroupMemberStatus;
@@ -8,6 +11,7 @@ import com.grupo3.BookVerse.features.groups.groupMember.repository.GroupMemberRe
 import com.grupo3.BookVerse.features.groups.readingGroups.domain.ReadingGroupEntity;
 import com.grupo3.BookVerse.features.groups.readingGroups.dto.ReadingGroupRequestDto;
 import com.grupo3.BookVerse.features.groups.readingGroups.dto.ReadingGroupResponseDto;
+import com.grupo3.BookVerse.features.groups.readingGroups.dto.UpdateReadingGroupRequestDto;
 import com.grupo3.BookVerse.features.groups.readingGroups.mappers.ReadingGroupMapper;
 import com.grupo3.BookVerse.features.groups.readingGroups.repository.ReadingGroupRepository;
 import com.grupo3.BookVerse.features.groups.readingGroups.service.ReadingGroupService;
@@ -15,9 +19,6 @@ import com.grupo3.BookVerse.features.stories.domain.StoryEntity;
 import com.grupo3.BookVerse.features.stories.repository.StoryRepository;
 import com.grupo3.BookVerse.features.users.domain.UserEntity;
 import com.grupo3.BookVerse.features.users.repository.UserRepository;
-import com.grupo3.BookVerse.common.exception.BadRequestException;
-import com.grupo3.BookVerse.common.exception.ResourceNotFoundException;
-import com.grupo3.BookVerse.features.books.domain.BookEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -47,20 +48,27 @@ public class ReadingGroupServiceImpl implements ReadingGroupService {
         validateContent(dto.bookId(), dto.storyId());
 
         UserEntity authenticatedUser = getAuthenticatedUser();
+        String normalizedName = normalizeName(dto.name());
 
-        ReadingGroupEntity entity = mapper.toEntity(dto);
-        entity.setCreatedBy(authenticatedUser);
-        entity.setIsActive(Boolean.TRUE);
+        BookEntity book = null;
+        StoryEntity story = null;
 
         if (dto.bookId() != null) {
-            entity.setBook(findBookByIdExternal(dto.bookId()));
-            entity.setStory(null);
+            book = findBookByIdExternal(dto.bookId());
         }
 
         if (dto.storyId() != null) {
-            entity.setStory(findStoryByIdExternal(dto.storyId()));
-            entity.setBook(null);
+            story = findStoryByIdExternal(dto.storyId());
         }
+
+        validateUniqueActiveGroupName(normalizedName, dto.bookId(), dto.storyId());
+
+        ReadingGroupEntity entity = mapper.toEntity(dto);
+        entity.setName(normalizedName);
+        entity.setCreatedBy(authenticatedUser);
+        entity.setIsActive(Boolean.TRUE);
+        entity.setBook(book);
+        entity.setStory(story);
 
         ReadingGroupEntity saved = repository.save(entity);
 
@@ -138,11 +146,10 @@ public class ReadingGroupServiceImpl implements ReadingGroupService {
 
     @Override
     @Transactional
-    public ReadingGroupResponseDto updateGroup(UUID idExternal, ReadingGroupRequestDto dto) {
-        validateContent(dto.bookId(), dto.storyId());
-
+    public ReadingGroupResponseDto updateGroup(UUID idExternal, UpdateReadingGroupRequestDto dto) {
         ReadingGroupEntity entity = findGroupByIdExternal(idExternal);
         UserEntity authenticatedUser = getAuthenticatedUser();
+        String normalizedName = normalizeName(dto.name());
 
         validateCanManageGroup(entity, authenticatedUser);
 
@@ -150,10 +157,9 @@ public class ReadingGroupServiceImpl implements ReadingGroupService {
             throw new BadRequestException("Inactive reading groups cannot be updated");
         }
 
-        validateContentNotChanged(entity, dto);
+        validateUniqueActiveGroupNameForUpdate(entity, normalizedName);
 
-        entity.setName(dto.name());
-        entity.setIsActive(dto.isActive());
+        entity.setName(normalizedName);
 
         ReadingGroupEntity updated = repository.save(entity);
         return mapper.toResponseDto(updated);
@@ -171,7 +177,7 @@ public class ReadingGroupServiceImpl implements ReadingGroupService {
             throw new BadRequestException("Reading group is already inactive");
         }
 
-        entity.setIsActive(false);
+        entity.setIsActive(Boolean.FALSE);
         repository.save(entity);
     }
 
@@ -189,33 +195,58 @@ public class ReadingGroupServiceImpl implements ReadingGroupService {
         }
     }
 
-    private void validateContentNotChanged(ReadingGroupEntity entity, ReadingGroupRequestDto dto) {
-        boolean currentIsBookGroup = entity.getBook() != null;
-        boolean currentIsStoryGroup = entity.getStory() != null;
-
-        if (currentIsBookGroup) {
-            boolean sameBook = dto.bookId() != null
-                    && entity.getBook().getIdExternal().equals(dto.bookId());
-            boolean storyMustBeNull = dto.storyId() == null;
-
-            if (!sameBook || !storyMustBeNull) {
+    private void validateUniqueActiveGroupName(String name, UUID bookId, UUID storyId) {
+        if (bookId != null) {
+            boolean exists = repository.existsByNameIgnoreCaseAndBook_IdExternalAndIsActiveTrue(name, bookId);
+            if (exists) {
                 throw new BadRequestException(
-                        "Changing the associated content of a reading group is not allowed"
+                        "An active reading group with this name already exists for this book"
                 );
             }
         }
 
-        if (currentIsStoryGroup) {
-            boolean sameStory = dto.storyId() != null
-                    && entity.getStory().getIdExternal().equals(dto.storyId());
-            boolean bookMustBeNull = dto.bookId() == null;
-
-            if (!sameStory || !bookMustBeNull) {
+        if (storyId != null) {
+            boolean exists = repository.existsByNameIgnoreCaseAndStory_IdExternalAndIsActiveTrue(name, storyId);
+            if (exists) {
                 throw new BadRequestException(
-                        "Changing the associated content of a reading group is not allowed"
+                        "An active reading group with this name already exists for this story"
                 );
             }
         }
+    }
+
+    private void validateUniqueActiveGroupNameForUpdate(ReadingGroupEntity entity, String name) {
+        if (entity.getBook() != null) {
+            boolean exists = repository.existsByNameIgnoreCaseAndBook_IdExternalAndIsActiveTrueAndIdExternalNot(
+                    name,
+                    entity.getBook().getIdExternal(),
+                    entity.getIdExternal()
+            );
+
+            if (exists) {
+                throw new BadRequestException(
+                        "An active reading group with this name already exists for this book"
+                );
+            }
+        }
+
+        if (entity.getStory() != null) {
+            boolean exists = repository.existsByNameIgnoreCaseAndStory_IdExternalAndIsActiveTrueAndIdExternalNot(
+                    name,
+                    entity.getStory().getIdExternal(),
+                    entity.getIdExternal()
+            );
+
+            if (exists) {
+                throw new BadRequestException(
+                        "An active reading group with this name already exists for this story"
+                );
+            }
+        }
+    }
+
+    private String normalizeName(String name) {
+        return name.trim();
     }
 
     private void validateCanManageGroup(ReadingGroupEntity entity, UserEntity authenticatedUser) {
@@ -278,4 +309,3 @@ public class ReadingGroupServiceImpl implements ReadingGroupService {
         return user;
     }
 }
-
