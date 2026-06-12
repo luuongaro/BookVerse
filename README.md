@@ -11,11 +11,14 @@ following IEEE-based software requirements specification guidelines.
 BookVerse provides a RESTful API that allows users to:
 
 - Register and manage accounts
-- Create and publish original stories
-- Browse and review books and stories
-- Participate in reading groups
+- Authenticate securely using JWT
+- Create and publish original serialized stories
+- Read and review both commercial books and platform stories
+- Browse and search books using Google Books API integration
 - Track reading progress and status
-- Interact with other users through comments and tips
+- Participate in reading groups with structured roles and permissions
+- Define and follow group reading goals
+- Interact with other users through contextual group comments
 - Manage roles, reports, and moderation processes
 
 The system is designed as a backend service without a mandatory frontend, enabling flexibility for integration with different clients.
@@ -24,15 +27,19 @@ The system is designed as a backend service without a mandatory frontend, enabli
 
 The system includes the following main functional areas:
 
-- User authentication and role management
-- Story and chapter management
-- Book metadata consultation
-- Reviews and ratings system
-- Review reporting and moderation
-- Reading status and progress tracking
-- Reading groups, membership, goals, and comments
-- Subscription management
-- Tips (user-to-user interaction)
+## Functional Scope
+
+The system includes the following main functional areas:
+
+- User authentication and role-based authorization
+- Story and chapter management with publishing restrictions based on subscription
+- Book metadata integration through Google Books API with local persistence and duplicate prevention
+- Reviews and ratings system for books and stories
+- Review reporting and moderation workflows
+- Reading status and progress tracking with business rules
+- Reading groups with membership, roles, comments, and goals
+- Subscription management (FREE / PREMIUM with real constraints)
+- User interaction features such as tips and group-based discussions (in progress)
 
 ## External Integrations
 
@@ -42,27 +49,62 @@ The system includes the following main functional areas:
 
 The core entities of the system include:
 
-- Authors
-- Books
-- Stories
+- Books (external reference via Google Books)
+- Stories (user-generated content)
 - Chapters
 - Users
 - Roles
 - Reviews
 - ReviewReport
-- Status (reading status)
+- ReadingStatus
 - Subscriptions
 - Tips
 
 ### Group-related entities
 
-- ReadingGroups
-- GroupMember
-- GroupGoals
-- GroupProgress
-- GroupComment
+- ReadingGroup
+- GroupMember (CREATOR / MEMBER, ACTIVE / LEFT / REMOVED)
+- GroupGoals (group-level reading objectives)
+- GroupProgress (calculated, not persisted)
+- GroupComment (contextual comments with spoiler filtering)
 
-These entities are connected through bidirectional relationships and represent the full domain model described in the conceptual design.
+These entities are connected through structured relationships and enforce business rules such as access control, ownership, and content visibility.
+
+## Reading Groups System
+## Reading Groups
+
+- Each group has a creator automatically registered as `CREATOR`
+- Other users join as `MEMBER`
+- Membership states:
+  - ACTIVE
+  - LEFT
+  - REMOVED
+- Only active members can participate in group activities
+
+### Group Comments
+
+- Comments are contextual and linked to reading progress
+- Visibility is controlled to prevent spoilers
+- Only content up to the user's reading progress is visible
+
+### Group Goals
+
+- Each group can define a single ACTIVE goal at a time
+- Goals define a target reading milestone:
+  - Percentage (Books or Stories)
+  - Chapter number (Stories only)
+
+### Group Progress
+
+- Progress is calculated dynamically (not stored)
+- Based on:
+  - Active group members
+  - Their reading statuses
+  - The active group goal
+- Ensures consistency without duplicating data
+
+The reading groups module enables collaborative reading experiences with structured roles and rules.
+
 
 ## Architecture
 
@@ -109,19 +151,23 @@ Existing solutions often separate reading tracking, content creation, and commun
 
 BookVerse aims to centralize these features into a single backend system.
 
-## Key Design Decisions
+## Key Design Decisions## 
 
+-Design of `Author` entity: User represents both reader and writer roles
+- Book entity represents external content (Google Books) and is stored locally to avoid duplication
+- Separation between:
+  - `Review`: global opinion about a work (Book or Story)
+  - `GroupComment`: contextual interaction within reading groups
+- Reading progress is centralized in `ReadingStatus`, avoiding duplication across modules
+- `GroupProgress` is calculated dynamically based on group goals and member progress
+- Implementation of soft delete and status-based lifecycle management in multiple modules
 - Use of DTO pattern to isolate persistence models from API responses
-- Implementation of MapStruct for object mapping
+- Use of MapStruct for object mapping
 - Layered architecture for scalability and maintainability
-- Use of bidirectional relationships between entities
-- Inclusion of `idExternal` as part of entity identification strategy
-- Exception handling centralized using global handlers
-- Validation of input data using annotations such as `@Valid`, `@NotNull`, and `@Size`
-- JWT-based stateless authentication
-- Login process using email instead of username
-- Automatic initialization of roles, subscriptions, and default admin account
-- Role-based access control using Spring Security
+- Pagination support using Spring Data Pageable
+- JWT-based stateless authentication using email as subject
+- Role hierarchy (Admin > Moderator > User) implemented via Spring Security
+- Automatic initialization of roles, subscriptions, and default admin user
 
 ## Non-Functional Requirements
 
@@ -135,15 +181,17 @@ BookVerse aims to centralize these features into a single backend system.
 - Secure password storage using BCrypt hashing
 - Centralized security exception handling
 
+## Future Improvements
 
 ## Future Improvements
 
-- Frontend application development
-- Real-time notifications and messaging
-- Support for donations/tips to content creators
-- Recommendation system based on reading preferences
-- Automated testing (unit and integration tests)
-- Containerization with Docker
+- Frontend application development to provide a complete user experience
+- Payment integration for subscriptions and content monetization
+- Expansion of the Tips feature, including full integration with the system and real use cases
+- Advanced recommendation system based on user reading behavior and preferences
+- Enhanced analytics for group activity, reading progress, and engagement
+- Extended testing coverage (unit and integration tests)
+- Performance improvements and caching strategies for external API calls
 
 ## Postman Collection
 
@@ -152,8 +200,9 @@ This allows easy verification of the system without requiring a frontend.
 
 ## Security
 
-BookVerse implements authentication and authorization using Spring Security and JWT (JSON Web Token).
-
+- BookVerse implements authentication and authorization using Spring Security and JWT (JSON Web Token).
+- Fine-grained authorization enforced at service level (ownership, membership, role hierarchy)
+  
 ### Authentication Features
 
 - JWT-based authentication
